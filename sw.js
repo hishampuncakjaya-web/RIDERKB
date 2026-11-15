@@ -1,5 +1,5 @@
-const CACHE = 'rkb-v28';
-const SHELL = ['./', './index.html', './track.html', './manifest-rider.webmanifest', './rider.html', './admin.html', './app.css', './theme.css', './common.js', './firebase-config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+const CACHE = 'rkb-v30';
+const SHELL = ['./', './index.html', './track.html', './manifest-rider.webmanifest', './rider.html', './admin.html', './app.css', './theme.css', './theme.js', './common.js', './firebase-config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 const CDN = ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'];
 
 self.addEventListener('install', e => {

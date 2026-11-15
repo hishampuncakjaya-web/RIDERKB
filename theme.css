@@ -48,3 +48,50 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);border-col
 @keyframes pulse{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
 .foot button{background:none;border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:8px 14px;font:inherit;font-size:12.5px;margin-top:8px}
 @media(prefers-reduced-motion:reduce){.cf{display:none}.rdr,.pulse,.rt #priceTxt,.rt #kmTxt{animation:none}html{scroll-behavior:auto}}
+
+/* ===== Tema CERAH (sesuai bawah matahari) ===== */
+html[data-theme="light"]{--bg:#fbf6ee;--card:#ffffff;--card2:#f4ebe0;--line:#e2d4c4;--txt:#2a1a1e;--mut:#6b5560;--red:#9f1239;--org:#a8700f;--grn:#0f8a5f;--gold:#a8700f;color-scheme:light}
+html[data-theme="light"] body{background:var(--bg);color:var(--txt)}
+html[data-theme="light"] a{color:#8f1536}
+html[data-theme="light"] .svc.on{background:#fbe9ee}
+html[data-theme="light"] .chip.on,html[data-theme="light"] .opt.on{background:#fff4dc}
+html[data-theme="light"] .popt.on{background:#e3f6ec}
+html[data-theme="light"] .price{background:#fdeef2;border-color:#ecc3cf}
+html[data-theme="light"] .price .km{color:var(--txt)}
+html[data-theme="light"] .price b{color:#9f1239}
+html[data-theme="light"] .rain,html[data-theme="light"] #install{background:#fff4dc;border-color:#ecd49a}
+html[data-theme="light"] .bar{background:linear-gradient(#fbf6eecc,#fbf6ee 30%)}
+html[data-theme="light"] .fsbar{background:#fffffff2!important}
+html[data-theme="light"] .st.on{color:var(--txt)}
+html[data-theme="light"] .stp .done,html[data-theme="light"] .stp .now{color:var(--txt)}
+html[data-theme="light"] .b-baru{background:#fff1d6;color:#8a5a00}
+html[data-theme="light"] .b-diterima,html[data-theme="light"] .b-diambil{background:#e1eeff;color:#1d4ed8}
+html[data-theme="light"] .b-selesai{background:#dff5ea;color:#0b6b48}
+html[data-theme="light"] .b-batal{background:#fde4ea;color:#9f1239}
+html[data-theme="light"] .err{color:#b4123a}
+html[data-theme="light"] .rlbl,html[data-theme="light"] .spd{background:#fff;color:#2a1a1e}
+html[data-theme="light"] .toast{background:#2a1a1e;color:#fff}
+html[data-theme="light"] .nb{background:var(--card)}
+html[data-theme="light"] #greet{color:#8f1536}
+html[data-theme="light"] .btn.gry{color:var(--txt)}
+html[data-theme="light"] .tab{color:var(--txt)}
+html[data-theme="light"] .tab.on{color:#fff}
+html[data-theme="light"] .modal .mbox{background:var(--card);color:var(--txt)}
+html[data-theme="light"] select,html[data-theme="light"] input,html[data-theme="light"] textarea{color:var(--txt)}
+
+/* ===== Mesra pengguna: teks lebih jelas, sasaran sentuh lebih besar ===== */
+.mut{font-size:13.5px}
+.st{font-size:12px}.svc small{font-size:12px}
+.chip{min-height:44px}
+.themeBtn{background:none;border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:8px 14px;font:inherit;font-size:12.5px;margin:6px 4px 0;cursor:pointer}
+.qchips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 8px;margin:0 -2px;scrollbar-width:none}
+.qchips::-webkit-scrollbar{display:none}
+.qchips .chip{flex:0 0 auto;white-space:nowrap;min-height:40px;padding:8px 13px}
+.brk{font-size:12px;color:var(--mut);display:block;margin-top:2px}
+.pinfo{background:var(--card);border:1px dashed var(--gold);border-radius:14px;padding:12px 14px;margin-top:10px;font-size:13.5px;line-height:1.6}
+.pinfo b{color:var(--gold)}
+.pinfo img{display:block;max-width:220px;width:100%;margin:8px auto 0;border-radius:10px;background:#fff}
+.fld.bad{border-color:#e11d48!important;outline:2px solid #e11d4855}
+.fmsg{color:#fda4af;font-size:12.5px;margin-top:4px;min-height:0}
+html[data-theme="light"] .fmsg{color:#b4123a}
+.sumtot{font-weight:900}

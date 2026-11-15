@@ -2,13 +2,14 @@
 <html lang="ms"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Admin | Rider KB</title><meta name="theme-color" content="#7a1230">
+<script src="theme.js"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="theme.css">
 </head><body>
 <div class="wrap wide">
-<header class="hd"><div><span class="tag">ADMIN</span><h1>Rider KB Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
+<header class="hd"><div><span class="tag">ADMIN</span><h1>Rider KB Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
 
 <div id="login" class="pad hide" style="max-width:520px;margin:0 auto">
   <div class="card"><h3>Log masuk admin</h3>
@@ -21,13 +22,17 @@
 
 <div id="app" class="pad hide">
   <div class="stats" id="stats"></div>
-  <div class="cols">
+  <div id="late" class="hide" style="background:#3b1d0a;border:2px solid #f59e0b;border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:14px;line-height:1.5;cursor:pointer"></div>
+  <div class="card hide" id="repCard" style="margin-top:0"><h3>🆘 Laporan &amp; SOS <span id="repN" class="mut"></span></h3><div id="reps"></div></div>
+  <div class="tabs" id="mtabs" style="padding:0 0 10px"></div>
+  <div>
     <div>
-      <div class="card" style="margin-top:0"><h3>Peta live</h3><div id="map" class="map" style="height:300px"></div>
+      <div data-tab="peta" class="hide"><div class="card" style="margin-top:0"><h3>Peta live</h3><div id="map" class="map" style="height:300px"></div>
         <div class="mut" style="margin-top:8px">🟢 Ambil &nbsp; 🔴 Hantar &nbsp; 🛵 Rider online / ada job (pudar = isyarat lama) &nbsp; ━ Laluan job aktif</div></div>
-      <div class="card" id="repCard"><h3>🆘 Laporan &amp; SOS <span id="repN" class="mut"></span></h3><div id="reps"><div class="mut">Tiada laporan.</div></div></div>
-      <div class="card"><h3>Rider</h3><div id="riders"></div></div>
-      <div class="card"><h3>📷 Kamera laju / AES / speed trap</h3>
+      </div>
+      <div data-tab="rider" class="hide"><div class="card" style="margin-top:0"><h3>Rider</h3><div id="riders"></div></div></div>
+      <div data-tab="kedai" class="hide">
+      <div class="card" style="margin-top:0"><h3>📷 Kamera laju / AES / speed trap</h3>
         <div class="mut" style="margin-bottom:8px">Rider akan diberi amaran bila hampir lokasi ini. Tekan butang, kemudian tekan lokasi di peta.</div>
         <button class="btn sm" id="addHaz">➕ Tambah kamera/AES</button><div id="hazl" style="margin-top:10px"></div></div>
       <div class="card"><h3>⭐ Kedai pilihan (dicadangkan kepada customer)</h3>
@@ -42,8 +47,33 @@
         <div class="mut" id="shLocT" style="margin-top:6px">Lokasi belum dipilih</div>
         <div class="acts"><button class="btn sm" id="shSave" type="button">💾 Simpan kedai</button></div>
         <div id="shl" style="margin-top:12px"></div></div>
+      </div>
+      <div data-tab="tetapan" class="hide">
+        <div class="card" style="margin-top:0"><h3>💰 Harga</h3>
+          <div class="mut" style="margin-bottom:6px">Berkuat kuasa serta-merta di app customer (tak perlu upload semula).</div>
+          <div class="acts" style="margin-top:0">
+            <div style="flex:1 1 45%"><label style="margin-top:0">Upah asas (RM)</label><input id="sBase" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label style="margin-top:0">KM termasuk asas</label><input id="sFree" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label>RM setiap KM lebihan</label><input id="sPer" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label>Tambahan kereta (RM)</label><input id="sCar" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label>Caj hujan (RM)</label><input id="sRain" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label>Amaran order tiada rider (min)</label><input id="sAlert" type="number" step="1" min="1" inputmode="numeric"></div>
+          </div></div>
+        <div class="card"><h3>💬 WhatsApp pusat</h3>
+          <label style="margin-top:0">Nombor (format 60xxxxxxxxx)</label><input id="sWa" type="tel" inputmode="tel" placeholder="601139900099"></div>
+        <div class="card"><h3>📲 Bayaran Transfer / QR</h3>
+          <div class="mut" style="margin-bottom:6px">Dipaparkan kepada customer bila pilih Transfer/QR, dan di halaman jejak.</div>
+          <label style="margin-top:0">Bank</label><input id="sBank" placeholder="cth: Maybank / TNG eWallet">
+          <label>No. akaun</label><input id="sAcc" inputmode="numeric" placeholder="cth: 1234567890">
+          <label>Nama akaun</label><input id="sName" placeholder="Nama penerima">
+          <label>Gambar QR (pilihan)</label><input id="sQrF" type="file" accept="image/*">
+          <img id="sQrP" alt="" style="display:none;max-width:180px;margin-top:8px;border-radius:10px;background:#fff">
+          <div class="acts"><button class="btn gry sm hide" id="sQrX" type="button">🗑️ Buang QR</button></div></div>
+        <div class="acts"><button class="btn full" id="sSave" type="button">💾 Simpan tetapan</button></div>
+        <div class="mut" id="sInfo" style="margin-top:8px;text-align:center"></div>
+      </div>
     </div>
-    <div>
+    <div data-tab="order">
       <div class="chips" id="flt"></div>
       <input id="q" placeholder="Cari ref / nama / telefon / rider…">
       <div id="list"></div>
@@ -73,7 +103,7 @@ auth.onAuthStateChanged(u=>{
   if(!u){ $('#login').classList.remove('hide'); $('#app').classList.add('hide'); $('#out').classList.add('hide'); return }
   if(!admins.includes((u.email||'').toLowerCase())){ $('#lerr').textContent='Akaun ini bukan admin.'; auth.signOut(); return }
   $('#login').classList.add('hide'); $('#app').classList.remove('hide'); $('#out').classList.remove('hide'); $('#who').textContent=u.email;
-  if(!started){ started=true; listen(); initMap(); }
+  if(!started){ started=true; listen(); initMap(); goTab(curTab); }
 });
 function listen(){
   db.ref('orders').orderByChild('createdAt').limitToLast(300).on('value',s=>{
@@ -97,7 +127,7 @@ function stats(L){
 }
 setInterval(()=>{ if(started) render() },15000);
 function drawReps(){
-  const R=Object.entries(reps).sort((x,y)=>y[1].t-x[1].t); $('#repN').textContent=R.length?'('+R.length+')':'';
+  const R=Object.entries(reps).sort((x,y)=>y[1].t-x[1].t); $('#repN').textContent=R.length?'('+R.length+')':''; $('#repCard').classList.toggle('hide',!R.length);
   $('#reps').innerHTML=R.length?R.map(([k,r])=>{ const wa=RKB.tel(r.phone); return `<div class="row" style="align-items:flex-start"><span>${r.type==='sos'?'🆘':'⚠️'} <b>${esc(r.from||'')}</b> ${esc(r.name||'')}<br><small class="mut">${RKB.hm(r.t)} · ${r.ref?'#'+esc(r.ref):''}</small><br>${esc(r.msg||'')}</span><span>${wa?`<a class="btn grn sm" target="_blank" href="https://wa.me/${wa}">💬</a> `:''}${r.loc?`<a class="btn gry sm" target="_blank" href="https://www.google.com/maps?q=${r.loc.lat},${r.loc.lng}">🗺️</a> `:''}<button class="btn gry sm" data-rp="${k}">✅ Selesai</button></span></div>` }).join(''):'<div class="mut">Tiada laporan.</div>';
 }
 $('#reps').onclick=async e=>{ const b=e.target.closest('[data-rp]'); if(!b) return; try{ await db.ref('reports/'+b.dataset.rp).remove() }catch(err){ toast('Gagal: '+err.code) } };
@@ -109,7 +139,7 @@ function render(){
   const s=q.toLowerCase();
   const V=L.filter(o=>(filter==='semua'||(filter==='aktif'?isAct(o):o.status===filter))&&(!s||[o.ref,o.name,o.phone,o.riderName].join(' ').toLowerCase().includes(s)));
   const ropts=Object.entries(riders).filter(([u,r])=>r.approved===true).map(([u,r])=>`<option value="${u}">${esc(r.name||u)}</option>`).join('');
-  $('#list').innerHTML=V.length?V.map(o=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}${o.rating?' · ⭐'+o.rating.stars:''}</b><span>${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
+  $('#list').innerHTML=V.length?V.map(o=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}${o.rating?' · ⭐'+o.rating.stars:''}</b><span>${(()=>{ const c=RKB.confState(o); if(!c) return ''; const far=(o.doneDist!=null&&o.doneDist>(+RKB.cfg.dropRadiusM||300))||o.doneGps===false; return '<span class="badge '+(c.k==='issue'?'b-batal':'b-'+(c.k==='ok'?'selesai':'diterima'))+'">'+esc(c.t)+'</span> '+(far?'<span class="badge b-batal">📍 '+(o.doneGps===false?'tiada GPS masa selesai':'selesai '+o.doneDist+' m dari lokasi hantar')+'</span> ':'') })()}${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
     <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b></div>
     <div class="row"><span>Ambil</span><span>${esc(o.pick.addr)}</span></div>
     <div class="row"><span>Hantar</span><span>${esc(o.drop.addr)}</span></div>
@@ -126,6 +156,9 @@ function render(){
   const R=Object.entries(riders).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||(a[1].name||'').localeCompare(b[1].name||''));
   $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;return `<div class="row" style="align-items:center"><span>${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}<br><small class="mut">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?'<br>'+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</small>${ok?'<br><small>💰 '+rm(r.wallet||0)+'</small>':''}</span><span>${ok?(per[r.name]?per[r.name].n+' order · '+rm(per[r.name].s)+'<br>':'')+'<button class="btn grn sm" data-r="top" data-u="'+u+'">＋ Wallet</button> <button class="btn gry sm" data-r="ded" data-u="'+u+'">－</button><br><button class="btn gry sm" data-r="rev" data-u="'+u+'">⏸ Gantung</button>':'<button class="btn grn sm" data-r="ok" data-u="'+u+'">✅ Lulus</button>'} <button class="btn gry sm" data-r="pw" data-u="${u}">🔑 Reset</button> <button class="btn gry sm" data-r="del" data-u="${u}">🗑️</button></span></div>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
   try{ updMap(L) }catch(err){ console.error('updMap',err) }
+  const late=lateCheck(L), wait=Object.values(riders).filter(r=>r.approved!==true).length;
+  lastBadges={order:L.filter(o=>o.status==='baru').length,rider:wait,peta:Object.keys(reps).length};
+  drawTabs(lastBadges);
 }
 $('#riders').onclick=async e=>{
   const b=e.target.closest('[data-r]'); if(!b) return; const u=b.dataset.u, a=b.dataset.r;
@@ -166,18 +199,76 @@ $('#csv').onclick=()=>{
   const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'})); a.download='order-rider-kb.csv'; a.click();
 };
+/* ---- Tab ---- */
+const TABS=[['order','📋 Order'],['peta','🗺️ Peta'],['rider','🛵 Rider'],['kedai','⭐ Kedai & Kamera'],['tetapan','⚙️ Tetapan']];
+let curTab='order', retTab=null;
+try{ const t=sessionStorage.getItem('rkb-atab'); if(TABS.some(x=>x[0]===t)) curTab=t }catch(_){}
+function drawTabs(badges){
+  badges=badges||{};
+  $('#mtabs').innerHTML=TABS.map(t=>`<button class="tab ${curTab===t[0]?'on':''}" data-t="${t[0]}" type="button">${t[1]}${badges[t[0]]?' <span style="background:#fff;color:#9f1239;border-radius:99px;padding:1px 7px;font-size:11.5px;margin-left:3px">'+badges[t[0]]+'</span>':''}</button>`).join('');
+}
+function goTab(t){
+  curTab=t; try{ sessionStorage.setItem('rkb-atab',t) }catch(_){}
+  document.querySelectorAll('[data-tab]').forEach(el=>el.classList.toggle('hide',el.dataset.tab!==t));
+  drawTabs(lastBadges);
+  if(t==='peta'&&map) setTimeout(()=>{ map.invalidateSize(); if(!goTab._f){ goTab._f=1; updMap.fit=false; try{ updMap(list()) }catch(_){} } },80);
+}
+function backTab(){ if(retTab){ const t=retTab; retTab=null; goTab(t) } }
+let lastBadges={};
+$('#mtabs').onclick=e=>{ const b=e.target.closest('[data-t]'); if(b) goTab(b.dataset.t) };
+
+/* ---- Amaran order tiada rider ---- */
+let alertMin=5, alerted=new Set();
+function lateCheck(L){
+  const late=L.filter(o=>o.status==='baru'&&nowS()-o.createdAt>alertMin*60000);
+  const box=$('#late'); box.classList.toggle('hide',!late.length);
+  if(late.length){
+    box.innerHTML='⏰ <b>'+late.length+' order belum ada rider lebih '+alertMin+' minit</b><br><small>'+late.slice(0,4).map(o=>'#'+esc(o.ref)+' ('+Math.round((nowS()-o.createdAt)/60000)+' min)').join(' · ')+(late.length>4?' …':'')+' · tekan untuk tugaskan rider</small>';
+    const fresh=late.filter(o=>!alerted.has(o.k)); if(fresh.length){ fresh.forEach(o=>alerted.add(o.k)); RKB.beep() }
+  }
+  return late.length;
+}
+$('#late').onclick=()=>{ filter='baru'; goTab('order'); render() };
+
+/* ---- Tetapan (harga, WhatsApp, bayaran) ---- */
+let SET={}, qrData='';
+const nv=(id,d)=>{ const v=$('#'+id).value.trim(); return v!==''&&isFinite(+v)&&+v>=0?+v:d };
+function fillSet(){
+  const p=SET.pricing||{}, f=(id,v,d)=>{ if(document.activeElement!==$('#'+id)) $('#'+id).value=(v!=null?v:d) };
+  f('sBase',p.base,5); f('sFree',p.freeKm,5); f('sPer',p.perKm,1); f('sCar',p.car,10); f('sRain',p.rain,2); f('sAlert',SET.alertMin,5);
+  f('sWa',SET.wa,RKB.cfg.waNumber||''); const y=SET.pay||{}; f('sBank',y.bank,''); f('sAcc',y.acc,''); f('sName',y.name,'');
+  qrData=y.qr||''; $('#sQrP').style.display=qrData?'block':'none'; if(qrData) $('#sQrP').src=qrData; $('#sQrX').classList.toggle('hide',!qrData);
+  alertMin=+SET.alertMin>0?+SET.alertMin:5;
+}
+db.ref('settings').on('value',sn=>{ SET=sn.val()||{}; fillSet(); render() },e=>toast('Ralat tetapan: '+e.code));
+$('#sQrF').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; try{ qrData=await RKB.compressImg(f,600,.8); $('#sQrP').src=qrData; $('#sQrP').style.display='block'; $('#sQrX').classList.remove('hide'); toast('QR dimuat. Tekan Simpan tetapan.') }catch(_){ toast('Gambar tak dapat dibaca') } };
+$('#sQrX').onclick=()=>{ qrData=''; $('#sQrP').style.display='none'; $('#sQrX').classList.add('hide'); $('#sQrF').value='' };
+$('#sSave').onclick=async()=>{
+  const wa=$('#sWa').value.replace(/\D/g,''); if(wa&&!/^60\d{8,11}$/.test(wa)) return toast('Nombor WhatsApp mesti bermula 60, cth 601139900099');
+  const o={pricing:{base:nv('sBase',5),freeKm:nv('sFree',5),perKm:nv('sPer',1),car:nv('sCar',10),rain:nv('sRain',2)},alertMin:Math.max(1,Math.round(nv('sAlert',5)))};
+  if(wa) o.wa=wa;
+  const pay={bank:$('#sBank').value.trim().slice(0,60),acc:$('#sAcc').value.trim().slice(0,40),name:$('#sName').value.trim().slice(0,80)}; if(qrData) pay.qr=qrData;
+  if(pay.bank||pay.acc||pay.name||pay.qr) o.pay=pay;
+  if(o.pricing.base>200||o.pricing.car>200||o.pricing.rain>200||o.pricing.perKm>50) return toast('Nilai harga nampak terlalu tinggi, semak semula');
+  $('#sSave').disabled=true;
+  try{ await db.ref('settings').set(o); $('#sInfo').textContent='✅ Disimpan '+new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})+'. Customer terus guna harga baharu.'; toast('Tetapan disimpan ✅') }
+  catch(err){ toast(err.code==='PERMISSION_DENIED'?'Tiada kebenaran. Tampal rules terkini (nod settings) di Firebase.':'Gagal: '+err.code) }
+  $('#sSave').disabled=false;
+};
+$('#thB').textContent=RKB_THEME.label(); $('#thB').onclick=()=>{ RKB_THEME.cycle(); $('#thB').textContent=RKB_THEME.label() };
+
 /* ---- Peta live ---- */
 function initMap(){
   map=RKB.baseMap('map');
   map.on('click',e=>{
-    if(shopPick){ shopLL=[+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)]; shopPick=false; if(shMk) map.removeLayer(shMk); shMk=L.marker(shopLL,{icon:RKB.mkIcon('#fbbf24')}).addTo(map); $('#shLocT').textContent='📍 Lokasi dipilih: '+shopLL.join(', '); $('#shLoc').textContent='📍 Tukar lokasi'; return }
+    if(shopPick){ shopLL=[+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)]; shopPick=false; if(shMk) map.removeLayer(shMk); shMk=L.marker(shopLL,{icon:RKB.mkIcon('#fbbf24')}).addTo(map); $('#shLocT').textContent='📍 Lokasi dipilih: '+shopLL.join(', '); $('#shLoc').textContent='📍 Tukar lokasi'; backTab(); return }
     if(!addMode) return;
-    const t=(prompt('Jenis? 1 = AES/kamera, 2 = Speed trap, 3 = Lain','1')||'').trim(); if(!t){ addMode=false; $('#addHaz').textContent='➕ Tambah kamera/AES'; return }
+    const t=(prompt('Jenis? 1 = AES/kamera, 2 = Speed trap, 3 = Lain','1')||'').trim(); if(!t){ addMode=false; $('#addHaz').textContent='➕ Tambah kamera/AES'; backTab(); return }
     const type={1:'aes',2:'speedtrap',3:'lain'}[t]||'aes';
     const label=prompt('Nama / lokasi (cth: AES Jalan Hamzah)','')||(type==='speedtrap'?'Speed trap':'Kamera AES');
     const lim=parseInt(prompt('Had laju km/j (kosongkan jika tak pasti)',''))||null;
     db.ref('hazards').push({lat:+e.latlng.lat.toFixed(6),lng:+e.latlng.lng.toFixed(6),type,label,limit:lim,t:Date.now()}).then(()=>toast('Kamera/AES ditambah ✅')).catch(err=>toast('Gagal: '+err.code));
-    addMode=false; $('#addHaz').textContent='➕ Tambah kamera/AES';
+    addMode=false; $('#addHaz').textContent='➕ Tambah kamera/AES'; backTab();
   });
   db.ref('hazards').on('value',sn=>{ hazards=sn.val()||{}; renderHaz() });
   db.ref('shops').on('value',sn=>{ shopsA=sn.val()||{}; renderShops() },e=>toast('Ralat kedai: '+e.code));
@@ -187,7 +278,7 @@ let shopsA={}, shopLL=null, shopPick=false, shMk=null; const shDays=new Set();
 $('#shC').innerHTML=RKB.CATS.map(c=>`<option value="${c.id}">${c.e} ${c.n}</option>`).join('');
 $('#shD').innerHTML=DAYS.map((d,i)=>`<button type="button" class="tab" data-d="${i}">${d}</button>`).join('');
 $('#shD').onclick=e=>{ const b=e.target.closest('[data-d]'); if(!b) return; const i=+b.dataset.d; if(shDays.has(i)) shDays.delete(i); else shDays.add(i); b.classList.toggle('on',shDays.has(i)) };
-$('#shLoc').onclick=()=>{ shopPick=true; addMode=false; toast('Tekan lokasi kedai di peta') };
+$('#shLoc').onclick=()=>{ shopPick=true; addMode=false; retTab=curTab; goTab('peta'); toast('Tekan lokasi kedai di peta') };
 $('#shSave').onclick=async()=>{
   const name=$('#shN').value.trim(); if(!name) return toast('Isi nama kedai'); if(!shopLL) return toast('Pilih lokasi kedai di peta');
   const o={name,cat:$('#shC').value,addr:$('#shA').value.trim(),hours:$('#shH').value.trim(),note:$('#shNote').value.trim(),days:[...shDays].sort().join(','),lat:shopLL[0],lng:shopLL[1],active:true,t:Date.now()};
@@ -209,7 +300,7 @@ function renderHaz(){
   Object.keys(hmk).forEach(k=>{ if(!hazards[k]){ map.removeLayer(hmk[k]); delete hmk[k] } });
   Object.entries(hazards).forEach(([k,h])=>{ if(!hmk[k]) hmk[k]=L.marker([h.lat,h.lng],{icon:RKB.hazIcon(h.type)}).addTo(map).bindPopup(esc(h.label||'')) });
 }
-$('#addHaz').onclick=()=>{ addMode=!addMode; $('#addHaz').textContent=addMode?'📍 Tekan lokasi di peta… (tekan sini untuk batal)':'➕ Tambah kamera/AES'; if(addMode) toast('Tekan lokasi di peta') };
+$('#addHaz').onclick=()=>{ addMode=!addMode; $('#addHaz').textContent=addMode?'📍 Tekan lokasi di peta… (tekan sini untuk batal)':'➕ Tambah kamera/AES'; if(addMode){ retTab=curTab; goTab('peta'); toast('Tekan lokasi di peta') } };
 $('#hazl').onclick=async e=>{ const b=e.target.closest('[data-h]'); if(b&&confirm('Padam lokasi ini?')) try{ await db.ref('hazards/'+b.dataset.h).remove() }catch(err){ toast('Gagal: '+err.code) } };
 const navs={};
 function updMap(LST){

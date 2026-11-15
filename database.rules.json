@@ -8,10 +8,14 @@
       "$id": {
         ".read": true,
         ".write": "(!data.exists() && newData.child('status').val() == 'baru' && newData.hasChildren(['ref','createdAt','pick','drop','name','phone','phoneKey']) && newData.child('createdAt').val() > now - 600000 && newData.child('createdAt').val() < now + 600000 && newData.child('name').val().length <= 60 && newData.child('phone').val().length <= 20 && (!newData.child('notes').exists() || newData.child('notes').val().length <= 600) && newData.parent().parent().child('ratelimit').child(newData.child('phoneKey').val()).val() == now) || (auth != null && newData.exists() && root.child('riders').child(auth.uid).child('approved').val() === true && (data.child('status').val() != 'baru' || newData.child('status').val() == 'baru' || (newData.child('need').val() == data.child('need').val() && (data.child('pay').val() != 'cash' || root.child('riders').child(auth.uid).child('wallet').val() >= data.child('need').val())))) || (auth != null && auth.token.email == 'admin@riderkb.com')",
-        ".validate": "newData.child('status').val().matches(/^(baru|diterima|diambil|selesai|batal)$/)",
+        ".validate": "newData.child('status').val().matches(/^(baru|diterima|diambil|selesai|batal)$/) && (data.exists() || ((newData.child('pay').val() == 'cash' || newData.child('pay').val() == 'online') && newData.child('price').isNumber() && newData.child('price').val() >= 0 && newData.child('price').val() <= 500 && newData.child('need').isNumber() && newData.child('need').val() >= 0 && newData.child('need').val() <= 2000 && newData.child('itemEst').isNumber() && newData.child('itemEst').val() >= 0 && newData.child('itemEst').val() <= 2000 && (newData.child('pay').val() == 'cash' || newData.child('need').val() == 0)))",
         "rating": {
           ".write": "!data.exists() && root.child('orders').child($id).child('status').val() == 'selesai'",
           ".validate": "newData.hasChildren(['stars','t']) && newData.child('stars').val() >= 1 && newData.child('stars').val() <= 5 && (!newData.child('c').exists() || newData.child('c').val().length <= 140)"
+        },
+        "conf": {
+          ".write": "!data.exists() && root.child('orders').child($id).child('status').val() == 'selesai'",
+          ".validate": "newData.hasChildren(['v','t']) && (newData.child('v').val() == 'ok' || newData.child('v').val() == 'issue') && (!newData.child('m').exists() || (newData.child('m').val().length <= 150))"
         }
       }
     },
@@ -86,6 +90,15 @@
         ".read": true,
         ".write": "auth != null && (auth.token.email == 'admin@riderkb.com' || root.child('riders').child(auth.uid).child('approved').val() === true)",
         ".validate": "newData.isString() && newData.val().length < 200000"
+      }
+    },
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'admin@riderkb.com'",
+      "pay": {
+        "qr": {
+          ".validate": "newData.isString() && newData.val().length < 200000"
+        }
       }
     }
   }

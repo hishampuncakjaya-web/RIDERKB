@@ -71,3 +71,25 @@ Upload semula zip. Pautan:
 - Halaman tempah: kawasan panas, alamat tersimpan dan cari kedai dilipat dalam satu bahagian; medan utama (ambil/hantar) di atas.
 - Loghat Kelantan (hidup secara lalai) untuk teks status dan sapaan; pengguna boleh matikan dengan butang "🗣️ Loghat". Arahan penting kekal BM jelas.
 - Perayaan (confetti + mesej) bila order selesai; hormati tetapan "kurangkan gerakan" peranti.
+
+## Kemas kini (v21) – pengesahan customer & tempahan lebih selamat
+- **PENTING:** tampal semula `database.rules.json` ke Realtime Database > Rules > Publish. Salinan peraturan sebelum ini ada dalam `database.rules.v20.json` jika perlu kembali.
+- **Pengesahan customer:** lepas rider tekan "Hantar selesai", halaman jejak tunjuk "Dah terima" / "Belum terima". Tiada tindakan = auto-sah selepas `confAutoMin` minit (lalai 30). "Belum terima" terus masuk panel Laporan & SOS admin. Rider tak tersekat dan upah tak ditahan.
+- **Semakan jarak rider:** "Dah sampai di lokasi hantar" dan "Hantar selesai" ditolak jika rider lebih `dropRadiusM` meter (lalai 300) dari lokasi hantar. Jarak (atau "tiada GPS") direkod pada order dan ditanda di panel admin. Ini semakan di sisi app; ia mengurangkan salah guna, bukan jaminan mutlak.
+- **Tempahan customer:** WhatsApp dibuka hanya selepas order benar-benar masuk sistem; ada timeout 8 saat, mesej ralat jelas, butang dikunci selepas hantar, cuba semula tak jadi order berganda, dan jam telefon yang salah tak lagi menolak order (guna masa pelayan).
+- **Rules baharu:** `pay`, `price`, `need`, `itemEst` disemak semasa order dicipta; nod `conf` boleh ditulis sekali sahaja selepas order selesai.
+- **Masih perlu dibuat:** aktifkan **App Check (reCAPTCHA v3)** dan isi `appCheckKey`. Tanpa ini, had 30 saat per nombor telefon masih boleh dipintas dengan menukar nombor.
+- **Butang lebih mudah (v21):** selepas hantar, butang bawah jadi "📡 Jejak order saya" dan "＋ Baru" (tiada lagi butang mati). Bar bawah disorok semasa menaip supaya tak tutup ruang. Langkah ada label jelas. Halaman jejak guna helaian pilihan sebab (satu ketik) ganti kotak prompt, dan ada "🔁 Tempah lagi". Kad order rider dikemas: Call, WhatsApp dan satu butang navigasi ikut fasa; yang lain dalam "⋯ Lagi"; SOS kekal nampak. Nombor customer tak lagi boleh dihubungi dari order yang dah selesai.
+- **Tempah dalam 5 langkah (v21):** Ambil > Hantar > Servis > Kontak > Sahkan. Langkah Ambil dan Hantar kongsi satu peta (skrin penuh dan keluar berfungsi seperti biasa); peta letak pin ikut langkah semasa. Lokasi semasa customer diisi automatik sebagai lokasi hantar, jadi langkah Hantar biasanya cuma semak dan tekan Seterusnya.
+
+## Kemas kini (v22): lebih mudah guna
+- **PENTING:** tampal semula `database.rules.json` ke Realtime Database > Rules > Publish (ada nod `settings` baharu).
+- **Customer: 3 langkah sahaja** (Lokasi, Butiran, Sahkan). Pin ambil dan hantar dalam satu skrin, pin seterusnya dipilih automatik. Nota ada chip cepat ikut servis. Nama/telefon disemak dengan mesej jelas di bawah ruangan. Skrin Sahkan tunjuk pecahan upah (asas, jarak, kereta, hujan).
+- **Tema Cerah / Gelap / Auto** di semua halaman (butang tema). Cerah sesuai untuk rider di bawah matahari.
+- **Admin > Tetapan:** tukar upah asas, KM asas, RM/KM lebihan, caj kereta, caj hujan, nombor WhatsApp pusat dan butiran bayaran (bank, no. akaun, QR) tanpa upload semula. Customer terus guna nilai baharu. Jika kosong, nilai asal dalam app digunakan.
+- **Admin > Tab:** Order, Peta, Rider, Kedai & Kamera, Tetapan. Lencana nombor pada tab (order baru, rider menunggu). Laporan/SOS sentiasa muncul di atas bila ada.
+- **Amaran order tiada rider** lebih X minit (tetapan `Amaran order tiada rider`), dengan bunyi.
+- **Bayaran Transfer/QR:** butiran bayaran dipaparkan kepada customer semasa tempah, dan di halaman jejak bila barang dah diambil/selesai (ada butang salin no. akaun).
+- **Rider:** butang 🚙 Waze di sebelah 🧭 Google Maps; butang tema.
+- **Jejak:** butang "Kongsi pautan jejak" (kongsi ke WhatsApp/keluarga).
+- **Alamat (Nominatim):** permintaan dihadkan 1 sesaat dan dicache, supaya tak disekat bila ramai guna.

@@ -144,12 +144,20 @@
     {id:'elektrik',e:'🔌',n:'Elektrik / Kedai RM2 / DIY',f:['[shop~"^(electronics|electrical|variety_store|houseware|discount)$"]','[shop][name~"rm ?2|mr ?diy|mr dollar|ecoshop|eco shop|elektrik",i]']},
     {id:'masjid',e:'🕌',n:'Barangan Masjid / Frozen / Kuih Raya',f:['[shop~"^(frozen_food|religion|confectionery)$"]','[shop][name~"frozen|kuih|sejuk beku|tikar|sejadah|kopiah|telekung|islamic|muslim|kurma",i]']}
   ];
+  /* Status pengesahan customer selepas order selesai (customer tekan, atau auto-sah selepas confAutoMin minit) */
+  function confState(o){
+    if(!o||o.status!=='selesai') return null;
+    if(o.conf&&o.conf.v==='ok') return {k:'ok',t:'✅ Customer sahkan terima'};
+    if(o.conf&&o.conf.v==='issue') return {k:'issue',t:'⚠️ Customer lapor: belum terima'+(o.conf.m?' ('+o.conf.m+')':'')};
+    const mins=+(cfg.confAutoMin||30), at=(o.t&&o.t.selesai)||0;
+    return (at&&Date.now()-at>mins*60000)?{k:'auto',t:'🕒 Auto-sah (tiada bantahan)'}:{k:'wait',t:'⏳ Menunggu pengesahan customer'};
+  }
   const phoneKey=p=>String(p||'').replace(/\D/g,'').slice(-10);
-  const report=o=>db?db.ref('reports').push(Object.assign({t:Date.now()},o)):Promise.reject(new Error('nodb'));
-  function compressImg(file,max,q){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onerror=rej; fr.onload=()=>{ const im=new Image(); im.onerror=rej; im.onload=()=>{ const k=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement('canvas'); cv.width=Math.round(im.width*k); cv.height=Math.round(im.height*k); cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height); res(cv.toDataURL('image/jpeg',q)) }; im.src=fr.result }; fr.readAsDataURL(file) }) }
+  const report=o=>db?db.ref('reports').push(Object.assign({t:firebase.database.ServerValue.TIMESTAMP},o)):Promise.reject(new Error('nodb'));   // masa pelayan: tak terjejas jam telefon salah
+  function compressImg(file,max,q){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onerror=rej; fr.onload=()=>{ const im=new Image(); im.onerror=rej; im.onload=()=>{ const k=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement('canvas'); cv.width=Math.round(im.width*k); cv.height=Math.round(im.height*k); const cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(im,0,0,cv.width,cv.height); res(cv.toDataURL('image/jpeg',q)) }; im.src=fr.result }; fr.readAsDataURL(file) }) }
   const kb=()=>{ try{ return localStorage.getItem('rkb-loghat')!=='0' }catch(e){ return true } };
   const say=(bm,k)=>kb()?k:bm;
   const toggleLoghat=()=>{ try{ localStorage.setItem('rkb-loghat',kb()?'0':'1') }catch(e){} return kb() };
   const confetti=()=>{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return; const E=['🎉','✨','🌙','💛','🛵']; for(let i=0;i<26;i++){ const s=document.createElement('span'); s.className='cf'; s.textContent=E[i%E.length]; s.style.left=(Math.random()*96)+'vw'; s.style.animationDelay=(Math.random()*0.8)+'s'; s.style.fontSize=(16+Math.random()*16)+'px'; document.body.appendChild(s); setTimeout(()=>s.remove(),4200) } };
-  window.RKB={kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
+  window.RKB={confState,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
 })();

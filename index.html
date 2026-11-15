@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Rider KB Express</title>
 <meta name="theme-color" content="#7a1230">
+<script src="theme.js"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -31,8 +32,9 @@ h1{margin:0;font-size:27px;font-weight:900;letter-spacing:-.5px}
 .rider b{display:block;font-size:13px;margin-bottom:2px}
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--grn);margin-right:5px;box-shadow:0 0 8px var(--grn)}
 .steps{display:flex;justify-content:space-between;padding:20px 22px 6px;position:relative}
-.steps:before{content:"";position:absolute;left:44px;right:44px;top:34px;height:2px;background:var(--line)}
-.st{position:relative;text-align:center;font-size:11px;color:var(--mut);font-weight:600;width:60px}
+.st{width:64px!important}
+.steps:before{content:"";position:absolute;left:50px;right:50px;top:34px;height:2px;background:var(--line)}
+.st{position:relative;text-align:center;font-size:12px;color:var(--mut);font-weight:600;width:56px}
 .st i{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 5px;border-radius:50%;background:var(--card);border:2px solid var(--line);font-style:normal;font-size:13px}
 .st.on{color:#fff}.st.on i{background:var(--red);border-color:var(--red)}.st.done i{background:var(--grn);border-color:var(--grn)}
 section{display:none;padding:14px 18px}section.on{display:block}
@@ -67,6 +69,8 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
 .price small{color:var(--mut);font-size:12px;display:block}.price .km{color:#fff;font-weight:700;font-size:13px}
 .price b{font-size:28px;letter-spacing:-.5px}
 .btns{display:flex;gap:10px}
+body.typing .bar{display:none}
+body.typing{padding-bottom:24px}
 .btn{flex:1;border:0;border-radius:16px;padding:16px;font:inherit;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#e11d48,#f97316)}
 .btn.back{flex:0 0 90px;background:var(--card);border:1px solid var(--line)}
 .btn.wa{background:linear-gradient(135deg,#059669,#10b981)}
@@ -119,16 +123,16 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
 <div id="again"></div>
 
 <div class="steps" id="steps">
-  <div class="st"><i>1</i>Laluan</div><div class="st"><i>2</i>Servis</div><div class="st"><i>3</i>Kontak</div><div class="st"><i>4</i>Sahkan</div>
+  <div class="st"><i>1</i>Lokasi</div><div class="st"><i>2</i>Butiran</div><div class="st"><i>3</i>Sahkan</div>
 </div>
 
 <!-- 1 LALUAN -->
 <section>
   <div id="greet"></div>
-  <h2>📍 Dari mana, ke mana?</h2>
+  <h2 id="routeH">📍 Dari mana ➜ ke mana?</h2>
   <div class="pins">
-    <button class="pin p on" id="bP">📍 1. Pin Ambil</button>
-    <button class="pin d" id="bD">🏁 2. Pin Hantar</button>
+    <button class="pin p on" id="bP">📍 Pin ambil</button>
+    <button class="pin d" id="bD">🏁 Pin hantar</button>
     <button class="pin loc" id="bL" title="Lokasi saya">🎯</button>
   </div>
   <div id="gps" style="font-size:12px;color:var(--mut);margin:-2px 0 8px">📡 Mengesan lokasi anda...</div>
@@ -141,45 +145,52 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
       <div class="fsInfo" id="fsInfo"></div>
     </div>
   </div>
+  <div id="gPick">
   <label>🟢 Lokasi Ambil (Pickup)</label>
   <input id="pick" placeholder="Contoh: Kedai Nasi Kak Wok, Berek 12" autocomplete="off">
+  <div class="mut" style="font-size:12.5px;margin:6px 0 0">✏️ Boleh ubah: taip alamat, tekan peta atau seret pin.</div>
+  </div>
+  <div id="gDrop">
   <label>🔴 Lokasi Hantar (Drop-off)</label>
   <input id="drop" placeholder="Contoh: No 12, Taman Desa Kemumin, Pengkalan Chepa" autocomplete="off">
-  <div class="rain" id="rainBox"><input type="checkbox" id="rain"><div>🌧️ <b>Caj hujan +RM2</b><br><span id="rainTxt" style="color:var(--mut)">Tanda jika sedang hujan</span></div></div>
+  <div class="mut" style="font-size:12.5px;margin:6px 0 0">✏️ Boleh ubah: taip alamat, tekan peta atau seret pin.</div>
+  <label>🎁 Penerima <span style="color:var(--mut);font-weight:400">· jika bukan anda (rider akan hubungi)</span></label>
+  <input id="recv" maxlength="100" placeholder="Nama &amp; no. telefon, cth: Mak 0123456789" autocomplete="off">
+  <div class="rain" id="rainBox"><input type="checkbox" id="rain"><div>🌧️ <b>Caj hujan +RM<span id="rainAmt">2</span></b><br><span id="rainTxt" style="color:var(--mut)">Tanda jika sedang hujan</span></div></div>
+  </div>
   <details class="fold"><summary>📌 Tempat pantas &amp; cari kedai berdekatan</summary><div class="fb">
   <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Kawasan panas (tekan untuk isi):</div>
   <div class="chips" id="chips"></div>
   <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Alamat tersimpan (dalam telefon anda sahaja):</div>
   <div class="chips" id="saved"></div>
+  <div id="nbGroup">
   <div style="font-size:13px;color:var(--mut);margin:4px 0 8px">📍 Cadangan berdekatan <span id="nbWhere"></span>:</div>
   <input id="nbQ" placeholder="🔍 Cari kedai (cth: Kak Wok, Mr DIY, farmasi)" autocomplete="off" style="margin-bottom:8px">
   <div class="chips" id="nbCats"></div>
   <div id="nbList"></div>
+  </div>
   </div></details>
 </section>
 
 <!-- 2 SERVIS -->
 <section>
-  <h2>1. Apa yang boleh kami tolong?</h2>
+  <h2>Apa yang boleh kami tolong?</h2>
   <div class="grid" id="svcs"></div>
   <h2>Beritahu rider apa yang perlu</h2>
-  <textarea id="notes" placeholder="Senaraikan barang yang nak dibeli atau nombor resit/tracking parcel anda..."></textarea>
+  <div class="qchips" id="qn"></div>
+  <textarea id="notes" class="fld" placeholder="Senaraikan barang yang nak dibeli atau nombor resit/tracking parcel anda..."></textarea><div class="fmsg" id="notesM"></div>
   <h2>Kenderaan</h2>
   <div class="opts">
     <button class="opt on" data-v="Motor">🏍️ Motor</button>
-    <button class="opt" data-v="Kereta">🚗 Kereta (+RM10)</button>
+    <button class="opt" data-v="Kereta">🚗 Kereta (+RM<span id="carAmt">10</span>)</button>
   </div>
   <h2>Bayaran</h2>
   <div class="opts"><button class="popt on" data-p="cash" type="button">💵 Tunai (bayar rider)</button><button class="popt" data-p="online" type="button">📲 Transfer / QR</button></div>
+  <div id="payInfo" class="pinfo" style="display:none"></div>
   <div id="itemBox"><label>Anggaran harga barang (RM) <span style="color:var(--mut);font-weight:400">· rider akan talangkan dahulu</span></label><input id="itemEst" type="number" inputmode="decimal" min="0" placeholder="Cth: 25"></div>
-</section>
-
-<!-- 3 KONTAK -->
-<section>
   <h2>Siapa rider boleh hubungi?</h2>
-  <label>Nama</label><input id="name" placeholder="Nama anda" autocomplete="name">
-  <label>No. telefon <span style="color:var(--mut);font-weight:400">· rider hubungi bila dah sampai</span></label><input id="phone" type="tel" placeholder="Contoh: 0123456789" autocomplete="tel">
-  <label>Nama / telefon penerima (jika orang lain)</label><input id="recv" placeholder="Pilihan">
+  <label>Nama</label><input id="name" class="fld" placeholder="Nama anda" autocomplete="name"><div class="fmsg" id="nameM"></div>
+  <label>No. telefon <span style="color:var(--mut);font-weight:400">· rider hubungi bila dah sampai</span></label><input id="phone" class="fld" type="tel" inputmode="tel" placeholder="Contoh: 0123456789" autocomplete="tel"><div class="fmsg" id="phoneM"></div>
   <div style="font-size:12px;color:var(--mut);margin-top:10px">Nama &amp; nombor disimpan dalam telefon anda untuk tempahan seterusnya.</div>
 </section>
 
@@ -190,11 +201,11 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
   <div style="font-size:12.5px;color:var(--mut);margin-top:12px;line-height:1.6">Upah ialah anggaran. Harga barang (jika beli) dibayar kepada rider. Bayar lepas sampai.</div>
 </section>
 
-<div class="foot"><button id="lg" type="button"></button><br>Liputan: Bandar Kota Bharu, Kubang Kerian, Pengkalan Chepa, Wakaf Bharu, Pasir Tumboh &amp; sekitarnya.</div>
+<div class="foot"><button id="lg" type="button"></button><button id="th" type="button"></button><br>Liputan: Bandar Kota Bharu, Kubang Kerian, Pengkalan Chepa, Wakaf Bharu, Pasir Tumboh &amp; sekitarnya.</div>
 </div>
 
 <div class="bar"><div class="bi">
-  <div class="price"><div><small>ANGGARAN UPAH · MASA SAMPAI · Bayar lepas sampai</small><span class="km" id="kmTxt">Jarak: -</span></div><b id="priceTxt">RM 5.00</b></div>
+  <div class="price"><div><small>Anggaran upah · bayar lepas sampai</small><span class="km" id="kmTxt">Jarak: -</span><span class="brk" id="brkTxt"></span></div><b id="priceTxt">RM 5.00</b></div>
   <div class="btns"><button class="btn back" id="back">‹ Balik</button><button class="btn" id="next">Seterusnya</button></div>
   <div class="mut" id="reas" style="text-align:center;margin-top:8px;font-size:13px"></div>
   <div class="err" id="err"></div>
@@ -208,11 +219,11 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
 <script src="common.js"></script>
 <script>
 /* ===== TETAPAN (ubah di sini) ===== */
-const WA_NUMBER = "601139900099";  // nombor WhatsApp rider, format 60xxxxxxxxx
-const BASE = 5;                    // RM5 untuk 5 km pertama
-const FREE_KM = 5;                 // km termasuk dalam asas (lebih: RM1/km atau sebahagiannya)
-const PER_KM = 1;                  // RM1 setiap km selepas itu
-const CAR_EXTRA = 10, RAIN_EXTRA = 2;
+let WA_NUMBER = (window.RKB_CFG&&RKB_CFG.waNumber)||"601139900099";  // nombor WhatsApp rider, format 60xxxxxxxxx
+let BASE = 5;                    // RM5 untuk 5 km pertama
+let FREE_KM = 5;                 // km termasuk dalam asas (lebih: RM1/km atau sebahagiannya)
+let PER_KM = 1;                  // RM1 setiap km selepas itu
+let CAR_EXTRA = 10, RAIN_EXTRA = 2;
 const CENTER = [6.1254, 102.2381]; // Kota Bharu
 /* ================================== */
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
@@ -224,14 +235,27 @@ const SERVICES = [
   ['🧺','Beli Barang / Pasar','Barang dapur & runcit'],
   ['🛵','Ambil & Hantar','Kunci, barang tertinggal']
 ];
-const HOT = [['Pasar Siti Khadijah','Pasar Siti Khadijah, Kota Bharu'],['HUSM','Hospital USM, Kubang Kerian'],['Wakaf Bharu','Wakaf Bharu, Kelantan'],['P. Chepa','Pengkalan Chepa, Kelantan']];
+const HOT = [['Pasar Siti Khadijah','Pasar Siti Khadijah, Kota Bharu'],['HUSM','Hospital USM, Kubang Kerian'],['Wakaf Bharu','Wakaf Bharu, Kelantan'],['P. Chepa','Pengkalan Chepa, Kelantan'],['Peringat','Peringat, Kota Bharu, Kelantan']];
 
 /* ---- UI asas ---- */
 $('#svcs').innerHTML = SERVICES.map((s,i)=>`<button class="svc ${i?'':'on'}" data-s="${s[1]}"><span class="e">${s[0]}</span><b>${s[1]}</b><small>${s[2]}</small></button>`).join('');
 $('#chips').innerHTML = HOT.map((h,i)=>`<button class="chip" data-i="${i}">${h[0]}</button>`).join('');
 const syncItem=()=>{ $('#itemBox').style.display=(BUY.includes(S.service)&&S.pay==='cash')?'':'none' };
-$$('.svc').forEach(b=>b.onclick=()=>{S.service=b.dataset.s;$$('.svc').forEach(x=>x.classList.toggle('on',x===b));syncItem()});
-$$('.popt').forEach(b=>b.onclick=()=>{S.pay=b.dataset.p;$$('.popt').forEach(x=>x.classList.toggle('on',x===b));syncItem()});
+const QN={'Tapau Makanan':['Nasi kerabu','Nasi dagang','Colek / keropok lekor','Kurang pedas','Tanpa sambal','Air: '],
+ 'Bungkusan / Pos':['Ambil parcel J&T','Hantar dokumen','Ambil di kaunter pos','No. tracking: '],
+ 'Beli Barang / Pasar':['Barang dapur','Ayam / ikan','Sayur','Ubat / farmasi','Ikut gambar / resit'],
+ 'Ambil & Hantar':['Ambil kunci','Barang tertinggal','Hantar ke pejabat','Jumpa di pagar']};
+const PH={'Tapau Makanan':'Cth: Nasi kerabu ayam 2 bungkus, teh ais 1. Kurang pedas.','Bungkusan / Pos':'Cth: Ambil parcel J&T, no. tracking JT123456789 atas nama Ali.','Beli Barang / Pasar':'Cth: Telur 1 papan, ayam 1 kg, bawang besar 1 kg.','Ambil & Hantar':'Cth: Ambil kunci motor di kedai, hantar ke pejabat.'};
+function drawQN(){ $('#qn').innerHTML=(QN[S.service]||[]).map((t,i)=>`<button type="button" class="chip" data-i="${i}">+ ${esc(t.trim().replace(/:$/,''))}</button>`).join(''); $('#notes').placeholder=PH[S.service]||'' }
+$('#qn').onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return; const t=QN[S.service][+b.dataset.i], n=$('#notes'); n.value=(n.value.trim()?n.value.replace(/\s+$/,'')+'\n':'')+'• '+t; n.classList.remove('bad'); $('#notesM').textContent=''; n.focus(); n.setSelectionRange(n.value.length,n.value.length) };
+$$('.svc').forEach(b=>b.onclick=()=>{S.service=b.dataset.s;$$('.svc').forEach(x=>x.classList.toggle('on',x===b));syncItem();drawQN()});
+$$('.popt').forEach(b=>b.onclick=()=>{S.pay=b.dataset.p;$$('.popt').forEach(x=>x.classList.toggle('on',x===b));syncItem();drawPay()});
+let PAY=null;
+function drawPay(){ const b=$('#payInfo'); if(S.pay!=='online'){ b.style.display='none'; return }
+  b.style.display='block';
+  if(PAY&&(PAY.acc||PAY.qr)){ b.innerHTML='<b>📲 Bayar selepas barang sampai</b><br>'+(PAY.bank?esc(PAY.bank)+'<br>':'')+(PAY.acc?'No. akaun: <b>'+esc(PAY.acc)+'</b> <button type="button" class="chip" id="cpAcc" style="min-height:34px;padding:4px 10px">Salin</button><br>':'')+(PAY.name?'Nama: '+esc(PAY.name)+'<br>':'')+(PAY.qr?'<img alt="QR bayaran" src="'+PAY.qr+'">':'')+'<span style="color:var(--mut)">Butiran ini juga ada di halaman jejak order.</span>';
+    const c=$('#cpAcc'); if(c) c.onclick=()=>{ try{ navigator.clipboard.writeText(PAY.acc); c.textContent='Disalin ✓' }catch(_){} } }
+  else b.innerHTML='<b>📲 Transfer / QR</b><br>Rider akan beri butiran bayaran semasa hantar. Anda bayar selepas barang sampai.' }
 syncItem();
 $$('.opt').forEach(b=>b.onclick=()=>{S.vehicle=b.dataset.v;$$('.opt').forEach(x=>x.classList.toggle('on',x===b));price()});
 $('#rain').onchange=price;
@@ -268,6 +292,7 @@ function setPoint(which,latlng,label){
     markers[which]=m;
   }
   if(label) $('#'+which).value=label;
+  const other=which==='pick'?'drop':'pick'; if(!S[other]&&S.mode===which) setMode(other);   // terus ke pin seterusnya
   fit(); route();
 }
 function fit(){
@@ -279,34 +304,46 @@ map.on('click',async e=>{
   const w=S.mode, ll=[e.latlng.lat,e.latlng.lng];
   setPoint(w,ll,'Memuatkan alamat...');
   $('#'+w).value = await reverse(ll);
-  if(w==='pick') setMode('drop');
 });
+const _nc={}, _sleep=ms=>new Promise(r=>setTimeout(r,ms)); let _nlast=0;
+async function nomi(url,key){            // cache + jarak minimum 1.1s antara permintaan
+  if(_nc[key]!==undefined) return _nc[key];
+  const wait=Math.max(0,1100-(Date.now()-_nlast)); _nlast=Date.now()+wait; if(wait) await _sleep(wait);
+  const r=await fetch(url); if(!r.ok) throw new Error('nominatim '+r.status);
+  const j=await r.json(); _nc[key]=j; return j;
+}
 async function reverse(ll){
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&lat=${ll[0]}&lon=${ll[1]}`);
-    const j=await r.json(); const a=j.address||{};
+    const j=await nomi(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&lat=${ll[0]}&lon=${ll[1]}`,'r'+ll[0].toFixed(4)+','+ll[1].toFixed(4)); const a=j.address||{};
     return [a.road||a.neighbourhood||j.name, a.suburb||a.village||a.town||a.city].filter(Boolean).join(', ') || `Pin (${ll[0].toFixed(5)}, ${ll[1].toFixed(5)})`;
   }catch(e){return `Pin (${ll[0].toFixed(5)}, ${ll[1].toFixed(5)})`}
 }
 async function geocode(q){
   try{
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=my&viewbox=102.0,6.4,102.5,5.9&q=${encodeURIComponent(q)}`);
-    const j=await r.json(); return j[0]?[+j[0].lat,+j[0].lon]:null;
+    const j=await nomi(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=my&viewbox=102.0,6.4,102.5,5.9&q=${encodeURIComponent(q)}`,'g'+q.toLowerCase());
+    return j[0]?[+j[0].lat,+j[0].lon]:null;
   }catch(e){return null}
 }
+let geoBusy=null;
+function clearPoint(w){ S[w]=null; if(markers[w]){ map.removeLayer(markers[w]); delete markers[w] } route() }
 ['pick','drop'].forEach(w=>{
   const el=$('#'+w); let last='';
   el.addEventListener('focus',()=>last=el.value);
-  el.addEventListener('change',async()=>{
-    const v=el.value.trim(); if(!v||v===last) return;
-    const ll=await geocode(v.toLowerCase().includes('kelantan')?v:v+', Kota Bharu, Kelantan');
-    if(ll) setPoint(w,ll); else $('#err').textContent='Lokasi tak jumpa. Cuba tekan peta untuk letak pin.';
+  el.addEventListener('change',()=>{
+    const v=el.value.trim(); if(v===last) return;
+    if(!v){ clearPoint(w); return }
+    geoBusy=(async()=>{
+      const ll=await geocode(v.toLowerCase().includes('kelantan')?v:v+', Kota Bharu, Kelantan');
+      if(el.value.trim()!==v) return;               // taipan berubah semasa mencari
+      if(ll) setPoint(w,ll);
+      else { clearPoint(w); $('#err').textContent='Lokasi "'+v.slice(0,30)+'" tak jumpa. Tekan peta untuk letak pin, atau cuba nama kawasan.' }
+    })();
   });
 });
 $$('.chip').forEach(c=>c.onclick=async()=>{
   const h=HOT[c.dataset.i], w=S.mode, ll=await geocode(h[1]);
   if(!ll){$('#err').textContent='Kawasan tak jumpa, tekan peta.';return}
-  setPoint(w,ll,h[0]); if(w==='pick') setMode('drop');
+  setPoint(w,ll,h[0]);
 });
 $('#bL').onclick=()=>{
   if(!navigator.geolocation){$('#err').textContent='Lokasi tak disokong.';return}
@@ -379,17 +416,18 @@ async function route(){
   checkRain();
 }
 function etaTxt(){ return S.min==null?'':' · ≈ '+(S.min+8)+' min' }
-function calc(){
-  const km=S.km??0;
-  let t=BASE+Math.max(0,Math.ceil(km-FREE_KM))*PER_KM;
-  if(S.vehicle==='Kereta') t+=CAR_EXTRA;
-  if($('#rain').checked) t+=RAIN_EXTRA;
-  return Math.round(t*2)/2;           // genapkan 0.50
+function parts(){
+  const km=S.km??0, o={base:BASE,extra:Math.max(0,Math.ceil(km-FREE_KM))*PER_KM,car:S.vehicle==='Kereta'?CAR_EXTRA:0,rain:$('#rain').checked?RAIN_EXTRA:0};
+  o.sum=o.base+o.extra+o.car+o.rain; o.total=Math.round(o.sum*2)/2; o.round=o.total-o.sum; return o;   // genapkan 0.50
 }
+function calc(){ return parts().total }
+const rmx=n=>(+n%1?(+n).toFixed(2):String(+n));
 function price(){
-  $('#priceTxt').textContent='RM '+calc().toFixed(2);
+  const p=parts();
+  $('#priceTxt').textContent='RM '+p.total.toFixed(2);
   $('#kmTxt').textContent = S.km==null?'Jarak: -':'Jarak: '+S.km.toFixed(1)+' KM'+etaTxt();
-  $('#fsInfo').textContent = (S.km==null?'Jarak: -':S.km.toFixed(1)+' KM'+etaTxt())+'  ·  RM '+calc().toFixed(2)+(S.est?' (anggaran)':'');
+  $('#brkTxt').textContent = S.km==null?'':'Asas RM'+rmx(p.base)+(p.extra?' + jarak RM'+rmx(p.extra):'')+(p.car?' + kereta RM'+rmx(p.car):'')+(p.rain?' + hujan RM'+rmx(p.rain):'');
+  $('#fsInfo').textContent = (S.km==null?'Jarak: -':S.km.toFixed(1)+' KM'+etaTxt())+'  ·  RM '+p.total.toFixed(2)+(S.est?' (anggaran)':'');
 }
 async function checkRain(){
   try{
@@ -402,65 +440,104 @@ async function checkRain(){
 }
 
 /* ---- Wizard ---- */
-const secs=$$('section'), stEls=$$('.st');
+const secs=$$('section'), stEls=$$('.st'), LAST=2;
 function show(n){
   S.step=n;
-  secs.forEach((s,i)=>s.classList.toggle('on',i===n));
-  stEls.forEach((s,i)=>{s.classList.toggle('on',i===n);s.classList.toggle('done',i<n);s.querySelector('i').textContent=i<n?'✓':i+1});
+  secs.forEach((x,i)=>x.classList.toggle('on',i===n));
+  stEls.forEach((x,i)=>{x.classList.toggle('on',i===n);x.classList.toggle('done',i<n);x.querySelector('i').textContent=i<n?'✓':i+1});
   $('#back').style.display=n?'block':'none';
-  const nx=$('#next'); nx.textContent=n===3?'🛵 Cari Rider Sekarang':'Seterusnya'; nx.classList.toggle('wa',n===3);
-  $('#err').textContent=''; $('#reas').textContent=n===3?'Lepas ni anda boleh jejak rider secara live 📍':'';
-  if(n===0) setTimeout(()=>map.invalidateSize(),50);
-  if(n===3) summary();
+  const nx=$('#next'); nx.disabled=false; nx.classList.remove('pulse'); nx.textContent=['Seterusnya ›','Semak tempahan ›','🛵 Cari Rider Sekarang'][n]; nx.classList.toggle('wa',n===LAST);
+  $('#err').textContent=''; $('#reas').textContent=n===LAST?'Lepas ni anda boleh jejak rider secara live 📍':'';
+  if(n===0) setTimeout(()=>{ map.invalidateSize(); if(S.pick&&S.drop) fit() },60);
+  if(n===LAST) summary();
   scrollTo({top:0,behavior:'smooth'});
 }
+const phoneOk=v=>{ let d=String(v).replace(/\D/g,''); if(d.startsWith('60')) d='0'+d.slice(2); return /^01\d{8,9}$/.test(d)||/^0[3-9]\d{7,8}$/.test(d) };
+function bad(id,msg){ const el=$('#'+id); el.classList.add('bad'); const m=$('#'+id+'M'); if(m) m.textContent=msg; el.scrollIntoView({block:'center',behavior:'smooth'}); try{ el.focus({preventScroll:true}) }catch(_){} return msg }
+['notes','name','phone'].forEach(id=>$('#'+id).addEventListener('input',()=>{ $('#'+id).classList.remove('bad'); $('#'+id+'M').textContent='' }));
 function valid(){
-  if(S.step===0&&!(S.pick&&S.drop)) return 'Satu langkah lagi: pilih lokasi ambil dan hantar (taip, tekan kawasan panas atau tekan peta).';
-  if(S.step===1&&!$('#notes').value.trim()) return 'Tulis sikit apa yang rider perlu buat, supaya order anda tak tersilap.';
-  if(S.step===2){ if(!$('#name').value.trim()) return 'Nama anda, supaya rider tahu siapa nak dihubungi.'; if($('#phone').value.replace(/\D/g,'').length<9) return 'Nombor telefon nampak tak cukup. Cuba semak semula.'}
+  if(S.step===0){
+    if(!S.pick){ setMode('pick'); return 'Pilih lokasi ambil dahulu: taip alamat, tekan kawasan panas atau tekan peta.' }
+    if(!S.drop){ setMode('drop'); return 'Pilih lokasi hantar pula: taip alamat atau tekan peta.' }
+  }
+  if(S.step===1){
+    if(!$('#notes').value.trim()) return bad('notes','Tulis sikit apa yang rider perlu buat, supaya order anda tak tersilap.');
+    if(S.pay==='cash'&&BUY.includes(S.service)&&$('#itemEst').value!==''&&!(+$('#itemEst').value>=0)) return 'Anggaran harga barang tak sah.';
+    if(!$('#name').value.trim()) return bad('name','Nama anda, supaya rider tahu siapa nak dihubungi.');
+    if(!phoneOk($('#phone').value)) return bad('phone','Nombor telefon nampak tak betul. Contoh: 0123456789');
+  }
   return '';
 }
-$('#next').onclick=()=>{
+$('#next').onclick=async()=>{
+  if(geoBusy){ const nx=$('#next'); nx.disabled=true; try{ await geoBusy }catch(_){} geoBusy=null; nx.disabled=false }
+  if(postSend){ if(postSend==='new') location.reload(); else location.href=postSend; return }
   const e=valid(); if(e){$('#err').textContent=e;return}
-  if(S.step===2){try{localStorage.setItem('rkb',JSON.stringify({n:$('#name').value,p:$('#phone').value}))}catch(_){}}
-  if(S.step<3) show(S.step+1); else send();
+  if(S.step===1){try{localStorage.setItem('rkb',JSON.stringify({n:$('#name').value,p:$('#phone').value}))}catch(_){}}
+  if(S.step<LAST) show(S.step+1); else send();
 };
-$('#back').onclick=()=>show(S.step-1);
+$('#back').onclick=()=>{ if(postSend){ location.reload(); return } attempt=null; show(S.step-1) };
 
 const mapLink=ll=>`https://www.google.com/maps?q=${ll[0].toFixed(6)},${ll[1].toFixed(6)}`;
 function summary(){
-  const rows=[['Servis',S.service],['Ambil',$('#pick').value],['Hantar',$('#drop').value],['Jarak',(S.km??0).toFixed(1)+' KM'],
+  const p=parts(), rows=[['Servis',S.service],['Ambil',$('#pick').value],['Hantar',$('#drop').value],...($('#recv').value.trim()?[['Penerima',$('#recv').value.trim()]]:[]),['Jarak',(S.km??0).toFixed(1)+' KM'],
     ['Kenderaan',S.vehicle],['Bayaran',S.pay==='cash'?'Tunai'+(BUY.includes(S.service)&&+$('#itemEst').value?' · barang ≈ RM'+(+$('#itemEst').value).toFixed(2):''):'Transfer / QR'],['Catatan',$('#notes').value.trim()],['Nama',$('#name').value+' · '+$('#phone').value]];
-  if($('#rain').checked) rows.push(['Caj hujan','+RM2.00']);
-  rows.push(['Anggaran upah','RM '+calc().toFixed(2)]);
-  $('#sum').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
+  let h=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
+  const b=[['Upah asas (sehingga '+FREE_KM+' KM)',p.base]];
+  if(p.extra) b.push(['Jarak tambahan ('+Math.ceil((S.km??0)-FREE_KM)+' KM × RM'+rmx(PER_KM)+')',p.extra]);
+  if(p.car) b.push(['Kenderaan kereta',p.car]);
+  if(p.rain) b.push(['Caj hujan',p.rain]);
+  if(p.round) b.push(['Pembundaran',p.round]);
+  h+='<div style="border-top:2px solid var(--line);margin-top:6px"></div>'+b.map(r=>`<div class="row"><span>${r[0]}</span><span>${r[1]<0?'-':''}RM ${Math.abs(r[1]).toFixed(2)}</span></div>`).join('')+`<div class="row sumtot"><span style="color:var(--txt)">Anggaran upah</span><span style="color:var(--gold);font-size:17px">RM ${p.total.toFixed(2)}</span></div>`;
+  $('#sum').innerHTML=h;
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let sending=false, attempt=null;   // attempt: id yang sama dipakai semula jika cuba lagi (elak order berganda)
+
+/* papan kekunci terbuka: sorok bar bawah supaya tak tutup ruang menaip */
+(function(){ const T=e=>e.target&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)&&e.target.type!=='checkbox';
+  addEventListener('focusin',e=>{ if(T(e)) document.body.classList.add('typing') });
+  addEventListener('focusout',e=>{ if(T(e)) setTimeout(()=>{ if(!document.activeElement||!/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) document.body.classList.remove('typing') },150) });
+})();
+let waWin=null, postSend='';
+function waUrl(msg){ return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}` }
+function sendWA(msg){   // pulang true jika berjaya dibuka
+  const u=waUrl(msg);
+  if(waWin&&!waWin.closed){ try{ waWin.location.href=u; waWin=null; return true }catch(_){} }
+  const w=window.open(u,'_blank'); return !!w;
+}
+function openWaTab(){ try{ waWin=window.open('','_blank'); if(waWin&&waWin.document) waWin.document.write('<meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:system-ui;background:#120a0c;color:#fbf4ea;display:grid;place-items:center;height:100vh;margin:0;text-align:center"><div>⏳ Menghantar order anda…</div>') }catch(_){ waWin=null } }
+function closeWaTab(){ try{ if(waWin&&!waWin.closed) waWin.close() }catch(_){} waWin=null }
+/* Keadaan selepas hantar: satu tindakan jelas ke hadapan, bukan butang mati */
+function afterSend(track){
+  postSend=track||'new'; const nx=$('#next'), bk=$('#back');
+  nx.disabled=false; nx.classList.add('wa','pulse');
+  nx.textContent=track?'📡 Jejak order saya':'＋ Tempah baru';
+  bk.style.display='block'; bk.textContent=track?'＋ Baru':'';
+  if(!track) bk.style.display='none';
+  $('#reas').textContent=track?'Alhamdulillah, order diterima 🎉 Kami carikan rider terdekat.':'Tempahan dihantar melalui WhatsApp.';
+  $('#err').textContent=''; try{ navigator.vibrate&&navigator.vibrate(30) }catch(_){}
+  scrollTo({top:0,behavior:'smooth'});
+}
 function send(){
+  if(sending) return;
   try{ const lt=+localStorage.getItem('rkb-lastsend')||0, w=30000-(Date.now()-lt); if(w>0){ $('#err').textContent='Sila tunggu '+Math.ceil(w/1000)+' saat sebelum hantar tempahan lagi.'; return } }catch(_){}
-  const recv=$('#recv').value.trim();
-  const ref='RKB-'+(1000+Math.floor(Math.random()*9000));
+  const recv=$('#recv').value.trim().slice(0,100);
   const line='----------------------------------------';
   const gm=ll=>`https://maps.google.com/?q=${ll[0].toFixed(6)},${ll[1].toFixed(6)}`;
   const f=ll=>ll[0].toFixed(6)+','+ll[1].toFixed(6);
   const route=`https://www.google.com/maps/dir/?api=1&destination=${f(S.drop)}&waypoints=${f(S.pick)}&travelmode=${S.vehicle==='Kereta'?'driving':'two-wheeler'}`;
-  const id=RKB.newId();
+  if(!attempt) attempt=RKB.newId();
+  const id=attempt;
+  const ref='RKB-'+id.slice(0,4).toUpperCase();   // diambil daripada id rawak: tak bertembung antara order
   const item=(S.pay==='cash'&&BUY.includes(S.service))?Math.max(0,+(+$('#itemEst').value||0).toFixed(2)):0;
   const minCash=+(RKB.cfg.walletMinCash??0);
   const pt=(ll,el)=>({lat:+ll[0].toFixed(6),lng:+ll[1].toFixed(6),addr:$(el).value});
-  const order={ref,createdAt:Date.now(),status:'baru',service:S.service,vehicle:S.vehicle,pick:pt(S.pick,'#pick'),drop:pt(S.drop,'#drop'),
+  const order={ref,createdAt:firebase.database.ServerValue.TIMESTAMP,status:'baru',service:S.service,vehicle:S.vehicle,pick:pt(S.pick,'#pick'),drop:pt(S.drop,'#drop'),
     notes:$('#notes').value.trim().slice(0,600),name:$('#name').value.trim().slice(0,60),phone:$('#phone').value.trim().slice(0,20),phoneKey:RKB.phoneKey($('#phone').value),recv,km:+(S.km??0).toFixed(1),rain:$('#rain').checked,price:calc(),
     pay:S.pay,itemEst:item,need:S.pay==='cash'?minCash+item:0};
   let trackUrl='';
-  if(RKB.ok){
- trackUrl=new URL('track.html?id='+id,location.href).href;
-    const up={}; up['orders/'+id]=order; up['ratelimit/'+order.phoneKey]=firebase.database.ServerValue.TIMESTAMP;
-    RKB.db.ref().update(up).then(()=>{ try{localStorage.setItem('rkb-last',id)}catch(_){}
-    $('#sum').insertAdjacentHTML('afterend',`<a id="trk" href="${trackUrl}" style="display:block;margin-top:12px;text-align:center;background:#0b2a4a;border:1px solid #3b82f6;border-radius:14px;padding:14px;color:#93c5fd;font-weight:800;text-decoration:none">📡 Jejak order anda (live)</a>`);
-    }).catch(e=>{ console.error('order',e); $('#sum').insertAdjacentHTML('afterend','<div style="margin-top:12px;background:#3b1d0a;border:1px solid #f59e0b;border-radius:14px;padding:12px;font-size:13px;line-height:1.5">⚠️ Jejak live tak dapat diaktifkan'+(e&&e.code==='PERMISSION_DENIED'?' (tempahan terlalu kerap, atau sambungan bermasalah)':'')+'. Tempahan anda tetap dihantar melalui WhatsApp.</div>') });
-  }
-  try{ localStorage.setItem('rkb-lastsend',String(Date.now())); localStorage.setItem('rkb-prev',JSON.stringify({service:S.service,vehicle:S.vehicle,pay:S.pay,notes:order.notes,itemEst:item,pick:order.pick,drop:order.drop})) }catch(_){}
-  const msg=[
+  const buildMsg=()=>{
+  return [
     '🛵 *TEMPAHAN BAHARU | RIDER KB EXPRESS*',
     `*No. Rujukan:* #${ref}`,
     line,
@@ -487,28 +564,58 @@ function send(){
     '',
     line,
     `📏 *Jarak Perjalanan:* ${(S.km??0).toFixed(1)} KM`,
-    `🌧️ *Status Cuaca:* ${$('#rain').checked?'🌧️ Hujan (+RM2.00)':'Cerah'}`,
+    `🌧️ *Status Cuaca:* ${$('#rain').checked?'🌧️ Hujan (+RM'+RAIN_EXTRA.toFixed(2)+')':'Cerah'}`,
     `💰 *JUMLAH TAMBANG PELANGGAN: RM ${calc().toFixed(2)}*`,
     line,
-    '_Tambang asas: RM5.00 untuk jarak sehingga 5 KM. Lebih 5 KM, tambah RM1.00 bagi setiap KM tambahan atau sebahagiannya. Bayar lepas sampai._'
+    `_Tambang asas: RM${BASE.toFixed(2)} untuk jarak sehingga ${FREE_KM} KM. Lebih ${FREE_KM} KM, tambah RM${PER_KM.toFixed(2)} bagi setiap KM tambahan atau sebahagiannya. Bayar lepas sampai._`
   ].join('\n');
-  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`,'_blank');
+  };
+  const nx=$('#next'), setBtn=(t,dis)=>{ nx.textContent=t; nx.disabled=!!dis };
+  const note=(html,bg)=>{ const old=$('#sendnote'); if(old) old.remove(); $('#sum').insertAdjacentHTML('afterend',`<div id="sendnote" style="margin-top:12px;background:${bg||'#3b1d0a'};border:1px solid #f59e0b;border-radius:14px;padding:12px;font-size:13px;line-height:1.5">${html}</div>`) };
+  const finish=()=>{ try{ localStorage.setItem('rkb-lastsend',String(Date.now())); localStorage.setItem('rkb-prev',JSON.stringify({service:S.service,vehicle:S.vehicle,pay:S.pay,notes:order.notes,itemEst:item,pick:order.pick,drop:order.drop})) }catch(_){} };
+  if(!RKB.ok){ finish(); sendWA(buildMsg()); afterSend(''); return }
+  openWaTab();
+  sending=true; setBtn('⏳ Menghantar…',true); $('#err').textContent='';
+  trackUrl=new URL('track.html?id='+id,location.href).href;
+  const up={}; up['orders/'+id]=order; up['ratelimit/'+order.phoneKey]=firebase.database.ServerValue.TIMESTAMP;
+  const timeout=new Promise((_,rej)=>setTimeout(()=>rej({code:'TIMEOUT'}),8000));
+  const done=()=>{
+    try{localStorage.setItem('rkb-last',id)}catch(_){}
+    finish(); sending=false; attempt=null;
+    const opened=sendWA(buildMsg());   // WhatsApp dibuka hanya selepas order benar-benar masuk
+    afterSend(trackUrl);
+    if(!opened) note('Order dah masuk ✅. Tekan <a href="'+waUrl(buildMsg())+'" target="_blank" rel="noopener" style="color:#fbbf24;font-weight:800">di sini untuk hantar salinan ke WhatsApp</a> (pilihan).','#0b2a4a');
+  };
+  Promise.race([RKB.db.ref().update(up),timeout]).then(done).catch(async e=>{
+    console.error('order',e);
+    // tulisan yang tertunda mungkin sudah sampai: semak dulu sebelum lapor gagal
+    try{ const ex=await Promise.race([RKB.db.ref('orders/'+id+'/ref').once('value'),new Promise((_,r)=>setTimeout(r,4000))]); if(ex&&ex.exists()){ done(); return } }catch(_){}
+    sending=false; trackUrl=''; closeWaTab();
+    const code=e&&e.code;
+    const why=code==='TIMEOUT'?'Talian lemah atau tiada internet.':code==='PERMISSION_DENIED'?'Tempahan ditolak (terlalu kerap dalam masa singkat, atau sistem sedang disemak).':'Sambungan bermasalah.';
+    setBtn('🛵 Cari Rider Sekarang',false); $('#err').textContent='⚠️ Order belum masuk. '+why+' Tekan sekali lagi atau lihat bawah ringkasan.';
+    note('⚠️ <b>Order belum masuk ke sistem rider.</b> '+why+'<br>Anda boleh <b>tekan sekali lagi</b> untuk cuba semula, atau <a href="#" id="waonly" style="color:#fbbf24;font-weight:800">hantar terus melalui WhatsApp (tanpa jejak live)</a>.');
+    const w=$('#waonly'); if(w) w.onclick=ev=>{ ev.preventDefault(); finish(); sendWA(buildMsg()); afterSend(''); };
+  });
 }
 
 try{const d=JSON.parse(localStorage.getItem('rkb')||'null'); if(d){$('#name').value=d.n||'';$('#phone').value=d.p||''}}catch(_){}
 /* ---- Auto detect lokasi pelanggan (lokasi hantar) ---- */
+const AREA={lat:[5.8,6.5],lng:[101.9,102.6]};   // Kelantan (kawasan perkhidmatan)
+const inArea=ll=>ll[0]>=AREA.lat[0]&&ll[0]<=AREA.lat[1]&&ll[1]>=AREA.lng[0]&&ll[1]<=AREA.lng[1];
 function autoDetect(){
   const g=$('#gps');
   if(!navigator.geolocation){g.textContent='Peranti tak sokong GPS. Tekan peta atau taip lokasi.';return}
   navigator.geolocation.getCurrentPosition(async p=>{
-    if(S.drop) return;                       // jangan timpa jika pelanggan dah pilih
     const ll=[p.coords.latitude,p.coords.longitude];
+    if(!inArea(ll)){ g.textContent='📍 Anda di luar Kelantan, tak mengapa. Letak lokasi ambil dan hantar di Kota Bharu & sekitarnya (taip, tekan peta atau guna kawasan panas).'; return }   // contoh: customer di KL, order untuk keluarga di KB
+    if(S.drop||S.pick) return;               // jangan timpa jika pelanggan dah pilih
     setPoint('drop',ll,'Memuatkan alamat...');
+    setMode('pick');   // lokasi hantar dah diisi, seterusnya pin ambil
     $('#drop').value=await reverse(ll);
-    setMode('pick');
-    g.textContent='✅ Lokasi anda dikesan sebagai lokasi hantar. Sekarang pilih lokasi ambil (kedai/barang).';
+    g.textContent='✅ Lokasi anda diisi sebagai lokasi hantar. Bukan di sini? Tukar dengan taip alamat, tekan peta atau seret pin hantar.';
   },err=>{
-    g.textContent=err.code===1?'Lokasi tak dibenarkan. Benarkan kebenaran lokasi, atau tekan peta / taip alamat.':'Lokasi tak dapat dikesan. Tekan peta atau taip alamat.';
+    g.textContent=err.code===1?'Lokasi tak dibenarkan. Tak mengapa, tekan peta atau taip alamat.':'Lokasi tak dapat dikesan. Tekan peta atau taip alamat.';
   },{enableHighAccuracy:true,timeout:12000,maximumAge:30000});
 }
 /* ---- Cadangan berdekatan: kedai pilihan admin (⭐) + OpenStreetMap ---- */
@@ -578,7 +685,7 @@ function showFav(){
 function nbPick(k){
   const x=nbCur[k]; if(!x) return; favAdd(x);
   setPoint('pick',[x.lat,x.lng],x.name+(x.addr?', '+x.addr:''));
-  setMode('drop'); map.setView([x.lat,x.lng],16); window.scrollTo({top:0,behavior:'smooth'});
+  map.setView([x.lat,x.lng],16); window.scrollTo({top:0,behavior:'smooth'});
   $('#err').textContent='';
 }
 $('#nbCats').onclick=e=>{
@@ -601,14 +708,14 @@ $('#saved').onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return; const
     const t=(prompt('Simpan lokasi '+(w==='pick'?'ambil':'hantar')+' ini sebagai: 1 = Rumah, 2 = Pejabat','1')||'').trim(), k={1:'home',2:'work'}[t]; if(!k) return;
     a[k]={lat:S[w][0],lng:S[w][1],addr:$('#'+w).value}; try{localStorage.setItem(ADDRK,JSON.stringify(a))}catch(_){} drawSaved(); return }
   const s=a[b.dataset.a]; if(!s){ $('#err').textContent='Belum disimpan. Letak pin, kemudian tekan 💾 Simpan lokasi semasa.'; return }
-  const w=S.mode; setPoint(w,[s.lat,s.lng],s.addr); if(w==='pick') setMode('drop') };
+  const w=S.mode; setPoint(w,[s.lat,s.lng],s.addr) };
 /* ---- Tempah semula ---- */
 (function(){ let p=null; try{p=JSON.parse(localStorage.getItem('rkb-prev')||'null')}catch(_){} if(!p||!p.pick||!p.drop) return;
   $('#again').innerHTML=`<div class="nb" style="margin:14px 18px 0"><div class="i"><b>🔁 Tempah semula</b><small>${esc(p.service)} · ${esc(String(p.pick.addr).slice(0,38))} ➜ ${esc(String(p.drop.addr).slice(0,38))}</small></div><button type="button" id="againBtn">Guna</button></div>`;
   $('#againBtn').onclick=()=>{ setPoint('pick',[p.pick.lat,p.pick.lng],p.pick.addr); setPoint('drop',[p.drop.lat,p.drop.lng],p.drop.addr); $('#notes').value=p.notes||'';
     S.service=p.service; $$('.svc').forEach(x=>x.classList.toggle('on',x.dataset.s===p.service));
     S.vehicle=p.vehicle; $$('.opt').forEach(x=>x.classList.toggle('on',x.dataset.v===p.vehicle));
-    S.pay=p.pay; $$('.popt').forEach(x=>x.classList.toggle('on',x.dataset.p===p.pay)); $('#itemEst').value=p.itemEst||''; syncItem(); price(); show(2); $('#again').innerHTML='' };
+    S.pay=p.pay; $$('.popt').forEach(x=>x.classList.toggle('on',x.dataset.p===p.pay)); $('#itemEst').value=p.itemEst||''; syncItem(); drawPay(); drawQN(); price(); show(1); $('#again').innerHTML='' };
 })();
 
 /* ---- PWA: pasang di telefon ---- */
@@ -639,6 +746,16 @@ if('serviceWorker' in navigator){ addEventListener('load',()=>navigator.serviceW
 
 function drawGreet(){ $('#greet').textContent=RKB.say('Nak tapau atau hantar apa hari ni?','Hari ni nok tapau gapo?'); $('#lg').textContent='🗣️ Loghat Kelantan: '+(RKB.kb()?'Hidup':'Mati') }
 $('#lg').onclick=()=>{ RKB.toggleLoghat(); drawGreet() }; drawGreet();
+/* ---- Tetapan dari admin (harga, WhatsApp, bayaran): cache dulu, kemudian kemas kini ---- */
+function applySettings(st){ if(!st) return; const p=st.pricing||{}, n=(v,d)=>(v!==undefined&&v!==null&&v!==''&&isFinite(+v)&&+v>=0)?+v:d;
+  BASE=n(p.base,BASE); FREE_KM=n(p.freeKm,FREE_KM); PER_KM=n(p.perKm,PER_KM); CAR_EXTRA=n(p.car,CAR_EXTRA); RAIN_EXTRA=n(p.rain,RAIN_EXTRA);
+  if(st.wa&&/^60\d{8,11}$/.test(String(st.wa))) WA_NUMBER=String(st.wa);
+  if(st.pay) PAY=st.pay;
+  $('#carAmt').textContent=rmx(CAR_EXTRA); $('#rainAmt').textContent=rmx(RAIN_EXTRA); drawPay(); price(); }
+try{ applySettings(JSON.parse(localStorage.getItem('rkb-settings')||'null')) }catch(_){}
+if(RKB.ok) RKB.db.ref('settings').once('value').then(sn=>{ const v=sn.val(); if(v){ applySettings(v); try{ localStorage.setItem('rkb-settings',JSON.stringify(v)) }catch(_){} } }).catch(()=>{});
+$('#th').textContent=RKB_THEME.label(); $('#th').onclick=()=>{ RKB_THEME.cycle(); $('#th').textContent=RKB_THEME.label() };
+drawQN(); drawPay();
 show(0); price(); autoDetect();
 try{ const last=localStorage.getItem('rkb-last');
   if(last&&RKB.ok) RKB.db.ref('orders/'+last+'/status').once('value').then(v=>{const st=v.val(); if(st&&st!=='selesai'&&st!=='batal') $('#install').insertAdjacentHTML('beforebegin',`<a href="track.html?id=${last}" style="display:block;margin:14px 18px 0;background:#0b2a4a;border:1px solid #3b82f6;border-radius:16px;padding:12px 14px;color:#93c5fd;font-weight:800;text-decoration:none;text-align:center">📡 Order aktif anda: ${st} · tekan untuk jejak</a>`)}).catch(()=>{}) }catch(_){}

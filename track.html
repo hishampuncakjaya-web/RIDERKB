@@ -2,6 +2,7 @@
 <html lang="ms"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Jejak Order | Rider KB</title><meta name="theme-color" content="#7a1230">
+<script src="theme.js"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
@@ -14,15 +15,26 @@
   <div class="card" id="msg">Memuatkan order…</div>
   <div id="main" class="hide">
     <div class="card"><div class="stp" id="stp"></div></div>
-    <div class="card"><div class="big" id="headline"></div><div class="mut" id="sub" style="margin-top:6px"></div><div id="rinfo" style="margin-top:8px;font-size:13px;line-height:1.6"></div><div class="acts" id="contact"></div><div class="acts" style="margin-top:8px"><button class="btn gry sm hide" id="notif" type="button">🔔 Aktifkan notifikasi</button><button class="btn gry sm" id="rep" type="button">⚠️ Lapor masalah</button><button class="btn gry sm" id="lg" type="button"></button></div></div>
+    <div class="card"><div class="big" id="headline"></div><div class="mut" id="sub" style="margin-top:6px"></div><div id="rinfo" style="margin-top:8px;font-size:13px;line-height:1.6"></div><div class="acts" id="contact"></div><div class="acts" style="margin-top:8px"><button class="btn gry sm hide" id="notif" type="button">🔔 Aktifkan notifikasi</button><button class="btn gry sm" id="rep" type="button">⚠️ Lapor masalah</button></div></div>
+    <div class="card hide" id="conf"></div>
     <div class="card hide" id="rate"></div>
     <div class="card hide" id="proof"></div>
+    <div class="card hide" id="payc"></div>
     <div id="map" class="map"></div>
     <div class="card" id="sum" style="margin-top:12px"></div>
+    <div class="acts" style="margin:0 0 8px"><button id="shr" class="btn gry full" type="button">🔗 Kongsi pautan jejak</button></div>
+    <div id="again2" class="hide" style="margin:6px 0 4px"><a class="btn full" href="index.html" style="display:block">🔁 Tempah lagi</a></div>
+    <div style="text-align:center;margin:14px 0 6px"><button id="lg" type="button" style="background:none;border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:8px 14px;font:inherit;font-size:12.5px;min-height:0"></button></div>
   </div>
 </div>
 </div>
 <div id="toast"></div>
+<div id="ask" class="modal hide"><div class="mbox" style="text-align:left;border-color:var(--line)">
+  <div class="big" id="askT" style="margin-bottom:10px"></div>
+  <div id="askL"></div>
+  <div id="askO" class="hide"><input id="askI" maxlength="150" placeholder="Terangkan ringkas…" style="margin:8px 0"><button class="btn full" id="askS" type="button">Hantar</button></div>
+  <button class="btn gry full" id="askX" type="button" style="margin-top:8px">Batal</button>
+</div></div>
 <div id="done" class="modal hide"><div class="mbox">
   <div style="font-size:54px">🎉</div>
   <div class="big" id="dT" style="margin:6px 0"></div>
@@ -82,11 +94,24 @@ else{
     if(chg){ const msg={diterima:RKB.say('Rider dah terima order anda 🛵','Rider doh terima order demo 🛵'),diambil:RKB.say('Barang dah diambil, rider menuju ke lokasi anda 📦','Barang doh ambik, rider tengah mari 📦'),selesai:RKB.say('Order anda dah sampai! 🎉','Doh sampai! 🎉'),batal:'Order dibatalkan'}[o.status]; if(msg) notify('Rider KB · #'+o.ref,msg) }
     if(o.arrivedAt&&!prevArr&&wasSt!==null&&o.status==='diterima') notify('Rider KB · #'+o.ref,'Rider dah sampai di lokasi ambil 📍');
     prevArr=o.arrivedAt||null;
-    drawRate(); loadProof();
-    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Nota',o.notes||'-'],['Anggaran upah',rm(o.price)]];
+    $('#again2').classList.toggle('hide',!over); drawConf(); drawRate(); loadProof(); drawPayC();
+    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],['Anggaran upah',rm(o.price)]];
     $('#sum').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
   }
   $('#dX').onclick=()=>$('#done').classList.add('hide');
+  /* butiran bayaran (transfer / QR): tunjuk bila barang dah diambil atau selesai */
+  let payData=null, payLoaded=false;
+  try{ payData=(JSON.parse(localStorage.getItem('rkb-settings')||'null')||{}).pay||null }catch(_){}
+  function drawPayC(){
+    const b=$('#payc'), show=o.pay==='online'&&(o.status==='diambil'||o.status==='selesai');
+    if(!show){ b.classList.add('hide'); return }
+    if(!payLoaded){ payLoaded=true; RKB.db.ref('settings/pay').once('value').then(sn=>{ if(sn.val()){ payData=sn.val(); drawPayC() } }).catch(()=>{}) }
+    b.classList.remove('hide');
+    const d=payData||{};
+    b.innerHTML='<div class="big">📲 Bayar upah: '+rm(o.price)+'</div>'+((d.acc||d.qr)?'<div style="margin-top:8px;line-height:1.7">'+(d.bank?esc(d.bank)+'<br>':'')+(d.acc?'No. akaun: <b>'+esc(d.acc)+'</b><br>':'')+(d.name?'Nama: '+esc(d.name)+'<br>':'')+'</div>'+(d.acc?'<button class="btn gry sm" id="cpA" type="button" style="margin-top:6px">📋 Salin no. akaun</button>':'')+(d.qr?'<img alt="QR bayaran" src="'+d.qr+'" style="display:block;max-width:240px;width:100%;margin:10px auto 0;border-radius:12px;background:#fff">':''):'<div class="mut" style="margin-top:6px">Rider akan beri butiran bayaran. Sila bayar selepas barang sampai.</div>');
+    const c=$('#cpA'); if(c) c.onclick=()=>{ try{ navigator.clipboard.writeText(d.acc); c.textContent='✓ Disalin' }catch(_){} };
+  }
+  $('#shr').onclick=async()=>{ const u=location.href, t='Jejak order Rider KB #'+(o?o.ref:''); try{ if(navigator.share) await navigator.share({title:t,url:u}); else { await navigator.clipboard.writeText(u); notify('Rider KB','Pautan disalin ✓') } }catch(_){} };
   /* notifikasi (berfungsi semasa halaman ini dibuka) */
   const canN='Notification' in window;
   function syncN(){ $('#notif').classList.toggle('hide',!(canN&&Notification.permission==='default')) } syncN();
@@ -97,12 +122,25 @@ else{
     try{ if(canN&&Notification.permission==='granted'){ if(navigator.serviceWorker&&navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-192.png',data:{url:location.href}})).catch(()=>new Notification(title,{body,icon:'icon-192.png'})); else new Notification(title,{body,icon:'icon-192.png'}) } }catch(_){}
   }
   function drawLg(){ $('#lg').textContent='🗣️ Loghat: '+(RKB.kb()?'Hidup':'Mati') } drawLg();
+  const thb=document.createElement('button'); thb.type='button'; thb.className='themeBtn'; thb.textContent=RKB_THEME.label(); thb.onclick=()=>{ RKB_THEME.cycle(); thb.textContent=RKB_THEME.label() }; $('#lg').after(thb);
   $('#lg').onclick=()=>{ RKB.toggleLoghat(); drawLg(); if(o) render() };
+  /* helaian pilihan sebab: satu ketik, tiada kotak prompt() pelayar */
+  function askReason(title,reasons){
+    return new Promise(res=>{
+      const m=$('#ask'); $('#askT').textContent=title; $('#askO').classList.add('hide'); $('#askI').value='';
+      $('#askL').innerHTML=reasons.map(r=>'<button class="btn gry full" type="button" data-r="'+esc(r)+'" style="margin-bottom:8px;text-align:left">'+esc(r)+'</button>').join('')+'<button class="btn gry full" type="button" data-r="" style="margin-bottom:8px;text-align:left">✏️ Lain-lain…</button>';
+      m.classList.remove('hide');
+      const close=v=>{ m.classList.add('hide'); res(v) };
+      $('#askL').onclick=e=>{ const b=e.target.closest('button[data-r]'); if(!b) return; if(b.dataset.r) close(b.dataset.r); else { $('#askL').classList.add('hide'); $('#askO').classList.remove('hide'); $('#askI').focus() } };
+      $('#askS').onclick=()=>{ const v=$('#askI').value.trim(); if(v){ $('#askL').classList.remove('hide'); close(v) } };
+      $('#askX').onclick=()=>{ $('#askL').classList.remove('hide'); close(null) };
+    });
+  }
   /* lapor masalah */
   $('#rep').onclick=async()=>{
-    const m=(prompt('Terangkan masalah anda (cth: rider lambat, barang salah, nak batal):','')||'').trim(); if(!m) return;
-    try{ await RKB.report({type:'customer',orderId:id,ref:o?o.ref:'',from:'customer',name:o?o.name:'',phone:o?o.phone:'',msg:m.slice(0,300)}); alert('Laporan dihantar kepada admin. Kami akan hubungi anda.') }
-    catch(e){ alert('Tak dapat hantar laporan. Sila WhatsApp admin.') }
+    const m=await askReason('Apa masalahnya?',['Rider lambat','Barang salah / tak lengkap','Nak batal order','Nak tukar alamat']); if(!m) return;
+    try{ await RKB.report({type:'customer',orderId:id,ref:o?o.ref:'',from:'customer',name:o?o.name:'',phone:o?o.phone:'',msg:m.slice(0,300)}); notify('Rider KB','Laporan dihantar. Kami akan hubungi anda 💛') }
+    catch(e){ notify('Rider KB','Tak dapat hantar laporan. Sila WhatsApp admin.') }
   };
   /* ajak ulasan Google (jujur, tanpa menetapkan bintang) */
   function reviewBlock(){
@@ -110,6 +148,24 @@ else{
     return '<div class="mut" style="margin-top:12px;line-height:1.6;text-align:left">Semoga urusan <b>ORANG BAIK</b> sentiasa dipermudahkan dan dilimpahi rezeki yang berkat. Kalau anda berpuas hati dengan servis kami, ulasan jujur anda, boleh sertakan gambar atau video, sangat bermakna untuk kami.</div>'
       +'<a class="btn blu full" target="_blank" rel="noopener" href="'+esc(u)+'" style="margin-top:10px;display:block;text-align:center">⭐ Tulis ulasan di Google</a>'
       +'<div class="mut" style="margin-top:12px">━━━━━━━━━━━━━<br><b>TERIMA KASIH ORANG BAIK</b> 💛</div>';
+  }
+  /* pengesahan terima barang: sekali sahaja. "Belum terima" terus masuk panel Laporan admin */
+  let confKey='';
+  function drawConf(){
+    const box=$('#conf'); if(o.status!=='selesai'){ box.classList.add('hide'); return }
+    box.classList.remove('hide');
+    const key=o.conf?o.conf.v:'-'; if(key===confKey) return; confKey=key;
+    if(o.conf){ box.innerHTML=o.conf.v==='ok'?'<div class="big">✅ Terima kasih, anda dah sahkan barang diterima.</div>':'<div class="big">⚠️ Laporan anda dah sampai kepada admin.</div><div class="mut" style="margin-top:6px">Kami akan hubungi anda secepat mungkin.</div>'; return }
+    box.innerHTML='<div class="big">Barang dah sampai pada anda?</div><div class="mut" style="margin:6px 0 10px">Kalau tiada masalah, anda tak perlu buat apa-apa pun. Order auto-disahkan selepas '+(+(RKB.cfg.confAutoMin||30))+' minit.</div><div class="acts"><button class="btn grn" id="cOk" type="button">✅ Dah terima</button><button class="btn gry" id="cNo" type="button" style="border:1px solid #ef4444">⚠️ Belum terima</button></div><div class="mut" id="cErr" style="margin-top:6px"></div>';
+    const TS=firebase.database.ServerValue.TIMESTAMP, err=m=>{ const e=$('#cErr'); if(e) e.textContent=m };
+    $('#cOk').onclick=async()=>{ $('#cOk').disabled=$('#cNo').disabled=true; try{ await RKB.db.ref('orders/'+id+'/conf').set({v:'ok',t:TS}) }catch(e){ $('#cOk').disabled=$('#cNo').disabled=false; err('Tak dapat hantar. Cuba lagi.') } };
+    $('#cNo').onclick=async()=>{
+      const m=await askReason('Apa yang berlaku?',['Barang tak sampai','Barang tak lengkap / rosak','Salah alamat / bukan saya terima']);
+      if(!m) return; $('#cOk').disabled=$('#cNo').disabled=true;
+      try{ await RKB.report({type:'customer',orderId:id,ref:o.ref||'',from:'customer',name:o.name||'',phone:o.phone||'',msg:('⚠️ BELUM TERIMA: '+m).slice(0,300)}) }
+      catch(e){ $('#cOk').disabled=$('#cNo').disabled=false; err('Laporan gagal dihantar. Sila WhatsApp admin terus.'); return }
+      try{ await RKB.db.ref('orders/'+id+'/conf').set({v:'issue',t:TS,m}) }catch(e){ err('Laporan dah dihantar kepada admin, tetapi status belum dikemas kini.') }
+    };
   }
   /* penilaian */
   function drawRate(){
