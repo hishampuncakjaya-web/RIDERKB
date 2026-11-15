@@ -125,7 +125,7 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
 <!-- 1 LALUAN -->
 <section>
   <div id="greet"></div>
-  <h2>📍 Pilih lokasi ambil &amp; hantar</h2>
+  <h2>📍 Dari mana, ke mana?</h2>
   <div class="pins">
     <button class="pin p on" id="bP">📍 1. Pin Ambil</button>
     <button class="pin d" id="bD">🏁 2. Pin Hantar</button>
@@ -160,9 +160,9 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
 
 <!-- 2 SERVIS -->
 <section>
-  <h2>1. Pilih servis runner</h2>
+  <h2>1. Apa yang boleh kami tolong?</h2>
   <div class="grid" id="svcs"></div>
-  <h2>Senarai pesanan / catatan rider</h2>
+  <h2>Beritahu rider apa yang perlu</h2>
   <textarea id="notes" placeholder="Senaraikan barang yang nak dibeli atau nombor resit/tracking parcel anda..."></textarea>
   <h2>Kenderaan</h2>
   <div class="opts">
@@ -176,16 +176,16 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
 
 <!-- 3 KONTAK -->
 <section>
-  <h2>Maklumat anda</h2>
+  <h2>Siapa rider boleh hubungi?</h2>
   <label>Nama</label><input id="name" placeholder="Nama anda" autocomplete="name">
-  <label>No. telefon</label><input id="phone" type="tel" placeholder="Contoh: 0123456789" autocomplete="tel">
+  <label>No. telefon <span style="color:var(--mut);font-weight:400">· rider hubungi bila dah sampai</span></label><input id="phone" type="tel" placeholder="Contoh: 0123456789" autocomplete="tel">
   <label>Nama / telefon penerima (jika orang lain)</label><input id="recv" placeholder="Pilihan">
   <div style="font-size:12px;color:var(--mut);margin-top:10px">Nama &amp; nombor disimpan dalam telefon anda untuk tempahan seterusnya.</div>
 </section>
 
 <!-- 4 SAHKAN -->
 <section>
-  <h2>Semak tempahan</h2>
+  <h2>Hampir siap! Semak sekali lagi ✅</h2>
   <div class="sum" id="sum"></div>
   <div style="font-size:12.5px;color:var(--mut);margin-top:12px;line-height:1.6">Upah ialah anggaran. Harga barang (jika beli) dibayar kepada rider. Bayar lepas sampai.</div>
 </section>
@@ -196,6 +196,7 @@ input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent
 <div class="bar"><div class="bi">
   <div class="price"><div><small>ANGGARAN UPAH · MASA SAMPAI · Bayar lepas sampai</small><span class="km" id="kmTxt">Jarak: -</span></div><b id="priceTxt">RM 5.00</b></div>
   <div class="btns"><button class="btn back" id="back">‹ Balik</button><button class="btn" id="next">Seterusnya</button></div>
+  <div class="mut" id="reas" style="text-align:center;margin-top:8px;font-size:13px"></div>
   <div class="err" id="err"></div>
 </div></div>
 
@@ -407,16 +408,16 @@ function show(n){
   secs.forEach((s,i)=>s.classList.toggle('on',i===n));
   stEls.forEach((s,i)=>{s.classList.toggle('on',i===n);s.classList.toggle('done',i<n);s.querySelector('i').textContent=i<n?'✓':i+1});
   $('#back').style.display=n?'block':'none';
-  const nx=$('#next'); nx.textContent=n===3?'Hantar ke WhatsApp':'Seterusnya'; nx.classList.toggle('wa',n===3);
-  $('#err').textContent='';
+  const nx=$('#next'); nx.textContent=n===3?'🛵 Cari Rider Sekarang':'Seterusnya'; nx.classList.toggle('wa',n===3);
+  $('#err').textContent=''; $('#reas').textContent=n===3?'Lepas ni anda boleh jejak rider secara live 📍':'';
   if(n===0) setTimeout(()=>map.invalidateSize(),50);
   if(n===3) summary();
   scrollTo({top:0,behavior:'smooth'});
 }
 function valid(){
-  if(S.step===0&&!(S.pick&&S.drop)) return 'Sila pilih lokasi ambil dan hantar (taip, tekan kawasan panas atau tekan peta).';
-  if(S.step===1&&!$('#notes').value.trim()) return 'Sila isi senarai pesanan / catatan untuk rider.';
-  if(S.step===2){ if(!$('#name').value.trim()) return 'Sila isi nama.'; if($('#phone').value.replace(/\D/g,'').length<9) return 'Nombor telefon tak sah.'}
+  if(S.step===0&&!(S.pick&&S.drop)) return 'Satu langkah lagi: pilih lokasi ambil dan hantar (taip, tekan kawasan panas atau tekan peta).';
+  if(S.step===1&&!$('#notes').value.trim()) return 'Tulis sikit apa yang rider perlu buat, supaya order anda tak tersilap.';
+  if(S.step===2){ if(!$('#name').value.trim()) return 'Nama anda, supaya rider tahu siapa nak dihubungi.'; if($('#phone').value.replace(/\D/g,'').length<9) return 'Nombor telefon nampak tak cukup. Cuba semak semula.'}
   return '';
 }
 $('#next').onclick=()=>{

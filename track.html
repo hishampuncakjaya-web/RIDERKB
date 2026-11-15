@@ -58,7 +58,7 @@ else{
     const batal=o.status==='batal', idx=ST.findIndex(x=>x[0]===o.status);
     $('#stp').innerHTML=batal?'<div class="now" style="width:100%"><i>✖</i>Dibatalkan</div>':ST.map((x,i)=>`<div class="${i<idx?'done':i===idx?'now':''}"><i>${i<idx?'✓':x[1]}</i>${x[2]}</div>`).join('');
     const rn=esc(o.riderName||'Rider');
-    const S_=RKB.say; $('#headline').textContent=({baru:S_('Menunggu rider terima order anda…','Tunggu sekejap ye, kito cari rider untuk demo…'),diterima:S_(`${o.riderName||'Rider'} sedang menuju lokasi ambil 🛵`,`${o.riderName||'Rider'} doh terima, tengah gi ambik barang 🛵`),diambil:S_(`${o.riderName||'Rider'} dah ambil, menuju lokasi hantar 🛵`,`${o.riderName||'Rider'} doh ambik, tengah mari ko demo 🛵`),selesai:S_('Order selesai. Terima kasih! 🎉','Doh sampai! Terima kaseh ye 🎉'),batal:'Order ini telah dibatalkan.'})[o.status]||o.status;
+    const S_=RKB.say; $('#headline').textContent=({baru:S_('Kami tengah carikan rider terdekat untuk anda…','Kito tengah cari rider paling dekak untuk demo…'),diterima:S_(`${o.riderName||'Rider'} dah terima order anda & tengah menuju lokasi ambil 🛵`,`${o.riderName||'Rider'} doh terima, tengah gi ambik barang 🛵`),diambil:S_(`${o.riderName||'Rider'} dah ambil barang anda & dalam perjalanan ke anda 🛵`,`${o.riderName||'Rider'} doh ambik, tengah mari ko demo 🛵`),selesai:S_('Sampai! Terima kasih sebab percayakan kami 🎉','Doh sampai! Terima kaseh ye 🎉'),batal:'Order ini telah dibatalkan.'})[o.status]||o.status;
     const live=o.riderLoc&&(o.status==='diterima'||o.status==='diambil');
     $('#sub').textContent=live?'Lokasi rider dikemas kini '+RKB.ago(o.riderLoc.t)+(o.riderLoc.spd!=null?' · '+o.riderLoc.spd+' km/j':''):(o.status==='baru'?'Biasanya rider terima dalam beberapa minit.':o.status==='selesai'?'Lokasi rider tidak lagi dikongsi.':'');
     const over=o.status==='selesai'||o.status==='batal';
@@ -104,14 +104,21 @@ else{
     try{ await RKB.report({type:'customer',orderId:id,ref:o?o.ref:'',from:'customer',name:o?o.name:'',phone:o?o.phone:'',msg:m.slice(0,300)}); alert('Laporan dihantar kepada admin. Kami akan hubungi anda.') }
     catch(e){ alert('Tak dapat hantar laporan. Sila WhatsApp admin.') }
   };
+  /* ajak ulasan Google (jujur, tanpa menetapkan bintang) */
+  function reviewBlock(){
+    const u=(RKB.cfg&&RKB.cfg.reviewUrl)||''; if(!u) return '<div class="mut" style="margin-top:12px">━━━━━━━━━━━━━<br><b>TERIMA KASIH ORANG BAIK</b> 💛</div>';
+    return '<div class="mut" style="margin-top:12px;line-height:1.6;text-align:left">Semoga urusan <b>ORANG BAIK</b> sentiasa dipermudahkan dan dilimpahi rezeki yang berkat. Kalau anda berpuas hati dengan servis kami, ulasan jujur anda, boleh sertakan gambar atau video, sangat bermakna untuk kami.</div>'
+      +'<a class="btn blu full" target="_blank" rel="noopener" href="'+esc(u)+'" style="margin-top:10px;display:block;text-align:center">⭐ Tulis ulasan di Google</a>'
+      +'<div class="mut" style="margin-top:12px">━━━━━━━━━━━━━<br><b>TERIMA KASIH ORANG BAIK</b> 💛</div>';
+  }
   /* penilaian */
   function drawRate(){
     const box=$('#rate'), key=o.status+'|'+(o.rating?o.rating.stars:'');
     if(o.status!=='selesai'){ box.classList.add('hide'); return }
     box.classList.remove('hide'); if(key===rateKey) return; rateKey=key;
-    if(o.rating){ box.innerHTML='<div class="big">Terima kasih atas penilaian anda 💖</div><div style="font-size:26px;margin-top:6px">'+'⭐'.repeat(o.rating.stars)+'</div>'; return }
+    if(o.rating){ box.innerHTML='<div class="big">Terima kasih! Penilaian anda sangat bermakna untuk rider 💖</div><div style="font-size:26px;margin-top:6px">'+'⭐'.repeat(o.rating.stars)+'</div>'+reviewBlock(); return }
     stars=0;
-    box.innerHTML='<div class="big">Bagaimana servis rider? ⭐</div><div id="stars" style="margin:6px 0">'+[1,2,3,4,5].map(n=>'<button class="star" data-n="'+n+'" type="button">⭐</button>').join('')+'</div><input id="rc" maxlength="140" placeholder="Komen (pilihan)" style="width:100%;margin-bottom:8px"><button class="btn grn full" id="rs" type="button" disabled>Hantar penilaian</button><div class="mut" id="rerr"></div>';
+    box.innerHTML='<div class="big">Macam mana rider tadi? Pendapat anda bantu rider kami ⭐</div><div id="stars" style="margin:6px 0">'+[1,2,3,4,5].map(n=>'<button class="star" data-n="'+n+'" type="button">⭐</button>').join('')+'</div><input id="rc" maxlength="140" placeholder="Komen (pilihan)" style="width:100%;margin-bottom:8px"><button class="btn grn full" id="rs" type="button" disabled>Hantar penilaian</button><div class="mut" id="rerr"></div>';
     $('#stars').onclick=e=>{ const b=e.target.closest('.star'); if(!b) return; stars=+b.dataset.n; [...document.querySelectorAll('.star')].forEach(x=>x.classList.toggle('on',+x.dataset.n<=stars)); $('#rs').disabled=false };
     $('#rs').onclick=async()=>{ try{ const r={stars,t:Date.now()}, c=$('#rc').value.trim().slice(0,140); if(c) r.c=c; await RKB.db.ref('orders/'+id+'/rating').set(r) }catch(e){ $('#rerr').textContent='Tak dapat hantar penilaian. Cuba lagi.' } };
   }

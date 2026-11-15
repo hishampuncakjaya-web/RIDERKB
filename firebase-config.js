@@ -15,5 +15,6 @@ window.RKB_CFG = {
   admins: ["admin@riderkb.com"],   // e-mel akaun admin (huruf kecil). Mesti sama dengan dalam rules
   riderMustInstall: true,         // rider wajib pasang app (set false untuk ujian dalam pelayar)
   walletMinCash: 0,               // tambahan baki minimum (RM). Peraturan asas: rider layak jika wallet >= harga barang (job tunai)
+  reviewUrl: "https://g.page/r/CW-FG4feUjmuEAI/review",   // pautan Google Review (kosongkan untuk sorok)
   waNumber: "601139900099"        // WhatsApp rider/pusat, format 60xxxxxxxxx
 };

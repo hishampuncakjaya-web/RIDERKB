@@ -8,7 +8,7 @@
     catch(e){ console.error('Firebase',e); db=null; }
   }
   // status order: baru > diterima > diambil > selesai  (batal = dibatalkan)
-  const ST=[['baru','🆕','Menunggu rider'],['diterima','✅','Rider terima'],['diambil','📦','Dalam perjalanan'],['selesai','🎉','Selesai']];
+  const ST=[['baru','🆕','Mencari rider'],['diterima','✅','Rider sedia'],['diambil','📦','Dalam perjalanan'],['selesai','🎉','Sampai']];
   const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const rm=n=>'RM '+(+n||0).toFixed(2);
   const ago=t=>{const s=Math.max(0,Math.round((Date.now()-t)/1000));return s<60?s+' saat lalu':s<3600?Math.round(s/60)+' min lalu':s<86400?Math.round(s/3600)+' jam lalu':Math.round(s/86400)+' hari lalu'};
