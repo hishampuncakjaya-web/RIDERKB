@@ -1,0 +1,50 @@
+/* ===== Tema Rider KB: marun songket + emas, identiti Kelantan ===== */
+:root{--bg:#120a0c;--card:#1d1115;--card2:#291820;--line:#3b2630;--txt:#fbf4ea;--mut:#bfa89f;--red:#9f1239;--org:#e0b04b;--grn:#3fb37f;--gold:#e0b04b;--mar:#7a1230;
+ --sk:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 2l10 12-10 12L4 14z' fill='none' stroke='%23e0b04b' stroke-width='1' opacity='.32'/%3E%3Ccircle cx='14' cy='14' r='1.6' fill='%23e0b04b' opacity='.45'/%3E%3C/svg%3E")}
+html{-webkit-text-size-adjust:100%}
+body{font-size:16px;line-height:1.5;background:var(--bg);color:var(--txt)}
+a{color:#f0cf8a}
+header,.hd{background:var(--sk),linear-gradient(160deg,#5e0d26 0%,#8f1536 62%,#7a1230 100%);background-color:#7a1230;border-bottom:3px solid var(--gold)}
+.tag{border-color:rgba(224,176,75,.7);color:var(--gold)}
+h1,.hd h1{letter-spacing:-.3px}
+.sub,.hd .sm{opacity:.95}
+.rider{background:rgba(0,0,0,.35)}
+/* butang utama: satu warna, jelas */
+.btn:not(.gry):not(.grn):not(.blu):not(.wa):not(.back){background:linear-gradient(135deg,#a8143f,#7a1230);box-shadow:inset 0 0 0 1px rgba(224,176,75,.5),0 6px 16px rgba(122,18,48,.35)}
+.btn.grn,.btn.wa{background:linear-gradient(135deg,#1f8f63,#3fb37f)}
+.btn,.chip,.pin,.opt,.popt,.tab,.hbtn,.svc{min-height:46px}
+.btn.sm{min-height:40px}
+.chip{padding:10px 14px}
+input,textarea,select{font-size:16px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);border-color:transparent}
+/* keadaan aktif: emas */
+.svc.on{border-color:var(--gold);background:#2b1219}
+.chip.on,.opt.on{border-color:var(--gold);color:var(--gold);background:#2a2012}
+.popt.on{border-color:var(--grn);color:var(--grn);background:#10261d}
+.st.on i,.stp .now i{background:var(--red);border-color:var(--gold)}
+.pin.on.d{background:#7a1230;border-color:var(--gold)}
+.tab.on{background:var(--red);border-color:var(--gold)}
+.price{background:#241016;border-color:#5a2230}.price b{color:var(--gold)}
+.rain,#install{background:#2a2012;border-color:#5a4720}
+#install button:not(.x){background:linear-gradient(135deg,#a8143f,#7a1230)}
+.nb button{background:#1f8f63}
+.b-baru{background:#3b2a0a;border-color:var(--gold);color:var(--gold)}
+/* lipatan: kurangkan serabut */
+.fold{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:0 14px;margin:12px 0}
+.fold summary{padding:14px 0;font-weight:800;cursor:pointer;list-style:none;min-height:46px}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary:after{content:'▾';float:right;color:var(--gold)}
+.fold[open] summary:after{content:'▴'}
+.fold>.fb{padding-bottom:12px}
+#greet{font-size:20px;font-weight:800;margin:4px 0 2px;color:var(--gold)}
+/* memuat: kelipan lembut, bukan skrin kosong */
+.rt #priceTxt,.rt #kmTxt{animation:shim 1s ease-in-out infinite}
+@keyframes shim{50%{opacity:.35}}
+/* perayaan bila order selesai */
+.cf{position:fixed;top:-30px;font-size:22px;z-index:8000;pointer-events:none;animation:cfall 2.8s linear forwards}
+@keyframes cfall{to{transform:translateY(112vh) rotate(540deg)}}
+.pulse{animation:pulse 1.2s ease-out 1}
+@keyframes pulse{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+.foot button{background:none;border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:8px 14px;font:inherit;font-size:12.5px;margin-top:8px}
+@media(prefers-reduced-motion:reduce){.cf{display:none}.rdr,.pulse,.rt #priceTxt,.rt #kmTxt{animation:none}html{scroll-behavior:auto}}

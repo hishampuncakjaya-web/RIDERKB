@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rider KB Express</title>
+<meta name="theme-color" content="#7a1230">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rider KB">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+.nb{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 13px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.nb .i{flex:1;min-width:0}.nb b{display:block;font-size:14px}.nb small{color:var(--mut);font-size:12px;display:block;margin-top:2px}
+.nb button{flex:0 0 auto;border:0;border-radius:11px;padding:9px 12px;font:inherit;font-weight:800;font-size:12.5px;color:#fff;background:#0d6b4d}
+.popt{flex:1;padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-weight:600}
+.popt.on{border-color:var(--grn);color:var(--grn);background:#0d2a22}
+:root{--bg:#0c1220;--card:#151d30;--card2:#1b2540;--line:#26324f;--txt:#eef1f8;--mut:#8a96b3;--red:#e11d48;--org:#f59e0b;--grn:#10b981}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:150px}
+.wrap{max-width:480px;margin:0 auto}
+header{background:linear-gradient(135deg,#e11d48,#f97316);padding:22px 18px 24px;border-radius:0 0 28px 28px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:1px;border:1px solid rgba(255,255,255,.5);padding:5px 12px;border-radius:99px;margin-bottom:8px}
+h1{margin:0;font-size:27px;font-weight:900;letter-spacing:-.5px}
+.sub{font-size:13px;opacity:.9;margin-top:3px}
+.rider{background:rgba(0,0,0,.28);border-radius:14px;padding:10px 12px;text-align:center;font-size:12px;min-width:92px}
+.rider b{display:block;font-size:13px;margin-bottom:2px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--grn);margin-right:5px;box-shadow:0 0 8px var(--grn)}
+.steps{display:flex;justify-content:space-between;padding:20px 22px 6px;position:relative}
+.steps:before{content:"";position:absolute;left:44px;right:44px;top:34px;height:2px;background:var(--line)}
+.st{position:relative;text-align:center;font-size:11px;color:var(--mut);font-weight:600;width:60px}
+.st i{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 5px;border-radius:50%;background:var(--card);border:2px solid var(--line);font-style:normal;font-size:13px}
+.st.on{color:#fff}.st.on i{background:var(--red);border-color:var(--red)}.st.done i{background:var(--grn);border-color:var(--grn)}
+section{display:none;padding:14px 18px}section.on{display:block}
+h2{font-size:12.5px;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin:16px 0 10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.svc{background:var(--card);border:2px solid transparent;border-radius:18px;padding:16px 8px;text-align:center;cursor:pointer;color:var(--txt);font:inherit}
+.svc .e{font-size:26px;display:block;margin-bottom:6px}.svc b{font-size:14px;display:block}.svc small{color:var(--mut);font-size:11px}
+.svc.on{border-color:var(--red);background:#2a1627}
+#map{height:290px;border-radius:18px;border:1px solid var(--line);margin-bottom:10px;z-index:0}
+.pins{display:flex;gap:8px;margin-bottom:10px}
+.pin{flex:1;padding:11px 6px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-weight:700;font-size:13px}
+.pin.on.p{background:#0d6b4d;border-color:var(--grn)}.pin.on.d{background:#7a1730;border-color:var(--red)}
+.pin.loc{flex:0 0 46px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip{background:var(--card);border:1px solid var(--line);color:var(--txt);padding:8px 13px;border-radius:10px;font:inherit;font-size:13px}
+.chip.on{border-color:var(--org);color:var(--org);background:#2a2214}
+label{display:block;font-size:14px;font-weight:600;margin:12px 0 6px}
+input,textarea{width:100%;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:14px;padding:14px;font:inherit;font-size:15px}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--red);border-color:transparent}
+.rain{background:#14284a;border:1px solid #27498a;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;font-size:13px;margin:12px 0}
+.rain input{width:20px;height:20px;accent-color:var(--org)}
+.opts{display:flex;gap:10px}
+.opt{flex:1;padding:14px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-weight:600}
+.opt.on{border-color:var(--org);color:var(--org);background:#2a2214}
+.sum{background:var(--card);border-radius:18px;padding:6px 16px}
+.row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.row:last-child{border:0}.row span:first-child{color:var(--mut);flex:0 0 auto}.row span:last-child{text-align:right;font-weight:600}
+.bar{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(#0c1220cc,#0c1220 30%);padding:18px 14px calc(14px + env(safe-area-inset-bottom));z-index:1000}
+.bi{max-width:480px;margin:0 auto}
+.price{display:flex;justify-content:space-between;align-items:center;background:#2a1020;border:1px solid #5a1c36;border-radius:16px;padding:10px 16px;margin-bottom:10px}
+.price small{color:var(--mut);font-size:12px;display:block}.price .km{color:#fff;font-weight:700;font-size:13px}
+.price b{font-size:28px;letter-spacing:-.5px}
+.btns{display:flex;gap:10px}
+.btn{flex:1;border:0;border-radius:16px;padding:16px;font:inherit;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#e11d48,#f97316)}
+.btn.back{flex:0 0 90px;background:var(--card);border:1px solid var(--line)}
+.btn.wa{background:linear-gradient(135deg,#059669,#10b981)}
+.btn:disabled{opacity:.45}
+.err{color:#fda4af;font-size:13px;margin-top:8px;min-height:18px}
+.foot{text-align:center;color:var(--mut);font-size:12px;padding:10px 24px 0;line-height:1.6}
+#mapWrap{position:relative;margin-bottom:10px}
+#mapWrap #map{margin-bottom:0}
+#mapWrap.fs{position:fixed;inset:0;z-index:3000;margin:0;background:var(--bg)}
+#mapWrap.fs #map{height:100%;border-radius:0;border:0}
+.fsBtn{position:absolute;top:10px;right:10px;z-index:1100;background:#fff;color:#111;border:0;border-radius:12px;padding:10px 14px;font:inherit;font-weight:800;font-size:13px;box-shadow:0 2px 10px #0006}
+#mapWrap.fs .fsBtn{top:calc(10px + env(safe-area-inset-top));background:#e11d48;color:#fff;padding:12px 18px;font-size:15px}
+.fsbar{display:none}
+#mapWrap.fs .fsbar{display:block;position:absolute;left:10px;right:10px;bottom:calc(26px + env(safe-area-inset-bottom));z-index:1100;background:#0c1220ee;border:1px solid var(--line);border-radius:18px;padding:10px}
+.fsbar .pins{margin-bottom:8px}
+.fsInfo{text-align:center;font-weight:800;font-size:15px}
+.fsHint{text-align:center;color:var(--mut);font-size:12px;margin-bottom:6px}
+#install{display:none;margin:14px 18px 0;background:#14284a;border:1px solid #27498a;border-radius:16px;padding:12px 14px;gap:12px;align-items:center}
+#install.show{display:flex}
+#install .t{flex:1;font-size:13px;line-height:1.45}
+#install b{display:block;font-size:14px}
+#install button{border:0;border-radius:12px;padding:10px 14px;font:inherit;font-weight:800;font-size:13px;color:#fff;background:linear-gradient(135deg,#e11d48,#f97316)}
+#install .x{background:transparent;color:var(--mut);padding:6px;font-size:18px}
+.mk{width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 8px #0008}
+.flow{stroke-dasharray:12 11;animation:flow 1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-23}}
+.rdr{font-size:26px;line-height:34px;width:38px;height:38px;text-align:center;background:#fff;border:2.5px solid #2563eb;border-radius:50%;box-shadow:0 3px 10px #0007;animation:bob .5s ease-in-out infinite alternate}
+.rdr span{display:inline-block;transition:transform .25s}
+@keyframes bob{from{margin-top:0}to{margin-top:-4px}}
+</style>
+<link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <span class="tag">RUNNER KAWASAN KOTA BHARU</span>
+    <h1>RIDER KB EXPRESS ⚡</h1>
+    <div class="sub">Pantas • Amanah • Jimat</div>
+  </div>
+  <div class="rider"><b><span class="dot"></span>Kota Bharu</b>Kawasan servis</div>
+</header>
+
+<div id="install">
+  <div class="t"><b>📲 Pasang Rider KB di telefon</b><span id="installTxt">Tempah lebih cepat terus dari skrin utama.</span></div>
+  <button id="installBtn" type="button">Pasang</button>
+  <button class="x" id="installX" type="button" aria-label="Tutup">✕</button>
+</div>
+
+<div id="again"></div>
+
+<div class="steps" id="steps">
+  <div class="st"><i>1</i>Laluan</div><div class="st"><i>2</i>Servis</div><div class="st"><i>3</i>Kontak</div><div class="st"><i>4</i>Sahkan</div>
+</div>
+
+<!-- 1 LALUAN -->
+<section>
+  <div id="greet"></div>
+  <h2>📍 Pilih lokasi ambil &amp; hantar</h2>
+  <div class="pins">
+    <button class="pin p on" id="bP">📍 1. Pin Ambil</button>
+    <button class="pin d" id="bD">🏁 2. Pin Hantar</button>
+    <button class="pin loc" id="bL" title="Lokasi saya">🎯</button>
+  </div>
+  <div id="gps" style="font-size:12px;color:var(--mut);margin:-2px 0 8px">📡 Mengesan lokasi anda...</div>
+  <div id="mapWrap">
+    <div id="map"></div>
+    <button class="fsBtn" id="fsBtn" type="button">⛶ Skrin penuh</button>
+    <div class="fsbar">
+      <div class="fsHint">Tekan peta atau seret pin untuk ubah lokasi</div>
+      <div class="pins"><button class="pin p on" id="bP2" type="button">📍 Pin Ambil</button><button class="pin d" id="bD2" type="button">🏁 Pin Hantar</button><button class="pin loc" id="bL2" type="button">🎯</button></div>
+      <div class="fsInfo" id="fsInfo"></div>
+    </div>
+  </div>
+  <label>🟢 Lokasi Ambil (Pickup)</label>
+  <input id="pick" placeholder="Contoh: Kedai Nasi Kak Wok, Berek 12" autocomplete="off">
+  <label>🔴 Lokasi Hantar (Drop-off)</label>
+  <input id="drop" placeholder="Contoh: No 12, Taman Desa Kemumin, Pengkalan Chepa" autocomplete="off">
+  <div class="rain" id="rainBox"><input type="checkbox" id="rain"><div>🌧️ <b>Caj hujan +RM2</b><br><span id="rainTxt" style="color:var(--mut)">Tanda jika sedang hujan</span></div></div>
+  <details class="fold"><summary>📌 Tempat pantas &amp; cari kedai berdekatan</summary><div class="fb">
+  <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Kawasan panas (tekan untuk isi):</div>
+  <div class="chips" id="chips"></div>
+  <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Alamat tersimpan (dalam telefon anda sahaja):</div>
+  <div class="chips" id="saved"></div>
+  <div style="font-size:13px;color:var(--mut);margin:4px 0 8px">📍 Cadangan berdekatan <span id="nbWhere"></span>:</div>
+  <input id="nbQ" placeholder="🔍 Cari kedai (cth: Kak Wok, Mr DIY, farmasi)" autocomplete="off" style="margin-bottom:8px">
+  <div class="chips" id="nbCats"></div>
+  <div id="nbList"></div>
+  </div></details>
+</section>
+
+<!-- 2 SERVIS -->
+<section>
+  <h2>1. Pilih servis runner</h2>
+  <div class="grid" id="svcs"></div>
+  <h2>Senarai pesanan / catatan rider</h2>
+  <textarea id="notes" placeholder="Senaraikan barang yang nak dibeli atau nombor resit/tracking parcel anda..."></textarea>
+  <h2>Kenderaan</h2>
+  <div class="opts">
+    <button class="opt on" data-v="Motor">🏍️ Motor</button>
+    <button class="opt" data-v="Kereta">🚗 Kereta (+RM10)</button>
+  </div>
+  <h2>Bayaran</h2>
+  <div class="opts"><button class="popt on" data-p="cash" type="button">💵 Tunai (bayar rider)</button><button class="popt" data-p="online" type="button">📲 Transfer / QR</button></div>
+  <div id="itemBox"><label>Anggaran harga barang (RM) <span style="color:var(--mut);font-weight:400">· rider akan talangkan dahulu</span></label><input id="itemEst" type="number" inputmode="decimal" min="0" placeholder="Cth: 25"></div>
+</section>
+
+<!-- 3 KONTAK -->
+<section>
+  <h2>Maklumat anda</h2>
+  <label>Nama</label><input id="name" placeholder="Nama anda" autocomplete="name">
+  <label>No. telefon</label><input id="phone" type="tel" placeholder="Contoh: 0123456789" autocomplete="tel">
+  <label>Nama / telefon penerima (jika orang lain)</label><input id="recv" placeholder="Pilihan">
+  <div style="font-size:12px;color:var(--mut);margin-top:10px">Nama &amp; nombor disimpan dalam telefon anda untuk tempahan seterusnya.</div>
+</section>
+
+<!-- 4 SAHKAN -->
+<section>
+  <h2>Semak tempahan</h2>
+  <div class="sum" id="sum"></div>
+  <div style="font-size:12.5px;color:var(--mut);margin-top:12px;line-height:1.6">Upah ialah anggaran. Harga barang (jika beli) dibayar kepada rider. Bayar lepas sampai.</div>
+</section>
+
+<div class="foot"><button id="lg" type="button"></button><br>Liputan: Bandar Kota Bharu, Kubang Kerian, Pengkalan Chepa, Wakaf Bharu, Pasir Tumboh &amp; sekitarnya.</div>
+</div>
+
+<div class="bar"><div class="bi">
+  <div class="price"><div><small>ANGGARAN UPAH · MASA SAMPAI · Bayar lepas sampai</small><span class="km" id="kmTxt">Jarak: -</span></div><b id="priceTxt">RM 5.00</b></div>
+  <div class="btns"><button class="btn back" id="back">‹ Balik</button><button class="btn" id="next">Seterusnya</button></div>
+  <div class="err" id="err"></div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="common.js"></script>
+<script>
+/* ===== TETAPAN (ubah di sini) ===== */
+const WA_NUMBER = "601139900099";  // nombor WhatsApp rider, format 60xxxxxxxxx
+const BASE = 5;                    // RM5 untuk 5 km pertama
+const FREE_KM = 5;                 // km termasuk dalam asas (lebih: RM1/km atau sebahagiannya)
+const PER_KM = 1;                  // RM1 setiap km selepas itu
+const CAR_EXTRA = 10, RAIN_EXTRA = 2;
+const CENTER = [6.1254, 102.2381]; // Kota Bharu
+/* ================================== */
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const S = {step:0, pick:null, drop:null, mode:'pick', service:'Tapau Makanan', vehicle:'Motor', km:null, pay:'cash'};
+const BUY=['Tapau Makanan','Beli Barang / Pasar'];
+const SERVICES = [
+  ['🍴','Tapau Makanan','Nasi kerabu, colek, dll'],
+  ['📦','Bungkusan / Pos','J&T, Shopee, Dokumen'],
+  ['🧺','Beli Barang / Pasar','Barang dapur & runcit'],
+  ['🛵','Ambil & Hantar','Kunci, barang tertinggal']
+];
+const HOT = [['Pasar Siti Khadijah','Pasar Siti Khadijah, Kota Bharu'],['HUSM','Hospital USM, Kubang Kerian'],['Wakaf Bharu','Wakaf Bharu, Kelantan'],['P. Chepa','Pengkalan Chepa, Kelantan']];
+
+/* ---- UI asas ---- */
+$('#svcs').innerHTML = SERVICES.map((s,i)=>`<button class="svc ${i?'':'on'}" data-s="${s[1]}"><span class="e">${s[0]}</span><b>${s[1]}</b><small>${s[2]}</small></button>`).join('');
+$('#chips').innerHTML = HOT.map((h,i)=>`<button class="chip" data-i="${i}">${h[0]}</button>`).join('');
+const syncItem=()=>{ $('#itemBox').style.display=(BUY.includes(S.service)&&S.pay==='cash')?'':'none' };
+$$('.svc').forEach(b=>b.onclick=()=>{S.service=b.dataset.s;$$('.svc').forEach(x=>x.classList.toggle('on',x===b));syncItem()});
+$$('.popt').forEach(b=>b.onclick=()=>{S.pay=b.dataset.p;$$('.popt').forEach(x=>x.classList.toggle('on',x===b));syncItem()});
+syncItem();
+$$('.opt').forEach(b=>b.onclick=()=>{S.vehicle=b.dataset.v;$$('.opt').forEach(x=>x.classList.toggle('on',x===b));price()});
+$('#rain').onchange=price;
+
+/* ---- Peta ---- */
+const map = L.map('map',{zoomControl:true}).setView(CENTER,13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+const mkIcon = c => L.divIcon({className:'',html:`<div class="mk" style="background:${c}"></div>`,iconSize:[26,26],iconAnchor:[13,26]});
+const markers = {};
+function setMode(m){S.mode=m;['#bP','#bP2'].forEach(s=>$(s).classList.toggle('on',m==='pick'));['#bD','#bD2'].forEach(s=>$(s).classList.toggle('on',m==='drop'))}
+$('#bP2').onclick=()=>setMode('pick'); $('#bD2').onclick=()=>setMode('drop');
+$('#bL2').onclick=()=>$('#bL').click();
+const wrap=$('#mapWrap');
+function fs(on){
+  wrap.classList.toggle('fs',on);
+  document.body.style.overflow=on?'hidden':'';
+  $('#fsBtn').textContent=on?'✕ Keluar':'⛶ Skrin penuh';
+  setTimeout(()=>{map.invalidateSize(); if(S.pick&&S.drop) fit()},80);
+}
+$('#fsBtn').onclick=()=>fs(!wrap.classList.contains('fs'));
+addEventListener('keydown',e=>{if(e.key==='Escape') fs(false)});
+$('#bP').onclick=()=>setMode('pick'); $('#bD').onclick=()=>setMode('drop');
+function setPoint(which,latlng,label){
+  S[which]=latlng;
+  if(markers[which]) markers[which].setLatLng(latlng);
+  else{
+    const m=L.marker(latlng,{icon:mkIcon(which==='pick'?'#10b981':'#e11d48'),draggable:true}).addTo(map);
+    m.on('dragend',async()=>{
+      const p=m.getLatLng(); S[which]=[p.lat,p.lng];
+      $('#'+which).value='Memuatkan alamat...';
+      route();                                   // jarak + harga dikira semula
+      $('#'+which).value=await reverse(S[which]); // nama lokasi auto
+    });
+    markers[which]=m;
+  }
+  if(label) $('#'+which).value=label;
+  fit(); route();
+}
+function fit(){
+  const pts=[S.pick,S.drop].filter(Boolean);
+  if(pts.length===2) map.fitBounds(L.latLngBounds(pts),{padding:[40,40]});
+  else if(pts.length===1) map.setView(pts[0],15);
+}
+map.on('click',async e=>{
+  const w=S.mode, ll=[e.latlng.lat,e.latlng.lng];
+  setPoint(w,ll,'Memuatkan alamat...');
+  $('#'+w).value = await reverse(ll);
+  if(w==='pick') setMode('drop');
+});
+async function reverse(ll){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=18&lat=${ll[0]}&lon=${ll[1]}`);
+    const j=await r.json(); const a=j.address||{};
+    return [a.road||a.neighbourhood||j.name, a.suburb||a.village||a.town||a.city].filter(Boolean).join(', ') || `Pin (${ll[0].toFixed(5)}, ${ll[1].toFixed(5)})`;
+  }catch(e){return `Pin (${ll[0].toFixed(5)}, ${ll[1].toFixed(5)})`}
+}
+async function geocode(q){
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=my&viewbox=102.0,6.4,102.5,5.9&q=${encodeURIComponent(q)}`);
+    const j=await r.json(); return j[0]?[+j[0].lat,+j[0].lon]:null;
+  }catch(e){return null}
+}
+['pick','drop'].forEach(w=>{
+  const el=$('#'+w); let last='';
+  el.addEventListener('focus',()=>last=el.value);
+  el.addEventListener('change',async()=>{
+    const v=el.value.trim(); if(!v||v===last) return;
+    const ll=await geocode(v.toLowerCase().includes('kelantan')?v:v+', Kota Bharu, Kelantan');
+    if(ll) setPoint(w,ll); else $('#err').textContent='Lokasi tak jumpa. Cuba tekan peta untuk letak pin.';
+  });
+});
+$$('.chip').forEach(c=>c.onclick=async()=>{
+  const h=HOT[c.dataset.i], w=S.mode, ll=await geocode(h[1]);
+  if(!ll){$('#err').textContent='Kawasan tak jumpa, tekan peta.';return}
+  setPoint(w,ll,h[0]); if(w==='pick') setMode('drop');
+});
+$('#bL').onclick=()=>{
+  if(!navigator.geolocation){$('#err').textContent='Lokasi tak disokong.';return}
+  navigator.geolocation.getCurrentPosition(async p=>{
+    const ll=[p.coords.latitude,p.coords.longitude], w=S.mode;
+    setPoint(w,ll,'Memuatkan alamat...'); $('#'+w).value=await reverse(ll);
+  },()=>$('#err').textContent='Tak dapat akses lokasi. Benarkan kebenaran lokasi.');
+};
+
+/* ---- Jarak & upah ---- */
+function hav(a,b){const R=6371,r=x=>x*Math.PI/180,dl=r(b[0]-a[0]),dn=r(b[1]-a[1]);
+  const h=Math.sin(dl/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
+let routeLine=null, reqId=0, riderMk=null, riderRaf=0;
+function stopRider(){ cancelAnimationFrame(riderRaf); if(riderMk){map.removeLayer(riderMk);riderMk=null} }
+function startRider(coords){ // coords: [[lng,lat],...]
+  stopRider(); if(!coords||coords.length<2) return;
+  const pts=coords.map(c=>[c[1],c[0]]), cum=[0];
+  for(let i=1;i<pts.length;i++) cum.push(cum[i-1]+hav(pts[i-1],pts[i]));
+  const total=cum[cum.length-1]||1e-9;
+  riderMk=L.marker(pts[0],{icon:L.divIcon({className:'',html:'<div class="rdr"><span>🛵</span></div>',iconSize:[38,38],iconAnchor:[19,19]}),interactive:false,keyboard:false,zIndexOffset:900}).addTo(map);
+  const DUR=Math.min(14000,Math.max(6000,total*900)), PAUSE=700; let t0=performance.now(), k=0;
+  const tick=now=>{
+    let p=((now-t0)%(DUR+PAUSE))/DUR; if(p>1)p=1;
+    const d=p*total; while(k<cum.length-2&&cum[k+1]<d)k++; while(k>0&&cum[k]>d)k--;
+    const seg=(cum[k+1]-cum[k])||1e-9, f=Math.min(1,Math.max(0,(d-cum[k])/seg));
+    const a=pts[k], b=pts[k+1];
+    if(riderMk){ riderMk.setLatLng([a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f]);
+      const sp=riderMk.getElement()&&riderMk.getElement().querySelector('span');
+      if(sp) sp.style.transform=(b[1]<a[1])?'scaleX(1)':'scaleX(-1)'; }
+    riderRaf=requestAnimationFrame(tick);
+  };
+  riderRaf=requestAnimationFrame(tick);
+}
+async function getRoute(a,b){
+  const q=`${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`;
+  const hosts=['https://router.project-osrm.org/route/v1/driving/','https://routing.openstreetmap.de/routed-car/route/v1/driving/'];
+  for(let round=0;round<2;round++){
+    for(const h of hosts){
+      try{
+        const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),8000);
+        const r=await fetch(h+q,{signal:ctl.signal}); clearTimeout(t);
+        const j=await r.json();
+        if(j.routes&&j.routes[0]) return j.routes[0];
+      }catch(e){}
+    }
+  }
+  throw new Error('no route');
+}
+async function route(){
+  if(!(S.pick&&S.drop)){document.body.classList.remove('rt');stopRider();if(routeLine){map.removeLayer(routeLine);routeLine=null}S.km=null;S.min=null;price();return}
+  const id=++reqId; let km; document.body.classList.add('rt');
+  // garis putus-putus serta-merta antara Ambil dan Hantar (diganti garis jalan sebenar bila siap)
+  stopRider();
+  if(routeLine) map.removeLayer(routeLine);
+  routeLine=L.polyline([S.pick,S.drop],{color:'#f97316',weight:4,opacity:.8,dashArray:'8 10'}).addTo(map);
+  try{
+    const rt=await getRoute(S.pick,S.drop); km=rt.distance/1000; if(id===reqId) S.min=Math.round(rt.duration/60);
+    if(id===reqId){ $('#err').textContent=''; S.est=false; $('.fsHint').textContent='✅ Laluan ikut jalan sebenar'; }
+    if(id!==reqId) return;
+    if(routeLine) map.removeLayer(routeLine);
+    routeLine=L.geoJSON(rt.geometry,{style:{color:'#2563eb',weight:6,opacity:1,lineCap:'round',lineJoin:'round',className:'flow'}}).addTo(map);
+    startRider(rt.geometry.coordinates);
+    map.fitBounds(routeLine.getBounds(),{padding:[40,40]});
+  }catch(e){
+    km=hav(S.pick,S.drop)*1.3; if(id===reqId) S.min=Math.round(km*2.5);
+    if(id===reqId){ S.est=true; $('.fsHint').textContent='⚠️ Laluan jalan tak dapat dimuat, jarak dianggar'; $('#err').textContent='⚠️ Laluan jalan tak dapat dimuat, guna anggaran jarak. Seret pin sedikit untuk cuba lagi.'; }
+  }
+  if(id===reqId) document.body.classList.remove('rt');
+  S.km=km; price();
+  checkRain();
+}
+function etaTxt(){ return S.min==null?'':' · ≈ '+(S.min+8)+' min' }
+function calc(){
+  const km=S.km??0;
+  let t=BASE+Math.max(0,Math.ceil(km-FREE_KM))*PER_KM;
+  if(S.vehicle==='Kereta') t+=CAR_EXTRA;
+  if($('#rain').checked) t+=RAIN_EXTRA;
+  return Math.round(t*2)/2;           // genapkan 0.50
+}
+function price(){
+  $('#priceTxt').textContent='RM '+calc().toFixed(2);
+  $('#kmTxt').textContent = S.km==null?'Jarak: -':'Jarak: '+S.km.toFixed(1)+' KM'+etaTxt();
+  $('#fsInfo').textContent = (S.km==null?'Jarak: -':S.km.toFixed(1)+' KM'+etaTxt())+'  ·  RM '+calc().toFixed(2)+(S.est?' (anggaran)':'');
+}
+async function checkRain(){
+  try{
+    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${S.pick[0]}&longitude=${S.pick[1]}&current=precipitation`);
+    const j=await r.json(), p=j.current.precipitation;
+    $('#rain').checked = p>0;
+    $('#rainTxt').textContent = p>0?'Hujan dikesan di lokasi ambil (dimasukkan automatik)':'Tiada hujan dikesan sekarang';
+    price();
+  }catch(e){}
+}
+
+/* ---- Wizard ---- */
+const secs=$$('section'), stEls=$$('.st');
+function show(n){
+  S.step=n;
+  secs.forEach((s,i)=>s.classList.toggle('on',i===n));
+  stEls.forEach((s,i)=>{s.classList.toggle('on',i===n);s.classList.toggle('done',i<n);s.querySelector('i').textContent=i<n?'✓':i+1});
+  $('#back').style.display=n?'block':'none';
+  const nx=$('#next'); nx.textContent=n===3?'Hantar ke WhatsApp':'Seterusnya'; nx.classList.toggle('wa',n===3);
+  $('#err').textContent='';
+  if(n===0) setTimeout(()=>map.invalidateSize(),50);
+  if(n===3) summary();
+  scrollTo({top:0,behavior:'smooth'});
+}
+function valid(){
+  if(S.step===0&&!(S.pick&&S.drop)) return 'Sila pilih lokasi ambil dan hantar (taip, tekan kawasan panas atau tekan peta).';
+  if(S.step===1&&!$('#notes').value.trim()) return 'Sila isi senarai pesanan / catatan untuk rider.';
+  if(S.step===2){ if(!$('#name').value.trim()) return 'Sila isi nama.'; if($('#phone').value.replace(/\D/g,'').length<9) return 'Nombor telefon tak sah.'}
+  return '';
+}
+$('#next').onclick=()=>{
+  const e=valid(); if(e){$('#err').textContent=e;return}
+  if(S.step===2){try{localStorage.setItem('rkb',JSON.stringify({n:$('#name').value,p:$('#phone').value}))}catch(_){}}
+  if(S.step<3) show(S.step+1); else send();
+};
+$('#back').onclick=()=>show(S.step-1);
+
+const mapLink=ll=>`https://www.google.com/maps?q=${ll[0].toFixed(6)},${ll[1].toFixed(6)}`;
+function summary(){
+  const rows=[['Servis',S.service],['Ambil',$('#pick').value],['Hantar',$('#drop').value],['Jarak',(S.km??0).toFixed(1)+' KM'],
+    ['Kenderaan',S.vehicle],['Bayaran',S.pay==='cash'?'Tunai'+(BUY.includes(S.service)&&+$('#itemEst').value?' · barang ≈ RM'+(+$('#itemEst').value).toFixed(2):''):'Transfer / QR'],['Catatan',$('#notes').value.trim()],['Nama',$('#name').value+' · '+$('#phone').value]];
+  if($('#rain').checked) rows.push(['Caj hujan','+RM2.00']);
+  rows.push(['Anggaran upah','RM '+calc().toFixed(2)]);
+  $('#sum').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function send(){
+  try{ const lt=+localStorage.getItem('rkb-lastsend')||0, w=30000-(Date.now()-lt); if(w>0){ $('#err').textContent='Sila tunggu '+Math.ceil(w/1000)+' saat sebelum hantar tempahan lagi.'; return } }catch(_){}
+  const recv=$('#recv').value.trim();
+  const ref='RKB-'+(1000+Math.floor(Math.random()*9000));
+  const line='----------------------------------------';
+  const gm=ll=>`https://maps.google.com/?q=${ll[0].toFixed(6)},${ll[1].toFixed(6)}`;
+  const f=ll=>ll[0].toFixed(6)+','+ll[1].toFixed(6);
+  const route=`https://www.google.com/maps/dir/?api=1&destination=${f(S.drop)}&waypoints=${f(S.pick)}&travelmode=${S.vehicle==='Kereta'?'driving':'two-wheeler'}`;
+  const id=RKB.newId();
+  const item=(S.pay==='cash'&&BUY.includes(S.service))?Math.max(0,+(+$('#itemEst').value||0).toFixed(2)):0;
+  const minCash=+(RKB.cfg.walletMinCash??0);
+  const pt=(ll,el)=>({lat:+ll[0].toFixed(6),lng:+ll[1].toFixed(6),addr:$(el).value});
+  const order={ref,createdAt:Date.now(),status:'baru',service:S.service,vehicle:S.vehicle,pick:pt(S.pick,'#pick'),drop:pt(S.drop,'#drop'),
+    notes:$('#notes').value.trim().slice(0,600),name:$('#name').value.trim().slice(0,60),phone:$('#phone').value.trim().slice(0,20),phoneKey:RKB.phoneKey($('#phone').value),recv,km:+(S.km??0).toFixed(1),rain:$('#rain').checked,price:calc(),
+    pay:S.pay,itemEst:item,need:S.pay==='cash'?minCash+item:0};
+  let trackUrl='';
+  if(RKB.ok){
+ trackUrl=new URL('track.html?id='+id,location.href).href;
+    const up={}; up['orders/'+id]=order; up['ratelimit/'+order.phoneKey]=firebase.database.ServerValue.TIMESTAMP;
+    RKB.db.ref().update(up).then(()=>{ try{localStorage.setItem('rkb-last',id)}catch(_){}
+    $('#sum').insertAdjacentHTML('afterend',`<a id="trk" href="${trackUrl}" style="display:block;margin-top:12px;text-align:center;background:#0b2a4a;border:1px solid #3b82f6;border-radius:14px;padding:14px;color:#93c5fd;font-weight:800;text-decoration:none">📡 Jejak order anda (live)</a>`);
+    }).catch(e=>{ console.error('order',e); $('#sum').insertAdjacentHTML('afterend','<div style="margin-top:12px;background:#3b1d0a;border:1px solid #f59e0b;border-radius:14px;padding:12px;font-size:13px;line-height:1.5">⚠️ Jejak live tak dapat diaktifkan'+(e&&e.code==='PERMISSION_DENIED'?' (tempahan terlalu kerap, atau sambungan bermasalah)':'')+'. Tempahan anda tetap dihantar melalui WhatsApp.</div>') });
+  }
+  try{ localStorage.setItem('rkb-lastsend',String(Date.now())); localStorage.setItem('rkb-prev',JSON.stringify({service:S.service,vehicle:S.vehicle,pay:S.pay,notes:order.notes,itemEst:item,pick:order.pick,drop:order.drop})) }catch(_){}
+  const msg=[
+    '🛵 *TEMPAHAN BAHARU | RIDER KB EXPRESS*',
+    `*No. Rujukan:* #${ref}`,
+    line,
+    `👤 *Pengirim (Customer):* ${$('#name').value} (${$('#phone').value})`,
+    `📦 *Penerima:* ${recv||'Sama dengan pengirim'}`,
+    `📋 *Servis:* ${S.service}`,
+    `🚗 *Kenderaan:* ${S.vehicle}`,
+    `💳 *Bayaran:* ${S.pay==='cash'?'Tunai':'Transfer / QR'}${item?` (barang ≈ RM${item.toFixed(2)})`:''}`,
+    '',
+    '📍 *LOKASI AMBIL (A):*',
+    $('#pick').value,
+    `🧭 Navigasi Pickup: ${gm(S.pick)}`,
+    '',
+    '🏁 *LOKASI HANTAR (B):*',
+    $('#drop').value,
+    `🧭 Navigasi Dropoff: ${gm(S.drop)}`,
+    '',
+    '🗺️ *LALUAN PENUH RIDER (lokasi anda ➜ Ambil ➜ Hantar):*',
+    route,
+    '',
+    ...(trackUrl?['📡 *Jejak order (live):*',trackUrl,'']:[]),
+    '📝 *Nota Pesanan:*',
+    $('#notes').value.trim()||'Tiada nota tambahan',
+    '',
+    line,
+    `📏 *Jarak Perjalanan:* ${(S.km??0).toFixed(1)} KM`,
+    `🌧️ *Status Cuaca:* ${$('#rain').checked?'🌧️ Hujan (+RM2.00)':'Cerah'}`,
+    `💰 *JUMLAH TAMBANG PELANGGAN: RM ${calc().toFixed(2)}*`,
+    line,
+    '_Tambang asas: RM5.00 untuk jarak sehingga 5 KM. Lebih 5 KM, tambah RM1.00 bagi setiap KM tambahan atau sebahagiannya. Bayar lepas sampai._'
+  ].join('\n');
+  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+try{const d=JSON.parse(localStorage.getItem('rkb')||'null'); if(d){$('#name').value=d.n||'';$('#phone').value=d.p||''}}catch(_){}
+/* ---- Auto detect lokasi pelanggan (lokasi hantar) ---- */
+function autoDetect(){
+  const g=$('#gps');
+  if(!navigator.geolocation){g.textContent='Peranti tak sokong GPS. Tekan peta atau taip lokasi.';return}
+  navigator.geolocation.getCurrentPosition(async p=>{
+    if(S.drop) return;                       // jangan timpa jika pelanggan dah pilih
+    const ll=[p.coords.latitude,p.coords.longitude];
+    setPoint('drop',ll,'Memuatkan alamat...');
+    $('#drop').value=await reverse(ll);
+    setMode('pick');
+    g.textContent='✅ Lokasi anda dikesan sebagai lokasi hantar. Sekarang pilih lokasi ambil (kedai/barang).';
+  },err=>{
+    g.textContent=err.code===1?'Lokasi tak dibenarkan. Benarkan kebenaran lokasi, atau tekan peta / taip alamat.':'Lokasi tak dapat dikesan. Tekan peta atau taip alamat.';
+  },{enableHighAccuracy:true,timeout:12000,maximumAge:30000});
+}
+/* ---- Cadangan berdekatan: kedai pilihan admin (⭐) + OpenStreetMap ---- */
+const CATS=RKB.CATS, TOP=8, FAVK='rkb-fav';
+let shops=[], nbMoreOn=false, nbActive='', nbLayer=null, nbSeq=0, nbCur=[]; const nbCache={};
+if(RKB.ok) RKB.db.ref('shops').once('value').then(sn=>{ shops=Object.entries(sn.val()||{}).map(([k,v])=>({k,...v})).filter(x=>x.active!==false&&x.lat!=null&&x.lng!=null) }).catch(()=>{});
+function nbDrawCats(){
+  const list=nbMoreOn?CATS:CATS.slice(0,TOP);
+  $('#nbCats').innerHTML='<button class="chip" data-f="1" type="button">🔁 Kerap</button>'+list.map(c=>`<button class="chip ${nbActive===c.id?'on':''}" data-c="${c.id}" type="button">${c.e} ${c.n}</button>`).join('')+`<button class="chip" data-more="1" type="button">${nbMoreOn?'Kurang ▴':'Lagi ▾'}</button>`;
+}
+nbDrawCats();
+async function overpass(q){
+  const hosts=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+  for(const h of hosts){
+    try{
+      const ctl=new AbortController(), t=setTimeout(()=>ctl.abort(),14000);
+      const r=await fetch(h,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q),signal:ctl.signal}); clearTimeout(t);
+      if(!r.ok) continue; return await r.json();
+    }catch(e){}
+  }
+  throw new Error('overpass');
+}
+function nbCenter(){ if(S.drop) return [S.drop,'berdekatan lokasi anda']; if(S.pick) return [S.pick,'berdekatan lokasi ambil']; const c=map.getCenter(); return [[c.lat,c.lng],'berdekatan pusat peta']; }
+async function osmFetch(cat,q,ll){
+  const key=(cat?cat.id:'q:'+q.toLowerCase())+'|'+ll[0].toFixed(3)+','+ll[1].toFixed(3);
+  if(nbCache[key]&&Date.now()-nbCache[key].t<300000) return nbCache[key].v;
+  const R=cat?(cat.r||3000):5000; let parts;
+  if(cat) parts=cat.f.map(f=>`nwr(around:${R},${ll[0]},${ll[1]})${f}[name];`).join('');
+  else{ const safe=q.replace(/[^\p{L}\p{N} ]/gu,' ').replace(/\s+/g,' ').trim().slice(0,40); parts=`nwr(around:${R},${ll[0]},${ll[1]})["name"~"${safe}",i][~"^(amenity|shop|office|tourism|leisure)$"~"."];`; }
+  const j=await overpass(`[out:json][timeout:15];(${parts});out center 80;`);
+  const v=(j.elements||[]).map(e=>{const t=e.tags||{},la=e.lat??(e.center&&e.center.lat),lo=e.lon??(e.center&&e.center.lon);
+    return la==null?null:{name:t.name,lat:la,lng:lo,kind:t.shop||t.amenity||t.office||'',addr:[t['addr:housenumber'],t['addr:street'],t['addr:city']].filter(Boolean).join(' '),hours:t.opening_hours||'',d:RKB.hav(ll,[la,lo])}}).filter(Boolean)
+    .sort((a,b)=>a.d-b.d).filter((x,k,a)=>a.findIndex(y=>y.name===x.name&&Math.abs(y.d-x.d)<0.05)===k).slice(0,12);
+  nbCache[key]={t:Date.now(),v}; return v;
+}
+function nbRender(items,foot,emptyMsg){
+  nbCur=items; const box=$('#nbList');
+  if(nbLayer) map.removeLayer(nbLayer); nbLayer=L.layerGroup().addTo(map);
+  if(!items.length){ box.innerHTML='<div style="color:var(--mut);font-size:13px;margin:6px 2px">'+emptyMsg+'</div>'; return }
+  items.forEach((x,k)=>L.circleMarker([x.lat,x.lng],{radius:x.curated?9:7,color:'#fff',weight:2,fillColor:x.curated?'#fbbf24':'#f59e0b',fillOpacity:1}).addTo(nbLayer).on('click',()=>nbPick(k)));
+  box.innerHTML=items.map((x,k)=>`<div class="nb" style="${x.open===false?'opacity:.55':''}"><div class="i"><b>${x.curated?'⭐ ':x.fav?'🔁 ':''}${esc(x.name)}</b><small>${x.d.toFixed(1)} KM${x.addr?' · '+esc(x.addr):''}${x.hours?' · '+esc(String(x.hours).slice(0,40)):''}${x.open===false?' · ❌ tak buka hari ini':''}${x.note?'<br>📝 '+esc(x.note):''}</small></div><button type="button" data-k="${k}">Ambil di sini</button></div>`).join('')+(foot?'<div style="font-size:11.5px;color:var(--mut);margin:2px 2px 8px">'+foot+'</div>':'');
+}
+const FOOT='⭐ = kedai pilihan kami. Lain-lain: data OpenStreetMap, mungkin tak lengkap atau tak terkini.';
+async function nbRun(opt){
+  const [ll,where]=nbCenter(); $('#nbWhere').textContent='('+where+')';
+  const my=++nbSeq, cat=opt.cat?CATS.find(c=>c.id===opt.cat):null, q=(opt.q||'').trim().toLowerCase();
+  nbActive=cat?cat.id:''; nbDrawCats();
+  $('#nbList').innerHTML='<div style="color:var(--mut);font-size:13px;margin:6px 2px">Mencari '+esc(cat?cat.n:'"'+q+'"')+'...</div>';
+  const today=String(new Date().getDay());
+  const cur=shops.filter(x=>cat?x.cat===cat.id:((x.name||'').toLowerCase().includes(q)||(x.addr||'').toLowerCase().includes(q)))
+    .map(x=>({...x,curated:true,d:RKB.hav(ll,[x.lat,x.lng]),open:!x.days||String(x.days).split(',').includes(today)}))
+    .filter(x=>x.d<=(cat?15:30)).sort((a,b)=>(b.open-a.open)||(a.d-b.d)).slice(0,10);
+  let osm=[], fail=false;
+  try{ osm=await osmFetch(cat,q,ll) }catch(e){ fail=true }
+  if(my!==nbSeq) return;
+  osm=osm.filter(o=>!cur.some(c=>RKB.hav([c.lat,c.lng],[o.lat,o.lng])<0.15&&(c.name||'').toLowerCase().slice(0,6)===(o.name||'').toLowerCase().slice(0,6)));
+  const all=cur.concat(osm);
+  nbRender(all,FOOT,fail?'<span style="color:#fda4af">Tak dapat memuatkan data peta. Semak internet dan cuba lagi.</span>':'Tiada keputusan berdekatan. Taip nama kedai di bawah atau pilih lokasi di peta.');
+}
+const favGet=()=>{ try{return JSON.parse(localStorage.getItem(FAVK)||'{}')}catch(e){return {}} };
+function favAdd(x){ const f=favGet(), k=(x.name||'')+'|'+x.lat.toFixed(3); f[k]={name:x.name,lat:x.lat,lng:x.lng,addr:x.addr||'',n:(f[k]?f[k].n:0)+1,t:Date.now()}; try{localStorage.setItem(FAVK,JSON.stringify(f))}catch(e){} }
+function showFav(){
+  const [ll,where]=nbCenter(); $('#nbWhere').textContent='('+where+')'; nbActive=''; nbDrawCats(); nbSeq++;
+  const items=Object.values(favGet()).sort((a,b)=>b.n-a.n||b.t-a.t).slice(0,8).map(x=>({...x,fav:true,d:RKB.hav(ll,[x.lat,x.lng])}));
+  nbRender(items,'Tempat yang pernah anda pilih sebagai lokasi ambil.','Belum ada. Tempat yang anda pilih akan disimpan di sini.');
+}
+function nbPick(k){
+  const x=nbCur[k]; if(!x) return; favAdd(x);
+  setPoint('pick',[x.lat,x.lng],x.name+(x.addr?', '+x.addr:''));
+  setMode('drop'); map.setView([x.lat,x.lng],16); window.scrollTo({top:0,behavior:'smooth'});
+  $('#err').textContent='';
+}
+$('#nbCats').onclick=e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  if(b.dataset.more){ nbMoreOn=!nbMoreOn; nbDrawCats(); return }
+  if(b.dataset.f){ showFav(); return }
+  $('#nbQ').value=''; nbRun({cat:b.dataset.c});
+};
+$('#nbList').onclick=e=>{ const b=e.target.closest('button[data-k]'); if(b) nbPick(+b.dataset.k) };
+let nbT=null;
+$('#nbQ').oninput=e=>{ clearTimeout(nbT); const v=e.target.value.trim(); if(v.length<2) return; nbT=setTimeout(()=>nbRun({q:v}),700) };
+
+/* ---- Alamat tersimpan (Rumah / Pejabat) ---- */
+const ADDRK='rkb-addr';
+const addrGet=()=>{ try{return JSON.parse(localStorage.getItem(ADDRK)||'{}')}catch(e){return{}} };
+function drawSaved(){ const a=addrGet(); $('#saved').innerHTML=[['home','🏠 Rumah'],['work','🏢 Pejabat']].map(([k,l])=>`<button class="chip" data-a="${k}" type="button">${l}${a[k]?'':' (belum simpan)'}</button>`).join('')+'<button class="chip" data-save="1" type="button">💾 Simpan lokasi semasa</button>' }
+drawSaved();
+$('#saved').onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return; const a=addrGet();
+  if(b.dataset.save){ const w=S[S.mode]?S.mode:(S.drop?'drop':S.pick?'pick':null); if(!w){ $('#err').textContent='Letak pin di peta dahulu.'; return }
+    const t=(prompt('Simpan lokasi '+(w==='pick'?'ambil':'hantar')+' ini sebagai: 1 = Rumah, 2 = Pejabat','1')||'').trim(), k={1:'home',2:'work'}[t]; if(!k) return;
+    a[k]={lat:S[w][0],lng:S[w][1],addr:$('#'+w).value}; try{localStorage.setItem(ADDRK,JSON.stringify(a))}catch(_){} drawSaved(); return }
+  const s=a[b.dataset.a]; if(!s){ $('#err').textContent='Belum disimpan. Letak pin, kemudian tekan 💾 Simpan lokasi semasa.'; return }
+  const w=S.mode; setPoint(w,[s.lat,s.lng],s.addr); if(w==='pick') setMode('drop') };
+/* ---- Tempah semula ---- */
+(function(){ let p=null; try{p=JSON.parse(localStorage.getItem('rkb-prev')||'null')}catch(_){} if(!p||!p.pick||!p.drop) return;
+  $('#again').innerHTML=`<div class="nb" style="margin:14px 18px 0"><div class="i"><b>🔁 Tempah semula</b><small>${esc(p.service)} · ${esc(String(p.pick.addr).slice(0,38))} ➜ ${esc(String(p.drop.addr).slice(0,38))}</small></div><button type="button" id="againBtn">Guna</button></div>`;
+  $('#againBtn').onclick=()=>{ setPoint('pick',[p.pick.lat,p.pick.lng],p.pick.addr); setPoint('drop',[p.drop.lat,p.drop.lng],p.drop.addr); $('#notes').value=p.notes||'';
+    S.service=p.service; $$('.svc').forEach(x=>x.classList.toggle('on',x.dataset.s===p.service));
+    S.vehicle=p.vehicle; $$('.opt').forEach(x=>x.classList.toggle('on',x.dataset.v===p.vehicle));
+    S.pay=p.pay; $$('.popt').forEach(x=>x.classList.toggle('on',x.dataset.p===p.pay)); $('#itemEst').value=p.itemEst||''; syncItem(); price(); show(2); $('#again').innerHTML='' };
+})();
+
+/* ---- PWA: pasang di telefon ---- */
+(function(){
+  const box=$('#install'), btn=$('#installBtn'), txt=$('#installTxt');
+  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  let dismissed=false; try{dismissed=localStorage.getItem('rkb-install-x')==='1'}catch(_){}
+  if(standalone||dismissed) return;
+  let deferred=null;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  $('#installX').onclick=()=>{box.classList.remove('show');try{localStorage.setItem('rkb-install-x','1')}catch(_){}};
+  window.addEventListener('beforeinstallprompt',e=>{   // Android / Chrome: tawaran pasang terus
+    e.preventDefault(); deferred=e; btn.style.display='';
+    box.classList.add('show');
+  });
+  btn.onclick=async()=>{
+    if(!deferred) return;
+    deferred.prompt(); await deferred.userChoice; deferred=null; box.classList.remove('show');
+  };
+  window.addEventListener('appinstalled',()=>box.classList.remove('show'));
+  if(ios){                                              // iPhone: tiada prompt, tunjuk arahan
+    btn.style.display='none';
+    txt.innerHTML='Tekan ikon <b style="display:inline">Kongsi ⬆️</b> di Safari, kemudian <b style="display:inline">Tambah ke Skrin Utama</b>.';
+    box.classList.add('show');
+  }
+})();
+if('serviceWorker' in navigator){ addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+
+function drawGreet(){ $('#greet').textContent=RKB.say('Nak tapau atau hantar apa hari ni?','Hari ni nok tapau gapo?'); $('#lg').textContent='🗣️ Loghat Kelantan: '+(RKB.kb()?'Hidup':'Mati') }
+$('#lg').onclick=()=>{ RKB.toggleLoghat(); drawGreet() }; drawGreet();
+show(0); price(); autoDetect();
+try{ const last=localStorage.getItem('rkb-last');
+  if(last&&RKB.ok) RKB.db.ref('orders/'+last+'/status').once('value').then(v=>{const st=v.val(); if(st&&st!=='selesai'&&st!=='batal') $('#install').insertAdjacentHTML('beforebegin',`<a href="track.html?id=${last}" style="display:block;margin:14px 18px 0;background:#0b2a4a;border:1px solid #3b82f6;border-radius:16px;padding:12px 14px;color:#93c5fd;font-weight:800;text-decoration:none;text-align:center">📡 Order aktif anda: ${st} · tekan untuk jejak</a>`)}).catch(()=>{}) }catch(_){}
+</script>
+</body>
+</html>

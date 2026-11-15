@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="ms"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Admin | Rider KB</title><meta name="theme-color" content="#7a1230">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="theme.css">
+</head><body>
+<div class="wrap wide">
+<header class="hd"><div><span class="tag">ADMIN</span><h1>Rider KB Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
+
+<div id="login" class="pad hide" style="max-width:520px;margin:0 auto">
+  <div class="card"><h3>Log masuk admin</h3>
+    <label>E-mel</label><input id="em" type="email" autocomplete="username">
+    <label>Kata laluan</label><input id="pw" type="password" autocomplete="current-password">
+    <div class="err" id="lerr"></div>
+    <button class="btn full" id="go" style="margin-top:8px">Log masuk</button>
+  </div>
+</div>
+
+<div id="app" class="pad hide">
+  <div class="stats" id="stats"></div>
+  <div class="cols">
+    <div>
+      <div class="card" style="margin-top:0"><h3>Peta live</h3><div id="map" class="map" style="height:300px"></div>
+        <div class="mut" style="margin-top:8px">🟢 Ambil &nbsp; 🔴 Hantar &nbsp; 🛵 Rider online / ada job (pudar = isyarat lama) &nbsp; ━ Laluan job aktif</div></div>
+      <div class="card" id="repCard"><h3>🆘 Laporan &amp; SOS <span id="repN" class="mut"></span></h3><div id="reps"><div class="mut">Tiada laporan.</div></div></div>
+      <div class="card"><h3>Rider</h3><div id="riders"></div></div>
+      <div class="card"><h3>📷 Kamera laju / AES / speed trap</h3>
+        <div class="mut" style="margin-bottom:8px">Rider akan diberi amaran bila hampir lokasi ini. Tekan butang, kemudian tekan lokasi di peta.</div>
+        <button class="btn sm" id="addHaz">➕ Tambah kamera/AES</button><div id="hazl" style="margin-top:10px"></div></div>
+      <div class="card"><h3>⭐ Kedai pilihan (dicadangkan kepada customer)</h3>
+        <input id="shN" placeholder="Nama kedai">
+        <select id="shC" style="margin-top:8px"></select>
+        <input id="shA" placeholder="Alamat ringkas" style="margin-top:8px">
+        <input id="shH" placeholder="Waktu buka (cth: 8pg - 10mlm)" style="margin-top:8px">
+        <input id="shNote" placeholder="Nota / promosi (pilihan)" style="margin-top:8px">
+        <div class="mut" style="margin:10px 0 4px">Hari buka (pasar malam/bazar). Kosongkan = setiap hari:</div>
+        <div class="chips" id="shD"></div>
+        <div class="acts"><button class="btn gry sm" id="shLoc" type="button">📍 Pilih lokasi di peta</button></div>
+        <div class="mut" id="shLocT" style="margin-top:6px">Lokasi belum dipilih</div>
+        <div class="acts"><button class="btn sm" id="shSave" type="button">💾 Simpan kedai</button></div>
+        <div id="shl" style="margin-top:12px"></div></div>
+    </div>
+    <div>
+      <div class="chips" id="flt"></div>
+      <input id="q" placeholder="Cari ref / nama / telefon / rider…">
+      <div id="list"></div>
+      <div class="acts"><button class="btn gry sm" id="csv">⬇️ Eksport CSV</button></div>
+    </div>
+  </div>
+</div>
+</div>
+<div id="toast" class="toast hide"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="common.js"></script>
+<script>
+const $=s=>document.querySelector(s), {esc,rm}=RKB;
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3000)}
+if(!RKB.ok){ $('#login').classList.remove('hide'); $('#login').innerHTML='<div class="card">Firebase belum disetup. Lihat FIREBASE-SETUP.md.</div>'; }
+else{
+const db=RKB.db, auth=RKB.auth, admins=(RKB.cfg.admins||[]).map(x=>x.toLowerCase());
+let reps={}, orders={}, riders={}, filter='semua', q='', map=null, rm_={}, om={}, first=true, started=false;
+$('#go').onclick=async()=>{ $('#lerr').textContent=''; try{ await auth.signInWithEmailAndPassword($('#em').value.trim(),$('#pw').value) }catch(e){ $('#lerr').textContent='E-mel atau kata laluan salah.' } };
+$('#out').onclick=()=>auth.signOut();
+auth.onAuthStateChanged(u=>{
+  if(!u){ $('#login').classList.remove('hide'); $('#app').classList.add('hide'); $('#out').classList.add('hide'); return }
+  if(!admins.includes((u.email||'').toLowerCase())){ $('#lerr').textContent='Akaun ini bukan admin.'; auth.signOut(); return }
+  $('#login').classList.add('hide'); $('#app').classList.remove('hide'); $('#out').classList.remove('hide'); $('#who').textContent=u.email;
+  if(!started){ started=true; listen(); initMap(); }
+});
+function listen(){
+  db.ref('orders').orderByChild('createdAt').limitToLast(300).on('value',s=>{
+    const prev=Object.keys(orders).length; orders=s.val()||{};
+    if(!first&&Object.keys(orders).length>prev){ RKB.beep(); toast('🆕 Order baru!') } first=false; render();
+  },e=>toast('Ralat baca order: '+e.code));
+  let rpFirst=true; db.ref('reports').limitToLast(50).on('value',s=>{ const nw=s.val()||{}; const n=Object.keys(nw).filter(k=>!reps[k]).length; reps=nw; if(!rpFirst&&n){ RKB.beep(); const sos=Object.values(nw).some(x=>x.type==='sos'); toast((sos?'🆘 SOS rider! ':'⚠️ Laporan baru. ')+'Semak panel Laporan') } rpFirst=false; drawReps() },e=>toast('Ralat baca laporan: '+e.code));
+  let pc=null; db.ref('riders').on('value',s=>{ riders=s.val()||{}; const n=Object.values(riders).filter(r=>r.approved!==true).length; if(pc!==null&&n>pc){RKB.beep();toast('🆕 Rider baru menunggu kelulusan')} pc=n; render() });
+}
+const list=()=>Object.entries(orders).map(([k,o])=>({k,...o})).sort((a,b)=>b.createdAt-a.createdAt);
+const isAct=o=>o.status==='diterima'||o.status==='diambil';
+let srvOff=0; RKB.db.ref('.info/serverTimeOffset').on('value',s=>{ srvOff=s.val()||0 });
+const nowS=()=>Date.now()+srvOff;
+const isOn=r=>r.online&&r.t&&nowS()-r.t<120000;
+setInterval(()=>{ if(started) render() },15000);
+function stats(L){
+  const today=new Date().setHours(0,0,0,0), T=L.filter(o=>o.createdAt>=today), D=T.filter(o=>o.status==='selesai');
+  const per={}; D.forEach(o=>{const n=o.riderName||'-'; per[n]=per[n]||{n:0,s:0}; per[n].n++; per[n].s+=+o.price||0});
+  $('#stats').innerHTML=[['Order hari ini',T.length],['Baru',L.filter(o=>o.status==='baru').length],['Aktif',L.filter(isAct).length],['Selesai hari ini',D.length],['Hasil hari ini',rm(D.reduce((a,o)=>a+(+o.price||0),0))],['Rider online',Object.values(riders).filter(isOn).length],['Rider menunggu',Object.values(riders).filter(r=>r.approved!==true).length]].map(x=>`<div class="stat"><b>${x[1]}</b><small>${x[0]}</small></div>`).join('');
+  return per;
+}
+setInterval(()=>{ if(started) render() },15000);
+function drawReps(){
+  const R=Object.entries(reps).sort((x,y)=>y[1].t-x[1].t); $('#repN').textContent=R.length?'('+R.length+')':'';
+  $('#reps').innerHTML=R.length?R.map(([k,r])=>{ const wa=RKB.tel(r.phone); return `<div class="row" style="align-items:flex-start"><span>${r.type==='sos'?'🆘':'⚠️'} <b>${esc(r.from||'')}</b> ${esc(r.name||'')}<br><small class="mut">${RKB.hm(r.t)} · ${r.ref?'#'+esc(r.ref):''}</small><br>${esc(r.msg||'')}</span><span>${wa?`<a class="btn grn sm" target="_blank" href="https://wa.me/${wa}">💬</a> `:''}${r.loc?`<a class="btn gry sm" target="_blank" href="https://www.google.com/maps?q=${r.loc.lat},${r.loc.lng}">🗺️</a> `:''}<button class="btn gry sm" data-rp="${k}">✅ Selesai</button></span></div>` }).join(''):'<div class="mut">Tiada laporan.</div>';
+}
+$('#reps').onclick=async e=>{ const b=e.target.closest('[data-rp]'); if(!b) return; try{ await db.ref('reports/'+b.dataset.rp).remove() }catch(err){ toast('Gagal: '+err.code) } };
+function render(){
+  if(!started) return;
+  const L=list(), per=stats(L);
+  const maxW=Math.max(0,...Object.values(riders).filter(r=>r.approved===true).map(r=>+r.wallet||0));
+  $('#flt').innerHTML=[['semua','Semua'],['baru','Baru'],['aktif','Aktif'],['selesai','Selesai'],['batal','Batal']].map(f=>`<button class="tab ${filter===f[0]?'on':''}" data-f="${f[0]}">${f[1]}</button>`).join('');
+  const s=q.toLowerCase();
+  const V=L.filter(o=>(filter==='semua'||(filter==='aktif'?isAct(o):o.status===filter))&&(!s||[o.ref,o.name,o.phone,o.riderName].join(' ').toLowerCase().includes(s)));
+  const ropts=Object.entries(riders).filter(([u,r])=>r.approved===true).map(([u,r])=>`<option value="${u}">${esc(r.name||u)}</option>`).join('');
+  $('#list').innerHTML=V.length?V.map(o=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}${o.rating?' · ⭐'+o.rating.stars:''}</b><span>${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
+    <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b></div>
+    <div class="row"><span>Ambil</span><span>${esc(o.pick.addr)}</span></div>
+    <div class="row"><span>Hantar</span><span>${esc(o.drop.addr)}</span></div>
+    <div class="row"><span>Nota</span><span>${esc(o.notes||'-')}</span></div>
+    <div class="row"><span>Pelanggan</span><span>${esc(o.name)} · ${esc(o.phone)}</span></div>
+    <div class="row"><span>Rider</span><span>${esc(o.riderName||'Belum ada')}</span></div>
+    <div class="acts">
+      <select data-k="${o.k}" data-a="assign" style="flex:1 1 140px"><option value="">Tugaskan rider…</option>${ropts}</select>
+      <select data-k="${o.k}" data-a="status" style="flex:1 1 120px">${['baru','diterima','diambil','selesai','batal'].map(x=>`<option ${x===o.status?'selected':''}>${x}</option>`).join('')}</select>
+      <a class="btn gry sm" target="_blank" href="track.html?id=${o.k}">📡 Jejak</a>
+      <a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(o.phone)}">💬 WA</a>
+      <button class="btn gry sm" data-a="del" data-k="${o.k}">🗑️</button>
+    </div></div>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
+  const R=Object.entries(riders).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||(a[1].name||'').localeCompare(b[1].name||''));
+  $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;return `<div class="row" style="align-items:center"><span>${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}<br><small class="mut">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?'<br>'+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</small>${ok?'<br><small>💰 '+rm(r.wallet||0)+'</small>':''}</span><span>${ok?(per[r.name]?per[r.name].n+' order · '+rm(per[r.name].s)+'<br>':'')+'<button class="btn grn sm" data-r="top" data-u="'+u+'">＋ Wallet</button> <button class="btn gry sm" data-r="ded" data-u="'+u+'">－</button><br><button class="btn gry sm" data-r="rev" data-u="'+u+'">⏸ Gantung</button>':'<button class="btn grn sm" data-r="ok" data-u="'+u+'">✅ Lulus</button>'} <button class="btn gry sm" data-r="pw" data-u="${u}">🔑 Reset</button> <button class="btn gry sm" data-r="del" data-u="${u}">🗑️</button></span></div>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
+  updMap(L);
+}
+$('#riders').onclick=async e=>{
+  const b=e.target.closest('[data-r]'); if(!b) return; const u=b.dataset.u, a=b.dataset.r;
+  try{
+    if(a==='ok'){ await db.ref('riders/'+u+'/approved').set(true); toast('Rider diluluskan ✅') }
+    if(a==='rev'){ await db.ref('riders/'+u+'/approved').set(false); toast('Rider digantung') }
+    if(a==='pw'){
+      const r=riders[u]||{}; const em=(prompt('Hantar pautan tetapan semula kata laluan ke e-mel rider:',r.email||'')||'').trim(); if(!em) return;
+      try{ await auth.sendPasswordResetEmail(em); if(em!==r.email) await db.ref('riders/'+u+'/email').set(em); toast('🔑 Pautan reset dihantar ke '+em) }
+      catch(er){ toast(er.code==='auth/user-not-found'?'E-mel ini tiada akaun':er.code==='auth/invalid-email'?'Format e-mel tak betul':'Gagal: '+er.code) }
+    }
+    if(a==='del'&&confirm('Padam profil rider ini?')){ await db.ref('riders/'+u).remove() }
+    if(a==='top'||a==='ded'){
+      const v=parseFloat(prompt((a==='top'?'Tambah':'Tolak')+' wallet (RM):',''));
+      if(!v||v<=0) return; const amt=a==='top'?v:-v, note=prompt('Catatan (pilihan):','')||'';
+      await db.ref('riders/'+u+'/wallet').transaction(w=>Math.max(0,Math.round(((+w||0)+amt)*100)/100));
+      await db.ref('walletLog/'+u).push({amt,note,t:Date.now(),by:auth.currentUser.email});
+      toast('Wallet dikemas kini 💰');
+    }
+  }catch(err){ toast('Gagal: '+err.code) }
+};
+$('#flt').onclick=e=>{const b=e.target.closest('[data-f]'); if(b){filter=b.dataset.f;render()}};
+$('#q').oninput=e=>{q=e.target.value;render()};
+$('#list').onchange=async e=>{
+  const t=e.target, k=t.dataset.k, a=t.dataset.a; if(!a) return;
+  try{
+    if(a==='status'){ const up={status:t.value}; up['t/'+t.value]=Date.now(); await db.ref('orders/'+k).update(up) }
+    if(a==='assign'&&t.value){ const r=riders[t.value]; const up={riderUid:t.value,riderName:r.name||'',riderPhone:r.phone||'',riderPlate:r.plate||''}; if(orders[k].status==='baru'){up.status='diterima';up['t/diterima']=Date.now()} await db.ref('orders/'+k).update(up); toast('Rider ditugaskan ✅') }
+  }catch(err){ toast('Gagal: '+err.code) }
+};
+$('#list').onclick=async e=>{
+  const b=e.target.closest('button[data-a="del"]'); if(!b) return;
+  if(confirm('Padam order ini selamanya?')) try{ await db.ref('orders/'+b.dataset.k).remove() }catch(err){ toast('Gagal padam (hanya admin): '+err.code) }
+};
+$('#csv').onclick=()=>{
+  const rows=[['Ref','Masa','Status','Servis','Kenderaan','Ambil','Hantar','KM','RM','Pelanggan','Telefon','Rider']];
+  list().forEach(o=>rows.push([o.ref,new Date(o.createdAt).toLocaleString('ms-MY'),o.status,o.service,o.vehicle,o.pick.addr,o.drop.addr,o.km,o.price,o.name,o.phone,o.riderName||'']));
+  const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'})); a.download='order-rider-kb.csv'; a.click();
+};
+/* ---- Peta live ---- */
+function initMap(){
+  map=RKB.baseMap('map');
+  map.on('click',e=>{
+    if(shopPick){ shopLL=[+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)]; shopPick=false; if(shMk) map.removeLayer(shMk); shMk=L.marker(shopLL,{icon:RKB.mkIcon('#fbbf24')}).addTo(map); $('#shLocT').textContent='📍 Lokasi dipilih: '+shopLL.join(', '); $('#shLoc').textContent='📍 Tukar lokasi'; return }
+    if(!addMode) return;
+    const t=(prompt('Jenis? 1 = AES/kamera, 2 = Speed trap, 3 = Lain','1')||'').trim(); if(!t){ addMode=false; $('#addHaz').textContent='➕ Tambah kamera/AES'; return }
+    const type={1:'aes',2:'speedtrap',3:'lain'}[t]||'aes';
+    const label=prompt('Nama / lokasi (cth: AES Jalan Hamzah)','')||(type==='speedtrap'?'Speed trap':'Kamera AES');
+    const lim=parseInt(prompt('Had laju km/j (kosongkan jika tak pasti)',''))||null;
+    db.ref('hazards').push({lat:+e.latlng.lat.toFixed(6),lng:+e.latlng.lng.toFixed(6),type,label,limit:lim,t:Date.now()}).then(()=>toast('Kamera/AES ditambah ✅')).catch(err=>toast('Gagal: '+err.code));
+    addMode=false; $('#addHaz').textContent='➕ Tambah kamera/AES';
+  });
+  db.ref('hazards').on('value',sn=>{ hazards=sn.val()||{}; renderHaz() });
+  db.ref('shops').on('value',sn=>{ shopsA=sn.val()||{}; renderShops() },e=>toast('Ralat kedai: '+e.code));
+}
+const DAYS=['Ahd','Isn','Sel','Rab','Kha','Jum','Sab'];
+let shopsA={}, shopLL=null, shopPick=false, shMk=null; const shDays=new Set();
+$('#shC').innerHTML=RKB.CATS.map(c=>`<option value="${c.id}">${c.e} ${c.n}</option>`).join('');
+$('#shD').innerHTML=DAYS.map((d,i)=>`<button type="button" class="tab" data-d="${i}">${d}</button>`).join('');
+$('#shD').onclick=e=>{ const b=e.target.closest('[data-d]'); if(!b) return; const i=+b.dataset.d; if(shDays.has(i)) shDays.delete(i); else shDays.add(i); b.classList.toggle('on',shDays.has(i)) };
+$('#shLoc').onclick=()=>{ shopPick=true; addMode=false; toast('Tekan lokasi kedai di peta') };
+$('#shSave').onclick=async()=>{
+  const name=$('#shN').value.trim(); if(!name) return toast('Isi nama kedai'); if(!shopLL) return toast('Pilih lokasi kedai di peta');
+  const o={name,cat:$('#shC').value,addr:$('#shA').value.trim(),hours:$('#shH').value.trim(),note:$('#shNote').value.trim(),days:[...shDays].sort().join(','),lat:shopLL[0],lng:shopLL[1],active:true,t:Date.now()};
+  try{ await db.ref('shops').push(o); toast('Kedai disimpan ⭐');
+    ['#shN','#shA','#shH','#shNote'].forEach(x=>$(x).value=''); shDays.clear(); document.querySelectorAll('#shD .tab').forEach(b=>b.classList.remove('on'));
+    shopLL=null; if(shMk){map.removeLayer(shMk);shMk=null} $('#shLocT').textContent='Lokasi belum dipilih'; $('#shLoc').textContent='📍 Pilih lokasi di peta';
+  }catch(err){ toast('Gagal: '+err.code) }
+};
+function renderShops(){
+  const E=Object.entries(shopsA);
+  $('#shl').innerHTML=E.length?E.map(([k,x])=>{const c=RKB.CATS.find(c=>c.id===x.cat)||{e:'',n:x.cat};return `<div class="row" style="align-items:center;${x.active===false?'opacity:.5':''}"><span>${c.e} <b>${esc(x.name)}</b><br><small class="mut">${esc(c.n)}${x.days?' · hari: '+x.days.split(',').map(d=>DAYS[+d]).join(','):''}${x.hours?' · '+esc(x.hours):''}</small></span><span><button class="btn gry sm" data-s="tog" data-k="${k}">${x.active===false?'Papar':'Sembunyi'}</button> <button class="btn gry sm" data-s="del" data-k="${k}">🗑️</button></span></div>`}).join(''):'<div class="mut">Belum ada kedai pilihan.</div>';
+}
+$('#shl').onclick=async e=>{ const b=e.target.closest('[data-s]'); if(!b) return; const k=b.dataset.k;
+  try{ if(b.dataset.s==='tog') await db.ref('shops/'+k+'/active').set(shopsA[k].active===false); else if(confirm('Padam kedai ini?')) await db.ref('shops/'+k).remove() }catch(err){ toast('Gagal: '+err.code) } };
+let hazards={}, hmk={}, addMode=false;
+function renderHaz(){
+  $('#hazl').innerHTML=Object.keys(hazards).length?Object.entries(hazards).map(([k,h])=>`<div class="row" style="align-items:center"><span>${h.type==='speedtrap'?'🚔':'📷'} ${esc(h.label||'')}${h.limit?' · '+h.limit+' km/j':''}</span><span><button class="btn gry sm" data-h="${k}">🗑️</button></span></div>`).join(''):'<div class="mut">Belum ada. Rider juga dapat data kamera daripada OpenStreetMap secara automatik (tak lengkap).</div>';
+  if(!map) return;
+  Object.keys(hmk).forEach(k=>{ if(!hazards[k]){ map.removeLayer(hmk[k]); delete hmk[k] } });
+  Object.entries(hazards).forEach(([k,h])=>{ if(!hmk[k]) hmk[k]=L.marker([h.lat,h.lng],{icon:RKB.hazIcon(h.type)}).addTo(map).bindPopup(esc(h.label||'')) });
+}
+$('#addHaz').onclick=()=>{ addMode=!addMode; $('#addHaz').textContent=addMode?'📍 Tekan lokasi di peta… (tekan sini untuk batal)':'➕ Tambah kamera/AES'; if(addMode) toast('Tekan lokasi di peta') };
+$('#hazl').onclick=async e=>{ const b=e.target.closest('[data-h]'); if(b&&confirm('Padam lokasi ini?')) try{ await db.ref('hazards/'+b.dataset.h).remove() }catch(err){ toast('Gagal: '+err.code) } };
+const navs={};
+function updMap(LST){
+  if(!map) return; const keep=new Set();
+  LST.filter(o=>o.status==='baru'||isAct(o)).forEach(o=>{
+    ['p','d'].forEach(w=>{ const key=o.k+w, pt=w==='p'?o.pick:o.drop; keep.add(key);
+      if(!om[key]) om[key]=L.marker([pt.lat,pt.lng],{icon:RKB.mkIcon(w==='p'?'#10b981':'#e11d48')}).addTo(map).bindPopup(`#${esc(o.ref)} ${w==='p'?'Ambil':'Hantar'}`); });
+  });
+  Object.keys(om).forEach(k=>{ if(!keep.has(k)){ map.removeLayer(om[k]); delete om[k] } });
+  const rk=new Set(), actU=new Set(LST.filter(isAct).map(o=>o.riderUid).filter(Boolean));
+  Object.entries(riders).forEach(([u,r])=>{ if(r.lat==null||!(isOn(r)||actU.has(u))) return; rk.add(u);
+    const age=r.t?Math.round((nowS()-r.t)/1000):null, stale=!isOn(r), lbl=(r.name||'Rider')+(r.spd!=null&&!stale?' · '+r.spd+' km/j':'')+(stale&&age!=null?' · isyarat '+(age<90?age+'s':Math.round(age/60)+' min')+' lalu':'');
+    if(!rm_[u]) rm_[u]=L.marker([r.lat,r.lng],{icon:RKB.riderIcon(lbl),zIndexOffset:900}).addTo(map); else { RKB.glide(rm_[u],[r.lat,r.lng],1500); rm_[u].setIcon(RKB.riderIcon(lbl)) }
+    rm_[u].setOpacity(stale?.55:1); });
+  Object.keys(rm_).forEach(u=>{ if(!rk.has(u)){ map.removeLayer(rm_[u]); delete rm_[u] } });
+  // garisan laluan terang untuk setiap job aktif
+  const nk=new Set();
+  LST.filter(isAct).forEach(o=>{ nk.add(o.k); if(!navs[o.k]) navs[o.k]=RKB.makeNav(map);
+    const rr=riders[o.riderUid]||{}, loc=o.riderLoc&&nowS()-o.riderLoc.t<300000?[o.riderLoc.lat,o.riderLoc.lng]:(rr.lat!=null?[rr.lat,rr.lng]:null);
+    navs[o.k].update(o,loc); });
+  Object.keys(navs).forEach(k=>{ if(!nk.has(k)){ navs[k].clear(); delete navs[k] } });
+  if(!updMap.fit){ const pts=[...Object.values(om),...Object.values(rm_)].map(m=>m.getLatLng()); if(pts.length){ map.fitBounds(L.latLngBounds(pts),{padding:[40,40],maxZoom:15}); updMap.fit=true } }
+}
+}
+</script>
+</body></html>
