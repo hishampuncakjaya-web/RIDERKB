@@ -1,0 +1,105 @@
+{
+  "rules": {
+    "orders": {
+      ".read": "auth != null && (auth.token.email == 'admin@riderkb.com' || root.child('riders').child(auth.uid).child('approved').val() === true)",
+      ".indexOn": [
+        "createdAt"
+      ],
+      "$id": {
+        ".read": true,
+        ".write": "(!data.exists() && newData.child('status').val() == 'baru' && newData.hasChildren(['ref','createdAt','pick','drop','name','phone','phoneKey']) && newData.child('createdAt').val() > now - 600000 && newData.child('createdAt').val() < now + 600000 && newData.child('name').val().length <= 60 && newData.child('phone').val().length <= 20 && (!newData.child('notes').exists() || newData.child('notes').val().length <= 600) && newData.parent().parent().child('ratelimit').child(newData.child('phoneKey').val()).val() == now) || (auth != null && newData.exists() && root.child('riders').child(auth.uid).child('approved').val() === true && (data.child('status').val() != 'baru' || newData.child('status').val() == 'baru' || (newData.child('need').val() == data.child('need').val() && (data.child('pay').val() != 'cash' || root.child('riders').child(auth.uid).child('wallet').val() >= data.child('need').val())))) || (auth != null && auth.token.email == 'admin@riderkb.com')",
+        ".validate": "newData.child('status').val().matches(/^(baru|diterima|diambil|selesai|batal)$/) && (data.exists() || ((newData.child('pay').val() == 'cash' || newData.child('pay').val() == 'online') && newData.child('price').isNumber() && newData.child('price').val() >= 0 && newData.child('price').val() <= 500 && newData.child('need').isNumber() && newData.child('need').val() >= 0 && newData.child('need').val() <= 2000 && newData.child('itemEst').isNumber() && newData.child('itemEst').val() >= 0 && newData.child('itemEst').val() <= 2000 && (newData.child('pay').val() == 'cash' || newData.child('need').val() == 0)))",
+        "rating": {
+          ".write": "!data.exists() && root.child('orders').child($id).child('status').val() == 'selesai'",
+          ".validate": "newData.hasChildren(['stars','t']) && newData.child('stars').val() >= 1 && newData.child('stars').val() <= 5 && (!newData.child('c').exists() || newData.child('c').val().length <= 140)"
+        },
+        "conf": {
+          ".write": "!data.exists() && root.child('orders').child($id).child('status').val() == 'selesai'",
+          ".validate": "newData.hasChildren(['v','t']) && (newData.child('v').val() == 'ok' || newData.child('v').val() == 'issue') && (!newData.child('m').exists() || (newData.child('m').val().length <= 150))"
+        }
+      }
+    },
+    "riders": {
+      ".read": "auth != null && auth.token.email == 'admin@riderkb.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.token.email == 'admin@riderkb.com'",
+        "name": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "phone": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "email": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "reg": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "lat": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "lng": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "t": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "online": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "spd": {
+          ".write": "auth != null && auth.uid == $uid"
+        },
+        "plate": {
+          ".write": "auth != null && auth.uid == $uid"
+        }
+      }
+    },
+    "hazards": {
+      ".read": "auth != null && (auth.token.email == 'admin@riderkb.com' || root.child('riders').child(auth.uid).child('approved').val() === true)",
+      ".write": "auth != null && auth.token.email == 'admin@riderkb.com'"
+    },
+    "shops": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'admin@riderkb.com'"
+    },
+    "walletLog": {
+      ".read": "auth != null && auth.token.email == 'admin@riderkb.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.token.email == 'admin@riderkb.com'"
+      }
+    },
+    "ratelimit": {
+      ".read": false,
+      "$k": {
+        ".write": "newData.val() == now && (!data.exists() || data.val() < now - 30000)",
+        ".validate": "$k.matches(/^[0-9]{9,13}$/) && newData.isNumber()"
+      }
+    },
+    "reports": {
+      ".read": "auth != null && auth.token.email == 'admin@riderkb.com'",
+      "$id": {
+        ".write": "(!data.exists() && newData.hasChildren(['t','type','msg'])) || (auth != null && auth.token.email == 'admin@riderkb.com')",
+        ".validate": "newData.child('msg').val().length <= 300 && newData.child('t').val() > now - 600000"
+      }
+    },
+    "proofs": {
+      "$id": {
+        ".read": true,
+        ".write": "auth != null && (auth.token.email == 'admin@riderkb.com' || root.child('riders').child(auth.uid).child('approved').val() === true)",
+        ".validate": "newData.isString() && newData.val().length < 200000"
+      }
+    },
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'admin@riderkb.com'",
+      "pay": {
+        "qr": {
+          ".validate": "newData.isString() && newData.val().length < 200000"
+        }
+      }
+    }
+  }
+}

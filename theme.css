@@ -1,17 +1,17 @@
 /* ===== Tema Rider KB: marun songket + emas, identiti Kelantan ===== */
-:root{--bg:#120a0c;--card:#1d1115;--card2:#291820;--line:#3b2630;--txt:#fbf4ea;--mut:#bfa89f;--red:#9f1239;--org:#e0b04b;--grn:#3fb37f;--gold:#e0b04b;--mar:#7a1230;
- --sk:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 2l10 12-10 12L4 14z' fill='none' stroke='%23e0b04b' stroke-width='1' opacity='.32'/%3E%3Ccircle cx='14' cy='14' r='1.6' fill='%23e0b04b' opacity='.45'/%3E%3C/svg%3E")}
+:root{--bg:#0b140f;--card:#122019;--card2:#1a2c22;--line:#2a4034;--txt:#f2faf3;--mut:#9bb5a3;--red:#16a34a;--org:#a3e635;--grn:#34d399;--gold:#a3e635;--mar:#166534;
+ --sk:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M14 2l10 12-10 12L4 14z' fill='none' stroke='%2384cc16' stroke-width='1' opacity='.32'/%3E%3Ccircle cx='14' cy='14' r='1.6' fill='%2384cc16' opacity='.45'/%3E%3C/svg%3E")}
 html{-webkit-text-size-adjust:100%}
 body{font-size:16px;line-height:1.5;background:var(--bg);color:var(--txt)}
-a{color:#f0cf8a}
-header,.hd{background:var(--sk),linear-gradient(160deg,#5e0d26 0%,#8f1536 62%,#7a1230 100%);background-color:#7a1230;border-bottom:3px solid var(--gold)}
-.tag{border-color:rgba(224,176,75,.7);color:var(--gold)}
+a{color:#bef264}
+header,.hd{background:var(--sk),linear-gradient(160deg,#14532d 0%,#15803d 62%,#166534 100%);background-color:#166534;border-bottom:3px solid var(--gold)}
+.tag{border-color:rgba(163,230,53,.7);color:var(--gold)}
 h1,.hd h1{letter-spacing:-.3px}
 .sub,.hd .sm{opacity:.95}
 .rider{background:rgba(0,0,0,.35)}
 /* butang utama: satu warna, jelas */
-.btn:not(.gry):not(.grn):not(.blu):not(.wa):not(.back){background:linear-gradient(135deg,#a8143f,#7a1230);box-shadow:inset 0 0 0 1px rgba(224,176,75,.5),0 6px 16px rgba(122,18,48,.35)}
-.btn.grn,.btn.wa{background:linear-gradient(135deg,#1f8f63,#3fb37f)}
+.btn:not(.gry):not(.grn):not(.blu):not(.wa):not(.back){background:linear-gradient(135deg,#22a050,#166534);box-shadow:inset 0 0 0 1px rgba(163,230,53,.5),0 6px 16px rgba(22,101,52,.35)}
+.btn.grn,.btn.wa{background:linear-gradient(135deg,#15803d,#34d399)}
 .btn,.chip,.pin,.opt,.popt,.tab,.hbtn,.svc{min-height:46px}
 .btn.sm{min-height:40px}
 .chip{padding:10px 14px}
@@ -19,17 +19,17 @@ input,textarea,select{font-size:16px}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);border-color:transparent}
 /* keadaan aktif: emas */
-.svc.on{border-color:var(--gold);background:#2b1219}
-.chip.on,.opt.on{border-color:var(--gold);color:var(--gold);background:#2a2012}
-.popt.on{border-color:var(--grn);color:var(--grn);background:#10261d}
+.svc.on{border-color:var(--gold);background:#17301f}
+.chip.on,.opt.on{border-color:var(--gold);color:var(--gold);background:#1f2b12}
+.popt.on{border-color:var(--grn);color:var(--grn);background:#0f2a1c}
 .st.on i,.stp .now i{background:var(--red);border-color:var(--gold)}
-.pin.on.d{background:#7a1230;border-color:var(--gold)}
+.pin.on.d{background:#166534;border-color:var(--gold)}
 .tab.on{background:var(--red);border-color:var(--gold)}
-.price{background:#241016;border-color:#5a2230}.price b{color:var(--gold)}
-.rain,#install{background:#2a2012;border-color:#5a4720}
-#install button:not(.x){background:linear-gradient(135deg,#a8143f,#7a1230)}
-.nb button{background:#1f8f63}
-.b-baru{background:#3b2a0a;border-color:var(--gold);color:var(--gold)}
+.price{background:#14261b;border-color:#2f5a3c}.price b{color:var(--gold)}
+.rain,#install{background:#1f2b12;border-color:#4a6a1c}
+#install button:not(.x){background:linear-gradient(135deg,#22a050,#166534)}
+.nb button{background:#15803d}
+.b-baru{background:#26340d;border-color:var(--gold);color:var(--gold)}
 /* lipatan: kurangkan serabut */
 .fold{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:0 14px;margin:12px 0}
 .fold summary{padding:14px 0;font-weight:800;cursor:pointer;list-style:none;min-height:46px}
@@ -50,29 +50,29 @@ input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);border-col
 @media(prefers-reduced-motion:reduce){.cf{display:none}.rdr,.pulse,.rt #priceTxt,.rt #kmTxt{animation:none}html{scroll-behavior:auto}}
 
 /* ===== Tema CERAH (sesuai bawah matahari) ===== */
-html[data-theme="light"]{--bg:#fbf6ee;--card:#ffffff;--card2:#f4ebe0;--line:#e2d4c4;--txt:#2a1a1e;--mut:#6b5560;--red:#9f1239;--org:#a8700f;--grn:#0f8a5f;--gold:#a8700f;color-scheme:light}
+html[data-theme="light"]{--bg:#f4faf5;--card:#ffffff;--card2:#e8f3ea;--line:#cfe3d3;--txt:#12261a;--mut:#55695c;--red:#16a34a;--org:#3f7d1a;--grn:#0f8a5f;--gold:#3f7d1a;color-scheme:light}
 html[data-theme="light"] body{background:var(--bg);color:var(--txt)}
-html[data-theme="light"] a{color:#8f1536}
-html[data-theme="light"] .svc.on{background:#fbe9ee}
-html[data-theme="light"] .chip.on,html[data-theme="light"] .opt.on{background:#fff4dc}
-html[data-theme="light"] .popt.on{background:#e3f6ec}
-html[data-theme="light"] .price{background:#fdeef2;border-color:#ecc3cf}
+html[data-theme="light"] a{color:#15803d}
+html[data-theme="light"] .svc.on{background:#e3f4e7}
+html[data-theme="light"] .chip.on,html[data-theme="light"] .opt.on{background:#ecf8d9}
+html[data-theme="light"] .popt.on{background:#dff5e6}
+html[data-theme="light"] .price{background:#e9f6ec;border-color:#b9dcc2}
 html[data-theme="light"] .price .km{color:var(--txt)}
-html[data-theme="light"] .price b{color:#9f1239}
-html[data-theme="light"] .rain,html[data-theme="light"] #install{background:#fff4dc;border-color:#ecd49a}
-html[data-theme="light"] .bar{background:linear-gradient(#fbf6eecc,#fbf6ee 30%)}
+html[data-theme="light"] .price b{color:#16a34a}
+html[data-theme="light"] .rain,html[data-theme="light"] #install{background:#ecf8d9;border-color:#ecd49a}
+html[data-theme="light"] .bar{background:linear-gradient(#f4faf5cc,#f4faf5 30%)}
 html[data-theme="light"] .fsbar{background:#fffffff2!important}
 html[data-theme="light"] .st.on{color:var(--txt)}
 html[data-theme="light"] .stp .done,html[data-theme="light"] .stp .now{color:var(--txt)}
 html[data-theme="light"] .b-baru{background:#fff1d6;color:#8a5a00}
 html[data-theme="light"] .b-diterima,html[data-theme="light"] .b-diambil{background:#e1eeff;color:#1d4ed8}
 html[data-theme="light"] .b-selesai{background:#dff5ea;color:#0b6b48}
-html[data-theme="light"] .b-batal{background:#fde4ea;color:#9f1239}
+html[data-theme="light"] .b-batal{background:#fde4ea;color:#16a34a}
 html[data-theme="light"] .err{color:#b4123a}
-html[data-theme="light"] .rlbl,html[data-theme="light"] .spd{background:#fff;color:#2a1a1e}
-html[data-theme="light"] .toast{background:#2a1a1e;color:#fff}
+html[data-theme="light"] .rlbl,html[data-theme="light"] .spd{background:#fff;color:#12261a}
+html[data-theme="light"] .toast{background:#12261a;color:#fff}
 html[data-theme="light"] .nb{background:var(--card)}
-html[data-theme="light"] #greet{color:#8f1536}
+html[data-theme="light"] #greet{color:#15803d}
 html[data-theme="light"] .btn.gry{color:var(--txt)}
 html[data-theme="light"] .tab{color:var(--txt)}
 html[data-theme="light"] .tab.on{color:#fff}

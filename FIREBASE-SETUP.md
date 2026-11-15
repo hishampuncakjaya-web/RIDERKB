@@ -93,3 +93,30 @@ Upload semula zip. Pautan:
 - **Rider:** butang 🚙 Waze di sebelah 🧭 Google Maps; butang tema.
 - **Jejak:** butang "Kongsi pautan jejak" (kongsi ke WhatsApp/keluarga).
 - **Alamat (Nominatim):** permintaan dihadkan 1 sesaat dan dicache, supaya tak disekat bila ramai guna.
+
+## 6. Vendor (BAHARU, v23)
+**Wajib dahulu:** Realtime Database > Rules > tampal isi `database.rules.json` yang baharu (ada bahagian `vendors`, `vshops`, `vmenu`, `vorders`, `vpayouts`) > pastikan e-mel admin betul > **Publish**. Peraturan lama disimpan sebagai `database.rules.v22.json`.
+
+Pautan vendor: `/vendor.html`
+1. Vendor daftar sendiri (nama, telefon, nama kedai, e-mel, kata laluan).
+2. Admin: `/admin.html` > tab **🏪 Vendor** > **✅ Lulus** .
+3. Vendor log masuk > isi profil kedai (tekan 📍 untuk lokasi) > tambah produk di tab **Menu** > buka kedai.
+4. Order masuk dengan bunyi berulang sehingga dijawab. Terima (stok ditolak automatik), siap, serah. Tolak/batal memulangkan stok.
+5. Bayaran: admin tekan **↻ Kira bayaran** > **💸** pada vendor > jumlah direkod (jumlah = harga asal vendor). Vendor nampak di tab Jualan.
+
+Nota: order pelanggan ke vendor (struktur `vorders/<uidVendor>/<idOrder>`) disambung di Peringkat 3 (app customer). Struktur dan peraturannya sudah sedia dan diuji.
+
+Keselamatan vendor:
+- Vendor hanya boleh baca/tulis data kedai sendiri. Tak boleh luluskan diri sendiri atau ubah komisen.
+- Vendor tak boleh ubah jumlah, nama atau telefon pelanggan pada order. Status hanya boleh maju mengikut aliran.
+- Order hanya diterima jika kedai berstatus lulus dan BUKA. Vendor digantung terus tak boleh terima order.
+- Had percubaan order (ratelimit) dan pengesahan medan dikuatkuasakan di pelayan.
+
+## 7. Kongsi hasil (v24)
+**Wajib selepas publish rules:** buka `/admin.html` > **Tetapan** > semak **Bahagian rider (80%)** dan **Markup vendor (10%)** > **Simpan tetapan** (sekali sahaja, supaya nilai wujud dalam database; tanpa ini order vendor akan ditolak).
+
+- **Rider 80/20:** upah RM10 => rider nampak RM8.00 sahaja. Peratusan dan untung platform (RM2) hanya dipaparkan di admin (stat, baris order, CSV).
+- **Vendor +10%:** vendor letak harga RM100 => vendor terima RM100, pelanggan bayar RM110, untung platform RM10. Vendor tak nampak jumlah pelanggan dalam app (hanya "Anda terima").
+- Peraturan Firebase mengesahkan jumlah order = harga vendor × (1 + markup) di pelayan, jadi pelanggan tak boleh bayar kurang. Upah rider (`riderPay`) turut disahkan.
+- Tukar peratusan pada waktu sunyi. Order lama kekal guna nilai asal; pelanggan yang skrinnya dibuka sebelum perubahan perlu muat semula.
+- Had sebenar: peratusan disimpan dalam `settings` yang boleh dibaca app, jadi orang yang tahu menggunakan alat pembangun boleh menjumpainya. App hanya menyembunyikannya daripada paparan. Penyembunyian sepenuhnya memerlukan pelayan (Cloud Functions).

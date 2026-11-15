@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ms"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Admin | Rider KB</title><meta name="theme-color" content="#7a1230">
+<title>Admin | Rider KB</title><meta name="theme-color" content="#166534">
 <script src="theme.js"></script>
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -30,6 +30,7 @@
       <div data-tab="peta" class="hide"><div class="card" style="margin-top:0"><h3>Peta live</h3><div id="map" class="map" style="height:300px"></div>
         <div class="mut" style="margin-top:8px">🟢 Ambil &nbsp; 🔴 Hantar &nbsp; 🛵 Rider online / ada job (pudar = isyarat lama) &nbsp; ━ Laluan job aktif</div></div>
       </div>
+      <div data-tab="vendor" class="hide"><div class="card" style="margin-top:0"><h3>Vendor <button class="btn gry sm" id="vCalc" type="button" style="float:right">↻ Kira bayaran</button></h3><div class="mut" id="vInfo">Tekan "Kira bayaran" untuk muat jualan belum dibayar.</div><div id="vendors"></div></div></div>
       <div data-tab="rider" class="hide"><div class="card" style="margin-top:0"><h3>Rider</h3><div id="riders"></div></div></div>
       <div data-tab="kedai" class="hide">
       <div class="card" style="margin-top:0"><h3>📷 Kamera laju / AES / speed trap</h3>
@@ -69,6 +70,11 @@
           <label>Gambar QR (pilihan)</label><input id="sQrF" type="file" accept="image/*">
           <img id="sQrP" alt="" style="display:none;max-width:180px;margin-top:8px;border-radius:10px;background:#fff">
           <div class="acts"><button class="btn gry sm hide" id="sQrX" type="button">🗑️ Buang QR</button></div></div>
+        <div class="card"><h3>💼 Kongsi hasil (admin sahaja nampak pengiraan)</h3>
+          <div class="mut" style="margin-bottom:6px">Rider hanya nampak amaun bahagian mereka. Vendor terima harga asal mereka; pelanggan bayar harga + markup, beza itu untung platform.</div>
+          <div class="acts" style="margin-top:0"><div style="flex:1 1 45%"><label style="margin-top:0">Bahagian rider (% upah)</label><input id="sRider" type="number" step="1" min="50" max="100" inputmode="numeric"></div>
+          <div style="flex:1 1 45%"><label style="margin-top:0">Markup harga vendor (%)</label><input id="sMark" type="number" step="1" min="0" max="50" inputmode="numeric"></div></div>
+          <div class="mut" style="margin-top:6px">Ubah nilai ini pada waktu sunyi. Pelanggan yang skrinnya dibuka sebelum perubahan perlu muat semula.</div></div>
         <div class="acts"><button class="btn full" id="sSave" type="button">💾 Simpan tetapan</button></div>
         <div class="mut" id="sInfo" style="margin-top:8px;text-align:center"></div>
       </div>
@@ -96,7 +102,7 @@ function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide')
 if(!RKB.ok){ $('#login').classList.remove('hide'); $('#login').innerHTML='<div class="card">Firebase belum disetup. Lihat FIREBASE-SETUP.md.</div>'; }
 else{
 const db=RKB.db, auth=RKB.auth, admins=(RKB.cfg.admins||[]).map(x=>x.toLowerCase());
-let reps={}, orders={}, riders={}, filter='semua', q='', map=null, rm_={}, om={}, first=true, started=false;
+let vendors={}, vshops={}, vcalc=null, reps={}, orders={}, riders={}, filter='semua', q='', map=null, rm_={}, om={}, first=true, started=false;
 $('#go').onclick=async()=>{ $('#lerr').textContent=''; try{ await auth.signInWithEmailAndPassword($('#em').value.trim(),$('#pw').value) }catch(e){ $('#lerr').textContent='E-mel atau kata laluan salah.' } };
 $('#out').onclick=()=>auth.signOut();
 auth.onAuthStateChanged(u=>{
@@ -105,7 +111,42 @@ auth.onAuthStateChanged(u=>{
   $('#login').classList.add('hide'); $('#app').classList.remove('hide'); $('#out').classList.remove('hide'); $('#who').textContent=u.email;
   if(!started){ started=true; listen(); initMap(); goTab(curTab); }
 });
+/* ---- Vendor ---- */
+const VDONE=o=>(o.t&&+o.t.selesai)||+o.createdAt||0;
+function vUnpaid(u){ // order selesai selepas bayaran terakhir -> {net (bayar vendor), plat (untung platform), n, upto}
+  if(!vcalc)return null; const last=Math.max(0,...Object.values(vcalc.pay[u]||{}).map(p=>+p.upto||0));
+  let g=0,tot=0,n=0,upto=0; Object.values(vcalc.ord[u]||{}).forEach(o=>{ if(o.status!=='selesai')return; const t=VDONE(o); if(t>last){ const sub=o.sub!=null?+o.sub:Object.values(o.items||{}).reduce((a,i)=>a+(+i.p||0)*(+i.q||0),0); g+=sub; tot+=+o.total||0; n++; upto=Math.max(upto,t) } });
+  return {net:Math.round(g*100)/100,plat:Math.round((tot-g)*100)/100,n,upto};
+}
+function renderV(){
+  const E=Object.entries(vendors).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||String(a[1].shop||'').localeCompare(String(b[1].shop||'')));
+  $('#vendors').innerHTML=E.length?E.map(([u,v])=>{
+    const ok=v.approved===true,sp=v.approved===false,sh=vshops[u],un=vUnpaid(u);
+    return `<div class="row" style="align-items:center"><span>${ok&&sh&&sh.open?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(v.shop||v.name||u)}<br><small class="mut">${esc(v.name||'')} · ${esc(v.phone||'')} · ${esc(v.email||'')}</small><br><small>${ok?'✅ Aktif':sp?'⛔ Digantung':'⏳ Menunggu'}${sh?' · '+(sh.open?'Buka':'Tutup'):' · profil belum lengkap'}${un?' · Bayar vendor '+rm(un.net)+' · Untung platform '+rm(un.plat)+' ('+un.n+' order)':''}</small></span>
+    <span class="acts" style="justify-content:flex-end">${ok?`<button class="btn gry sm" data-v="pay" data-u="${esc(u)}">💸</button><button class="btn gry sm" data-v="rev" data-u="${esc(u)}">Gantung</button>`:`<button class="btn grn sm" data-v="ok" data-u="${esc(u)}">✅ ${sp?'Aktifkan':'Lulus'}</button>`}</span></div>`}).join(''):'<div class="mut">Belum ada vendor mendaftar.</div>';
+}
+$('#vendors').onclick=async e=>{
+  const b=e.target.closest('[data-v]'); if(!b) return; const u=b.dataset.u,a=b.dataset.v,v=vendors[u]||{};
+  try{
+    if(a==='ok'){ await db.ref('vendors/'+u+'/approved').set(true); toast('Vendor diluluskan ✅') }
+    if(a==='rev'){ if(!confirm('Gantung '+(v.shop||'vendor')+'? Kedai akan ditutup serta-merta.'))return;
+      const up={['vendors/'+u+'/approved']:false}; if(vshops[u]) up['vshops/'+u+'/open']=false; await db.ref().update(up); toast('Vendor digantung') }
+    if(a==='pay'){ if(!vcalc){toast('Tekan ↻ Kira bayaran dahulu');return} const un=vUnpaid(u); if(!un||!un.n){toast('Tiada jualan belum dibayar');return}
+      const amt=prompt('Jumlah dibayar kepada '+(v.shop||'vendor')+' (RM). Belum dibayar: '+un.net.toFixed(2),String(un.net.toFixed(2))); if(amt===null)return; const x=Math.round(parseFloat(amt)*100)/100; if(!(x>=0&&x<=1000000)){toast('Jumlah tak sah');return}
+      const note=(prompt('Nota (cth: transfer bank, rujukan):','')||'').trim().slice(0,100);
+      const rec={amt:x,t:firebase.database.ServerValue.TIMESTAMP,upto:un.upto}; if(note) rec.note=note;
+      await db.ref('vpayouts/'+u).push(rec); toast('Bayaran direkod ✅'); await loadVcalc() }
+  }catch(err){ toast('Gagal: '+(err.code||err.message)) }
+};
+async function loadVcalc(){
+  $('#vInfo').textContent='Memuat…';
+  try{ const [o,p]=await Promise.all([db.ref('vorders').once('value'),db.ref('vpayouts').once('value')]); vcalc={ord:o.val()||{},pay:p.val()||{}}; $('#vInfo').textContent='Dikemas kini '+new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})+'. Bayar vendor = jumlah harga asal vendor bagi order selesai selepas bayaran terakhir. Untung platform = markup.'; renderV() }
+  catch(err){ $('#vInfo').textContent='Gagal muat: '+(err.code||err.message) }
+}
+$('#vCalc').onclick=loadVcalc;
 function listen(){
+  db.ref('vendors').on('value',s=>{ const nw=s.val()||{}, n=Object.values(nw).filter(v=>v.approved===undefined).length, o=Object.values(vendors).filter(v=>v.approved===undefined).length; if(started&&n>o&&Object.keys(vendors).length+1>0&&listen._v){RKB.beep();toast('🆕 Vendor baru menunggu kelulusan')} listen._v=true; vendors=nw; renderV(); try{ if(typeof render==='function') render() }catch(_){} },e=>toast('Ralat vendor: '+e.code));
+  db.ref('vshops').on('value',s=>{ vshops=s.val()||{}; renderV() },()=>{});
   db.ref('orders').orderByChild('createdAt').limitToLast(300).on('value',s=>{
     const prev=Object.keys(orders).length; orders=s.val()||{};
     if(!first&&Object.keys(orders).length>prev){ RKB.beep(); toast('🆕 Order baru!') } first=false; render();
@@ -121,8 +162,8 @@ const isOn=r=>r.online&&r.t&&nowS()-r.t<120000;
 setInterval(()=>{ if(started) render() },15000);
 function stats(L){
   const today=new Date().setHours(0,0,0,0), T=L.filter(o=>o.createdAt>=today), D=T.filter(o=>o.status==='selesai');
-  const per={}; D.forEach(o=>{const n=o.riderName||'-'; per[n]=per[n]||{n:0,s:0}; per[n].n++; per[n].s+=+o.price||0});
-  $('#stats').innerHTML=[['Order hari ini',T.length],['Baru',L.filter(o=>o.status==='baru').length],['Aktif',L.filter(isAct).length],['Selesai hari ini',D.length],['Hasil hari ini',rm(D.reduce((a,o)=>a+(+o.price||0),0))],['Rider online',Object.values(riders).filter(isOn).length],['Rider menunggu',Object.values(riders).filter(r=>r.approved!==true).length]].map(x=>`<div class="stat"><b>${x[1]}</b><small>${x[0]}</small></div>`).join('');
+  const per={}; D.forEach(o=>{const n=o.riderName||'-'; per[n]=per[n]||{n:0,s:0}; per[n].n++; per[n].s+=RKB.riderPay(o)});
+  $('#stats').innerHTML=[['Order hari ini',T.length],['Baru',L.filter(o=>o.status==='baru').length],['Aktif',L.filter(isAct).length],['Selesai hari ini',D.length],['Upah dikutip hari ini',rm(D.reduce((a,o)=>a+(+o.price||0),0))],['Bahagian rider',rm(D.reduce((a,o)=>a+RKB.riderPay(o),0))],['Untung platform',rm(D.reduce((a,o)=>a+RKB.platCut(o),0))],['Rider online',Object.values(riders).filter(isOn).length],['Rider menunggu',Object.values(riders).filter(r=>r.approved!==true).length]].map(x=>`<div class="stat"><b>${x[1]}</b><small>${x[0]}</small></div>`).join('');
   return per;
 }
 setInterval(()=>{ if(started) render() },15000);
@@ -140,7 +181,7 @@ function render(){
   const V=L.filter(o=>(filter==='semua'||(filter==='aktif'?isAct(o):o.status===filter))&&(!s||[o.ref,o.name,o.phone,o.riderName].join(' ').toLowerCase().includes(s)));
   const ropts=Object.entries(riders).filter(([u,r])=>r.approved===true).map(([u,r])=>`<option value="${u}">${esc(r.name||u)}</option>`).join('');
   $('#list').innerHTML=V.length?V.map(o=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}${o.rating?' · ⭐'+o.rating.stars:''}</b><span>${(()=>{ const c=RKB.confState(o); if(!c) return ''; const far=(o.doneDist!=null&&o.doneDist>(+RKB.cfg.dropRadiusM||300))||o.doneGps===false; return '<span class="badge '+(c.k==='issue'?'b-batal':'b-'+(c.k==='ok'?'selesai':'diterima'))+'">'+esc(c.t)+'</span> '+(far?'<span class="badge b-batal">📍 '+(o.doneGps===false?'tiada GPS masa selesai':'selesai '+o.doneDist+' m dari lokasi hantar')+'</span> ':'') })()}${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
-    <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b></div>
+    <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b> <span class="mut">(rider ${rm(RKB.riderPay(o))} · platform ${rm(RKB.platCut(o))})</span></div>
     <div class="row"><span>Ambil</span><span>${esc(o.pick.addr)}</span></div>
     <div class="row"><span>Hantar</span><span>${esc(o.drop.addr)}</span></div>
     <div class="row"><span>Nota</span><span>${esc(o.notes||'-')}</span></div>
@@ -157,7 +198,7 @@ function render(){
   $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;return `<div class="row" style="align-items:center"><span>${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}<br><small class="mut">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?'<br>'+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</small>${ok?'<br><small>💰 '+rm(r.wallet||0)+'</small>':''}</span><span>${ok?(per[r.name]?per[r.name].n+' order · '+rm(per[r.name].s)+'<br>':'')+'<button class="btn grn sm" data-r="top" data-u="'+u+'">＋ Wallet</button> <button class="btn gry sm" data-r="ded" data-u="'+u+'">－</button><br><button class="btn gry sm" data-r="rev" data-u="'+u+'">⏸ Gantung</button>':'<button class="btn grn sm" data-r="ok" data-u="'+u+'">✅ Lulus</button>'} <button class="btn gry sm" data-r="pw" data-u="${u}">🔑 Reset</button> <button class="btn gry sm" data-r="del" data-u="${u}">🗑️</button></span></div>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
   try{ updMap(L) }catch(err){ console.error('updMap',err) }
   const late=lateCheck(L), wait=Object.values(riders).filter(r=>r.approved!==true).length;
-  lastBadges={order:L.filter(o=>o.status==='baru').length,rider:wait,peta:Object.keys(reps).length};
+  lastBadges={order:L.filter(o=>o.status==='baru').length,rider:wait,vendor:Object.values(vendors).filter(v=>v.approved===undefined).length,peta:Object.keys(reps).length};
   drawTabs(lastBadges);
 }
 $('#riders').onclick=async e=>{
@@ -194,18 +235,18 @@ $('#list').onclick=async e=>{
   if(confirm('Padam order ini selamanya?')) try{ await db.ref('orders/'+b.dataset.k).remove() }catch(err){ toast('Gagal padam (hanya admin): '+err.code) }
 };
 $('#csv').onclick=()=>{
-  const rows=[['Ref','Masa','Status','Servis','Kenderaan','Ambil','Hantar','KM','RM','Pelanggan','Telefon','Rider']];
-  list().forEach(o=>rows.push([o.ref,new Date(o.createdAt).toLocaleString('ms-MY'),o.status,o.service,o.vehicle,o.pick.addr,o.drop.addr,o.km,o.price,o.name,o.phone,o.riderName||'']));
+  const rows=[['Ref','Masa','Status','Servis','Kenderaan','Ambil','Hantar','KM','RM','Upah rider','Untung platform','Pelanggan','Telefon','Rider']];
+  list().forEach(o=>rows.push([o.ref,new Date(o.createdAt).toLocaleString('ms-MY'),o.status,o.service,o.vehicle,o.pick.addr,o.drop.addr,o.km,o.price,RKB.riderPay(o),RKB.platCut(o),o.name,o.phone,o.riderName||'']));
   const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'})); a.download='order-rider-kb.csv'; a.click();
 };
 /* ---- Tab ---- */
-const TABS=[['order','📋 Order'],['peta','🗺️ Peta'],['rider','🛵 Rider'],['kedai','⭐ Kedai & Kamera'],['tetapan','⚙️ Tetapan']];
+const TABS=[['order','📋 Order'],['peta','🗺️ Peta'],['rider','🛵 Rider'],['vendor','🏪 Vendor'],['kedai','⭐ Kedai & Kamera'],['tetapan','⚙️ Tetapan']];
 let curTab='order', retTab=null;
 try{ const t=sessionStorage.getItem('rkb-atab'); if(TABS.some(x=>x[0]===t)) curTab=t }catch(_){}
 function drawTabs(badges){
   badges=badges||{};
-  $('#mtabs').innerHTML=TABS.map(t=>`<button class="tab ${curTab===t[0]?'on':''}" data-t="${t[0]}" type="button">${t[1]}${badges[t[0]]?' <span style="background:#fff;color:#9f1239;border-radius:99px;padding:1px 7px;font-size:11.5px;margin-left:3px">'+badges[t[0]]+'</span>':''}</button>`).join('');
+  $('#mtabs').innerHTML=TABS.map(t=>`<button class="tab ${curTab===t[0]?'on':''}" data-t="${t[0]}" type="button">${t[1]}${badges[t[0]]?' <span style="background:#fff;color:#16a34a;border-radius:99px;padding:1px 7px;font-size:11.5px;margin-left:3px">'+badges[t[0]]+'</span>':''}</button>`).join('');
 }
 function goTab(t){
   curTab=t; try{ sessionStorage.setItem('rkb-atab',t) }catch(_){}
@@ -235,7 +276,7 @@ let SET={}, qrData='';
 const nv=(id,d)=>{ const v=$('#'+id).value.trim(); return v!==''&&isFinite(+v)&&+v>=0?+v:d };
 function fillSet(){
   const p=SET.pricing||{}, f=(id,v,d)=>{ if(document.activeElement!==$('#'+id)) $('#'+id).value=(v!=null?v:d) };
-  f('sBase',p.base,5); f('sFree',p.freeKm,5); f('sPer',p.perKm,1); f('sCar',p.car,10); f('sRain',p.rain,2); f('sAlert',SET.alertMin,5);
+  f('sBase',p.base,5); f('sFree',p.freeKm,5); f('sPer',p.perKm,1); f('sCar',p.car,10); f('sRain',p.rain,2); f('sAlert',SET.alertMin,5); f('sRider',SET.riderShare,RKB.cfg.riderShare||80); f('sMark',SET.vendorMarkup,RKB.cfg.vendorMarkup!=null?RKB.cfg.vendorMarkup:10); if(SET.riderShare!=null) RKB.shares().rider=+SET.riderShare; if(SET.vendorMarkup!=null) RKB.shares().mark=+SET.vendorMarkup;
   f('sWa',SET.wa,RKB.cfg.waNumber||''); const y=SET.pay||{}; f('sBank',y.bank,''); f('sAcc',y.acc,''); f('sName',y.name,'');
   qrData=y.qr||''; $('#sQrP').style.display=qrData?'block':'none'; if(qrData) $('#sQrP').src=qrData; $('#sQrX').classList.toggle('hide',!qrData);
   alertMin=+SET.alertMin>0?+SET.alertMin:5;
@@ -245,7 +286,9 @@ $('#sQrF').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f)
 $('#sQrX').onclick=()=>{ qrData=''; $('#sQrP').style.display='none'; $('#sQrX').classList.add('hide'); $('#sQrF').value='' };
 $('#sSave').onclick=async()=>{
   const wa=$('#sWa').value.replace(/\D/g,''); if(wa&&!/^60\d{8,11}$/.test(wa)) return toast('Nombor WhatsApp mesti bermula 60, cth 601139900099');
-  const o={pricing:{base:nv('sBase',5),freeKm:nv('sFree',5),perKm:nv('sPer',1),car:nv('sCar',10),rain:nv('sRain',2)},alertMin:Math.max(1,Math.round(nv('sAlert',5)))};
+  const o={pricing:{base:nv('sBase',5),freeKm:nv('sFree',5),perKm:nv('sPer',1),car:nv('sCar',10),rain:nv('sRain',2)},alertMin:Math.max(1,Math.round(nv('sAlert',5))),riderShare:Math.round(nv('sRider',80)),vendorMarkup:Math.round(nv('sMark',10))};
+  if(!(o.riderShare>=50&&o.riderShare<=100)) return toast('Bahagian rider mesti 50 hingga 100%');
+  if(!(o.vendorMarkup>=0&&o.vendorMarkup<=50)) return toast('Markup vendor mesti 0 hingga 50%');
   if(wa) o.wa=wa;
   const pay={bank:$('#sBank').value.trim().slice(0,60),acc:$('#sAcc').value.trim().slice(0,40),name:$('#sName').value.trim().slice(0,80)}; if(qrData) pay.qr=qrData;
   if(pay.bank||pay.acc||pay.name||pay.qr) o.pay=pay;

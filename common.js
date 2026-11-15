@@ -159,5 +159,12 @@
   const say=(bm,k)=>kb()?k:bm;
   const toggleLoghat=()=>{ try{ localStorage.setItem('rkb-loghat',kb()?'0':'1') }catch(e){} return kb() };
   const confetti=()=>{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return; const E=['🎉','✨','🌙','💛','🛵']; for(let i=0;i<26;i++){ const s=document.createElement('span'); s.className='cf'; s.textContent=E[i%E.length]; s.style.left=(Math.random()*96)+'vw'; s.style.animationDelay=(Math.random()*0.8)+'s'; s.style.fontSize=(16+Math.random()*16)+'px'; document.body.appendChild(s); setTimeout(()=>s.remove(),4200) } };
-  window.RKB={confState,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
+  /* Kongsi upah rider & markup vendor. Nilai sebenar dibaca daripada settings (admin tukar), lalai daripada firebase-config.js */
+  const _sh={rider:+cfg.riderShare||80,mark:cfg.vendorMarkup!=null?+cfg.vendorMarkup:10};
+  const r2=n=>Math.round((+n||0)*100)/100;
+  const loadShares=()=>db?db.ref('settings').once('value').then(s=>{const v=s.val()||{};if(v.riderShare!=null)_sh.rider=+v.riderShare;if(v.vendorMarkup!=null)_sh.mark=+v.vendorMarkup;return _sh}).catch(()=>_sh):Promise.resolve(_sh);
+  const riderPay=o=>o&&o.riderPay!=null?+o.riderPay:r2((+(o&&o.price)||0)*_sh.rider/100);          // bahagian rider (apa yang rider nampak)
+  const platCut=o=>r2((+(o&&o.price)||0)-riderPay(o));                                              // untung platform daripada upah (admin sahaja)
+  const vPrice=b=>r2((+b||0)*(1+_sh.mark/100));                                                     // harga pelanggan = harga vendor + markup
+  window.RKB={r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
 })();

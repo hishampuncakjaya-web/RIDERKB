@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ms"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Rider | Rider KB</title><meta name="theme-color" content="#7a1230">
+<title>Rider | Rider KB</title><meta name="theme-color" content="#166534">
 <script src="theme.js"></script>
 <link rel="manifest" href="manifest-rider.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -148,6 +148,7 @@ function detach(){
   if(ordersRef){ordersRef.off();ordersRef=null} if(profRef){profRef.off();profRef=null} if(hazRef){hazRef.off();hazRef=null}
   orders={}; gpsAuto=false; first=true;
 }
+RKB.loadShares().then(()=>{try{render()}catch(e){}});
 auth.onAuthStateChanged(u=>{
   user=u; detach();
   if(!u){ $('#login').classList.remove('hide'); $('#pend').classList.add('hide'); $('#app').classList.add('hide'); $('#out').classList.add('hide'); $('#who').textContent=''; return }
@@ -199,7 +200,7 @@ function renderTabs(){
   const L=list(), n={baru:L.filter(o=>o.status==='baru').length,aktif:L.filter(active).length,selesai:L.filter(o=>mine(o)&&o.status==='selesai').length};
   $('#tabs').innerHTML=[['baru','🆕 Baru'],['aktif','🛵 Aktif'],['selesai','✅ Selesai']].map(t=>`<button class="tab ${tab===t[0]?'on':''}" data-t="${t[0]}">${t[1]} (${n[t[0]]})</button>`).join('');
   const today=new Date().setHours(0,0,0,0), e=L.filter(o=>mine(o)&&o.status==='selesai'&&(o.t&&o.t.selesai||0)>=today);
-  const dn=L.filter(o=>mine(o)&&o.status==='selesai'), sum=a=>a.reduce((s,o)=>s+(+o.price||0),0), wk=dn.filter(o=>(o.t&&o.t.selesai||0)>=Date.now()-7*864e5), mo=dn.filter(o=>(o.t&&o.t.selesai||0)>=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime()), rt=dn.filter(o=>o.rating&&o.rating.stars);
+  const dn=L.filter(o=>mine(o)&&o.status==='selesai'), sum=a=>a.reduce((s,o)=>s+RKB.riderPay(o),0), wk=dn.filter(o=>(o.t&&o.t.selesai||0)>=Date.now()-7*864e5), mo=dn.filter(o=>(o.t&&o.t.selesai||0)>=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime()), rt=dn.filter(o=>o.rating&&o.rating.stars);
   $('#earn').innerHTML=`Hari ini: ${e.length} order · ${rm(sum(e))}<br>7 hari: ${wk.length} order · ${rm(sum(wk))}<br>Bulan ini: ${mo.length} order · ${rm(sum(mo))}`+(rt.length?`<br>⭐ <b>${(rt.reduce((s,o)=>s+o.rating.stars,0)/rt.length).toFixed(1)}</b> (${rt.length} penilaian)`:'');
   const w=+me.wallet||0, mc=+(RKB.cfg.walletMinCash??0), mx=Math.max(0,w-mc);
   $('#wal').innerHTML='💰 Credit Wallet: <b>'+rm(w)+'</b><br>'+(mx>0?'Layak job barang sehingga <b>'+rm(mx)+'</b>':'Layak job tanpa talangan barang sahaja');
@@ -218,7 +219,7 @@ function card(o){
   <div class="row"><span>📝 Nota</span><span>${esc(o.notes||'-')}</span></div>
   <div class="row"><span>👤 Pelanggan</span><span>${esc(o.name)} · ${o.status==='selesai'?'🔒 nombor disembunyikan':esc(o.phone)}${o.recv&&o.status!=='selesai'?'<br>Penerima: '+esc(o.recv):''}</span></div>
   <div class="row"><span>💳 Bayaran</span><span>${payTxt(o)}</span></div>
-  <div class="row"><span>💰 Upah</span><span>${rm(o.price)}${o.rain?' (hujan)':''}</span></div>
+  <div class="row"><span>💰 Upah</span><span>${rm(RKB.riderPay(o))}${o.rain?' (hujan)':''}</span></div>
   ${o.status==='selesai'&&RKB.confState(o)?`<div class="row"><span>🧾 Pengesahan</span><span>${esc(RKB.confState(o).t)}</span></div>`:''}
   <div class="acts">${nx?`<button class="btn ${nx[2]} full" data-a="${nx[0]}" data-k="${o.k}" ${nx[0]==='lock'?'disabled':''}>${nx[1]}</button>`:''}
   ${mine(o)&&o.status==='diterima'&&!o.arrivedAt?`<button class="btn blu full" data-a="arrive" data-k="${o.k}">📍 Dah sampai di lokasi ambil</button>`:''}${mine(o)&&o.status==='diterima'&&o.arrivedAt&&!o.pickPhoto?`<button class="btn blu full" data-a="proofP" data-k="${o.k}">📷 Ambil gambar barang</button>`:''}${mine(o)&&o.status==='diambil'&&!o.arrivedDropAt?`<button class="btn blu full" data-a="arriveD" data-k="${o.k}">📍 Dah sampai di lokasi hantar</button>`:''}${mine(o)&&o.status==='diambil'&&o.arrivedDropAt&&!o.dropPhoto?`<button class="btn blu full" data-a="proofD" data-k="${o.k}">📷 Ambil gambar bukti hantar</button>`:''}</div>
@@ -274,7 +275,7 @@ async function acceptOrder(k){
 }
 function showDone(k){
   const o=orders[k]||{}, m=RKB.msgRider();
-  $('#dT').textContent=m.t; $('#dM').textContent=m.m; $('#dE').textContent='Upah order ni: '+rm(o.price)+' · #'+(o.ref||'');
+  $('#dT').textContent=m.t; $('#dM').textContent=m.m; $('#dE').textContent='Upah order ni: '+rm(RKB.riderPay(o))+' · #'+(o.ref||'');
   $('#done').classList.remove('hide'); RKB.beep();
 }
 $('#dX').onclick=()=>$('#done').classList.add('hide');
@@ -296,7 +297,7 @@ function nextJob(){
   if(!jobCur){ $('#job').classList.add('hide'); return }
   const o=orders[jobCur], d=distTo(o);
   $('#jMeta').textContent=`#${o.ref} · ${o.service} · ${o.vehicle} · ${(+o.km||0).toFixed(1)} KM`+(d!=null?` · 📏 ${d.toFixed(1)} KM dari anda`:'')+(jobQ.length?` · +${jobQ.length} lagi`:'');
-  $('#jP').textContent=o.pick.addr; $('#jD').textContent=o.drop.addr; $('#jN').textContent=o.notes||'-'; $('#jPay').textContent=payTxt(o); $('#jPrice').textContent=rm(o.price);
+  $('#jP').textContent=o.pick.addr; $('#jD').textContent=o.drop.addr; $('#jN').textContent=o.notes||'-'; $('#jPay').textContent=payTxt(o); $('#jPrice').textContent=rm(RKB.riderPay(o));
   $('#jAcc').disabled=false; $('#job').classList.remove('hide'); RKB.beep();
   jobTimer=setInterval(()=>{ if(!orders[jobCur]||orders[jobCur].status!=='baru'){ toast('Order dah diambil rider lain'); nextJob(); return } RKB.beep() },4000);
 }
@@ -307,7 +308,7 @@ $('#jAcc').onclick=async()=>{ const k=jobCur; $('#jAcc').disabled=true; const ok
 async function sysNotify(o){
   try{ if(!o||!('Notification' in window)||Notification.permission!=='granted'||!document.hidden) return;
     const reg=await navigator.serviceWorker.ready;
-    await reg.showNotification('🆕 Order baru #'+o.ref,{body:o.pick.addr+' ➜ '+o.drop.addr+'\n'+rm(o.price),tag:'job-'+o.ref,requireInteraction:true,vibrate:[300,120,300],icon:'icon-192.png',badge:'icon-192.png',data:{url:'rider.html'}});
+    await reg.showNotification('🆕 Order baru #'+o.ref,{body:o.pick.addr+' ➜ '+o.drop.addr+'\n'+rm(RKB.riderPay(o)),tag:'job-'+o.ref,requireInteraction:true,vibrate:[300,120,300],icon:'icon-192.png',badge:'icon-192.png',data:{url:'rider.html'}});
   }catch(e){}
 }
 /* Notifikasi tetap macam Grab Driver: "App is running" bila rider online */
@@ -436,7 +437,7 @@ async function updMap(){
     const nw=list().filter(x=>x.status==='baru'), sig=nw.map(x=>x.k).join(',');
     if(routeFor!=='ov'||sig!==ovSig){
       routeFor='ov'; ovSig=sig; clearMarkers();
-      nw.forEach(x=>{ mm['n'+x.k]=L.marker([x.pick.lat,x.pick.lng],{icon:RKB.mkIcon('#f59e0b')}).addTo(map).bindPopup(`#${esc(x.ref)} · ${esc(x.pick.addr)} · ${rm(x.price)}`) });
+      nw.forEach(x=>{ mm['n'+x.k]=L.marker([x.pick.lat,x.pick.lng],{icon:RKB.mkIcon('#f59e0b')}).addTo(map).bindPopup(`#${esc(x.ref)} · ${esc(x.pick.addr)} · ${rm(RKB.riderPay(x))}`) });
       map.invalidateSize();
       const pts=Object.values(mm).map(m=>m.getLatLng()); if(selfPos) pts.push(L.latLng(selfPos[0],selfPos[1]));
       if(pts.length>1) map.fitBounds(L.latLngBounds(pts),{padding:[40,40],maxZoom:15}); else if(pts.length) map.setView(pts[0],14);

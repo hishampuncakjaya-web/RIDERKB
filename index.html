@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Rider KB Express</title>
-<meta name="theme-color" content="#7a1230">
+<meta name="theme-color" content="#166534">
 <script src="theme.js"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -505,7 +505,7 @@ function sendWA(msg){   // pulang true jika berjaya dibuka
   if(waWin&&!waWin.closed){ try{ waWin.location.href=u; waWin=null; return true }catch(_){} }
   const w=window.open(u,'_blank'); return !!w;
 }
-function openWaTab(){ try{ waWin=window.open('','_blank'); if(waWin&&waWin.document) waWin.document.write('<meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:system-ui;background:#120a0c;color:#fbf4ea;display:grid;place-items:center;height:100vh;margin:0;text-align:center"><div>⏳ Menghantar order anda…</div>') }catch(_){ waWin=null } }
+function openWaTab(){ try{ waWin=window.open('','_blank'); if(waWin&&waWin.document) waWin.document.write('<meta name="viewport" content="width=device-width,initial-scale=1"><body style="font-family:system-ui;background:#0b140f;color:#f2faf3;display:grid;place-items:center;height:100vh;margin:0;text-align:center"><div>⏳ Menghantar order anda…</div>') }catch(_){ waWin=null } }
 function closeWaTab(){ try{ if(waWin&&!waWin.closed) waWin.close() }catch(_){} waWin=null }
 /* Keadaan selepas hantar: satu tindakan jelas ke hadapan, bukan butang mati */
 function afterSend(track){
@@ -535,6 +535,7 @@ function send(){
   const order={ref,createdAt:firebase.database.ServerValue.TIMESTAMP,status:'baru',service:S.service,vehicle:S.vehicle,pick:pt(S.pick,'#pick'),drop:pt(S.drop,'#drop'),
     notes:$('#notes').value.trim().slice(0,600),name:$('#name').value.trim().slice(0,60),phone:$('#phone').value.trim().slice(0,20),phoneKey:RKB.phoneKey($('#phone').value),recv,km:+(S.km??0).toFixed(1),rain:$('#rain').checked,price:calc(),
     pay:S.pay,itemEst:item,need:S.pay==='cash'?minCash+item:0};
+  if(window.__rs!=null) order.riderPay=RKB.r2(order.price*window.__rs/100);
   let trackUrl='';
   const buildMsg=()=>{
   return [
@@ -753,7 +754,7 @@ function applySettings(st){ if(!st) return; const p=st.pricing||{}, n=(v,d)=>(v!
   if(st.pay) PAY=st.pay;
   $('#carAmt').textContent=rmx(CAR_EXTRA); $('#rainAmt').textContent=rmx(RAIN_EXTRA); drawPay(); price(); }
 try{ applySettings(JSON.parse(localStorage.getItem('rkb-settings')||'null')) }catch(_){}
-if(RKB.ok) RKB.db.ref('settings').once('value').then(sn=>{ const v=sn.val(); if(v){ applySettings(v); try{ localStorage.setItem('rkb-settings',JSON.stringify(v)) }catch(_){} } }).catch(()=>{});
+if(RKB.ok) RKB.db.ref('settings').once('value').then(sn=>{ const v=sn.val(); if(v){ if(v.riderShare!=null) window.__rs=+v.riderShare; applySettings(v); try{ localStorage.setItem('rkb-settings',JSON.stringify(v)) }catch(_){} } }).catch(()=>{});
 $('#th').textContent=RKB_THEME.label(); $('#th').onclick=()=>{ RKB_THEME.cycle(); $('#th').textContent=RKB_THEME.label() };
 drawQN(); drawPay();
 show(0); price(); autoDetect();
