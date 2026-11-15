@@ -43,6 +43,7 @@
     <div class="card" style="margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px">
       <div><b id="onTxt">Offline</b><div class="mut" id="earn"></div><div class="mut" id="wal"></div><a class="mut" id="prof" href="#" style="display:block;color:#93c5fd;font-weight:700;text-decoration:none">🪪 Profil &amp; no. plat</a><a class="mut" id="topup" target="_blank" style="color:#93c5fd;font-weight:700;text-decoration:none">➕ Top up wallet</a></div>
       <button class="btn sm" id="onBtn">Mula kongsi lokasi</button>
+      <button class="btn gry sm" id="tstSnd" style="margin-top:6px">🔊 Test bunyi order</button>
     </div>
   </div>
   <div class="tabs" id="tabs"></div>
@@ -202,7 +203,7 @@ $('#tabs').onclick=e=>{ askNotif();const b=e.target.closest('.tab'); if(b){tab=b
 const payTxt=o=>(o.pay==='online'?'📲 Online/Transfer':'💵 Tunai')+(+o.itemEst?` · barang ≈ ${rm(o.itemEst)}`:'');
 function card(o){
   const ok=eligible(o);
-  const nx=o.status==='baru'?(ok?['terima','✅ Terima order','grn']:['lock','🔒 Tak layak: wallet '+rm(me.wallet||0)+', perlu '+rm(o.need),'gry']):{diterima:['diambil','📦 Barang dah diambil','blu'],diambil:['selesai','🎉 Dah sampai & selesai','grn']}[o.status];
+  const nx=o.status==='baru'?(ok?['terima','✅ Terima order','grn']:['lock','🔒 Tak layak: wallet '+rm(me.wallet||0)+', perlu '+rm(o.need),'gry']):{diterima:(o.pickPhoto?['diambil','📦 Barang dah diambil','blu']:null),diambil:(o.dropPhoto?['selesai','🎉 Hantar selesai','grn']:null)}[o.status];
   const p=[o.pick.lat,o.pick.lng], d=[o.drop.lat,o.drop.lng], dd=o.status==='baru'?distTo(o):null;
   return `<div class="card" ${o.status==='baru'&&!ok?'style="opacity:.55"':''}><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}</b><span class="badge b-${o.status}">${o.status}</span></div>
   <div class="mut" style="margin:4px 0 8px">${RKB.hm(o.createdAt)} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM${dd!=null?` · 📏 ${dd.toFixed(1)} KM dari anda`:''}</div>
@@ -213,7 +214,7 @@ function card(o){
   <div class="row"><span>💳 Bayaran</span><span>${payTxt(o)}</span></div>
   <div class="row"><span>💰 Upah</span><span>${rm(o.price)}${o.rain?' (hujan)':''}</span></div>
   <div class="acts">${nx?`<button class="btn ${nx[2]} full" data-a="${nx[0]}" data-k="${o.k}" ${nx[0]==='lock'?'disabled':''}>${nx[1]}</button>`:''}
-  ${mine(o)&&o.status==='diterima'&&!o.arrivedAt?`<button class="btn blu sm" data-a="arrive" data-k="${o.k}">📍 Dah sampai di lokasi ambil</button>`:''}${mine(o)&&o.status==='diambil'?`<button class="btn gry sm" data-a="proof" data-k="${o.k}">📷 Bukti hantar</button>`:''}${mine(o)&&o.status!=='selesai'?`<button class="btn gry sm" data-a="sos" data-k="${o.k}" style="border:1px solid #ef4444">🆘 SOS</button><button class="btn gry sm" data-a="show" data-k="${o.k}">🗺️ Peta</button><a class="btn gry sm" target="_blank" href="${RKB.gmNav(p)}">🧭 Ke Ambil</a><a class="btn gry sm" target="_blank" href="${RKB.gmNav(d)}">🧭 Ke Hantar</a><a class="btn gry sm" target="_blank" href="${RKB.gmFull(p,d,o.vehicle)}">🗺️ Laluan penuh</a>`:''}
+  ${mine(o)&&o.status==='diterima'&&!o.arrivedAt?`<button class="btn blu full" data-a="arrive" data-k="${o.k}">📍 Dah sampai di lokasi ambil</button>`:''}${mine(o)&&o.status==='diterima'&&o.arrivedAt&&!o.pickPhoto?`<button class="btn blu full" data-a="proofP" data-k="${o.k}">📷 Ambil gambar barang</button>`:''}${mine(o)&&o.status==='diambil'&&!o.arrivedDropAt?`<button class="btn blu full" data-a="arriveD" data-k="${o.k}">📍 Dah sampai di lokasi hantar</button>`:''}${mine(o)&&o.status==='diambil'&&o.arrivedDropAt&&!o.dropPhoto?`<button class="btn blu full" data-a="proofD" data-k="${o.k}">📷 Ambil gambar bukti hantar</button>`:''}${mine(o)&&o.status!=='selesai'?`<button class="btn gry sm" data-a="sos" data-k="${o.k}" style="border:1px solid #ef4444">🆘 SOS</button><button class="btn gry sm" data-a="show" data-k="${o.k}">🗺️ Peta</button><a class="btn gry sm" target="_blank" href="${RKB.gmNav(p)}">🧭 Ke Ambil</a><a class="btn gry sm" target="_blank" href="${RKB.gmNav(d)}">🧭 Ke Hantar</a><a class="btn gry sm" target="_blank" href="${RKB.gmFull(p,d,o.vehicle)}">🗺️ Laluan penuh</a>`:''}
   <a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(o.phone)}">💬 WhatsApp</a><a class="btn gry sm" href="tel:+${RKB.tel(o.phone)}">📞 Call</a></div></div>`;
 }
 function render(){
@@ -231,8 +232,11 @@ $('#list').onclick=async e=>{
   const b=e.target.closest('button[data-a]'); if(!b) return; const k=b.dataset.k, a=b.dataset.a;
   if(a==='lock') return;
   if(a==='show'){ sel=k; updMap(); window.scrollTo({top:0,behavior:'smooth'}); return }
-  if(a==='arrive'){ try{ await db.ref('orders/'+k).update({arrivedAt:Date.now(),'t/arrived':Date.now()}); toast('Customer dimaklumkan rider dah sampai 📍') }catch(err){ toast('Gagal: '+err.code) } return }
-  if(a==='proof'){ proofK=k; $('#proofIn').value=''; $('#proofIn').click(); return }
+  if(a==='arrive'||a==='arriveD'||a==='proofP'||a==='proofD'){
+    const drop=(a==='arriveD'||a==='proofD'); proofK=k; proofT=drop?'D':'P'; $('#proofIn').value=''; $('#proofIn').click();   // kamera terus dibuka
+    if(a==='arrive'||a==='arriveD'){ const up=drop?{arrivedDropAt:Date.now(),'t/arrivedDrop':Date.now()}:{arrivedAt:Date.now(),'t/arrived':Date.now()};
+      try{ await db.ref('orders/'+k).update(up); toast(drop?'Dah sampai di lokasi hantar 📍. Ambil gambar':'Customer dimaklumkan rider dah sampai 📍. Ambil gambar barang') }catch(err){ toast('Gagal: '+err.code) } }
+    return }
   if(a==='sos'){ if(!confirm('Hantar SOS kepada admin dengan lokasi anda sekarang?')) return; const o=orders[k]||{}; try{ await RKB.report({type:'sos',orderId:k,ref:o.ref||'',from:'rider',name:me.name||'',phone:me.phone||'',msg:'🆘 SOS rider',loc:selfPos?{lat:+selfPos[0].toFixed(6),lng:+selfPos[1].toFixed(6)}:null}); toast('🆘 SOS dihantar kepada admin') }catch(err){ toast('SOS gagal dihantar. Hubungi admin terus.') } return }
   b.disabled=true;
   if(a==='terima'){ await acceptOrder(k); }
@@ -265,7 +269,7 @@ $('#dX').onclick=()=>$('#done').classList.add('hide');
 let jobQ=[], jobCur=null, jobTimer=null;
 function scheduleJob(k){
   const o=orders[k]; if(!o||jobTimers[k]||!eligible(o)) return;
-  const d=distTo(o), delay=d==null?25000:Math.min(40000,Math.round(d*8000));   // makin dekat, makin cepat dapat tawaran
+  const d=distTo(o), delay=d==null?2000:Math.min(10000,Math.round(d*1500));   // makin dekat, makin cepat dapat tawaran
   jobTimers[k]=setTimeout(()=>{ delete jobTimers[k]; const x=orders[k]; if(x&&x.status==='baru'&&eligible(x)) queueJob(k) },delay);
 }
 function queueJob(k){
@@ -283,6 +287,7 @@ function nextJob(){
   jobTimer=setInterval(()=>{ if(!orders[jobCur]||orders[jobCur].status!=='baru'){ toast('Order dah diambil rider lain'); nextJob(); return } RKB.beep() },4000);
 }
 $('#jSkip').onclick=nextJob;
+$('#tstSnd').onclick=()=>{ RKB.beep(); toast('Kalau tak dengar bunyi: naikkan volume media & lepaskan mod senyap') };
 $('#jAcc').onclick=async()=>{ const k=jobCur; $('#jAcc').disabled=true; const ok=await acceptOrder(k); nextJob(); if(ok) window.scrollTo({top:0}) };
 async function sysNotify(o){
   try{ if(!o||!('Notification' in window)||Notification.permission!=='granted'||!document.hidden) return;
@@ -357,9 +362,9 @@ function dutyCheck(){
   $('#dutyRetry').onclick=()=>{ restartGps(); toast('Menyambung semula…') };
   if(act&&Date.now()-lastBeep>15000){ lastBeep=Date.now(); RKB.beep() }
 }
-const finishing=new Set(); let proofK=null;
+const finishing=new Set(); let proofK=null, proofT='D';
 $('#prof').onclick=async e=>{ e.preventDefault(); const p=(prompt('No. plat kenderaan anda (pelanggan akan nampak):',me.plate||'')||'').trim().toUpperCase().slice(0,12); if(!p) return; try{ await db.ref('riders/'+user.uid+'/plate').set(p); toast('Plat dikemas kini ✅') }catch(err){ toast('Gagal: '+err.code) } };
-$('#proofIn').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!proofK) return; try{ const d=await RKB.compressImg(f,720,.6); await db.ref('proofs/'+proofK).set(d); toast('📷 Bukti hantar disimpan ✅') }catch(err){ toast('Gagal simpan gambar: '+(err.code||'cuba lagi')) } };
+$('#proofIn').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!proofK) return; try{ const d=await RKB.compressImg(f,720,.6), P=proofT==='P'; await db.ref('proofs/'+proofK+(P?'p':'')).set(d); await db.ref('orders/'+proofK).update(P?{pickPhoto:true}:{dropPhoto:true}); toast(P?'📷 Gambar barang disimpan. Tekan "Barang dah diambil" ✅':'📷 Bukti hantar disimpan. Tekan "Hantar selesai" ✅'); render() }catch(err){ toast('Gagal simpan gambar: '+(err.code||'cuba lagi')) } };
 function push(p){
   const now=Date.now(); if(now-lastPush<4000) return; lastPush=now;
   const loc={lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),t:now,spd}, up={};
@@ -405,11 +410,11 @@ async function updMap(){
   const o=sel&&orders[sel], act=o&&active(o);
   if(act){
     ovSig='';
-    if(routeFor!==sel){
-      routeFor=sel; clearMarkers();
-      mm.p=L.marker([o.pick.lat,o.pick.lng],{icon:RKB.mkIcon('#10b981')}).addTo(map);
+    if(routeFor!==sel+o.status){
+      routeFor=sel+o.status; clearMarkers();
+      if(o.status==='diterima') mm.p=L.marker([o.pick.lat,o.pick.lng],{icon:RKB.mkIcon('#10b981')}).addTo(map);   // pin ambil hilang lepas barang diambil
       mm.d=L.marker([o.drop.lat,o.drop.lng],{icon:RKB.mkIcon('#e11d48')}).addTo(map);
-      map.invalidateSize(); const pts=[mm.p.getLatLng(),mm.d.getLatLng()]; if(selfPos) pts.push(L.latLng(selfPos[0],selfPos[1]));
+      map.invalidateSize(); const pts=[mm.d.getLatLng()]; if(mm.p) pts.push(mm.p.getLatLng()); if(selfPos) pts.push(L.latLng(selfPos[0],selfPos[1]));
       map.fitBounds(L.latLngBounds(pts),{padding:[40,40]});
     }
   } else {

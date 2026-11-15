@@ -45,9 +45,14 @@
     const step=n=>{const k=Math.min(1,(n-t0)/ms);m.setLatLng([f.lat+(to[0]-f.lat)*k,f.lng+(to[1]-f.lng)*k]);if(k<1)m._raf=requestAnimationFrame(step)};
     m._raf=requestAnimationFrame(step);
   }
+  // Bunyi: satu AudioContext dikongsi, dibuka (unlock) pada sentuhan pertama supaya telefon tak senyapkan
+  let _ac=null;
+  function _ctx(){ try{ const A=window.AudioContext||window.webkitAudioContext; if(!A) return null; if(!_ac) _ac=new A(); if(_ac.state==='suspended') _ac.resume(); return _ac }catch(e){ return null } }
+  ['touchstart','click','keydown'].forEach(ev=>addEventListener(ev,()=>{ const c=_ctx(); if(c&&c.state==='running'){ try{ const o=c.createOscillator(),g=c.createGain(); g.gain.value=0.0001; o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+.01) }catch(e){} } },{passive:true}));
   function beep(){
-    try{const A=window.AudioContext||window.webkitAudioContext,c=new A();[0,.25,.5].forEach((d,i)=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=i%2?880:660;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.25,c.currentTime+d);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d+.2);o.start(c.currentTime+d);o.stop(c.currentTime+d+.22)})}catch(e){}
-    try{navigator.vibrate&&navigator.vibrate([300,120,300])}catch(e){}
+    const c=_ctx();
+    if(c){ try{ [0,.22,.44,.66].forEach((d,i)=>{ const o=c.createOscillator(),g=c.createGain(); o.type='square'; o.frequency.value=i%2?1100:800; o.connect(g); g.connect(c.destination); const t=c.currentTime+d; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.6,t+.02); g.gain.exponentialRampToValueAtTime(.001,t+.2); o.start(t); o.stop(t+.22) }) }catch(e){} }
+    try{navigator.vibrate&&navigator.vibrate([300,120,300,120,300])}catch(e){}
   }
 
   const hav=(a,b)=>{const R=6371,r=x=>x*Math.PI/180,dl=r(b[0]-a[0]),dn=r(b[1]-a[1]);const h=Math.sin(dl/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};

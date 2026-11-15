@@ -83,7 +83,7 @@ function listen(){
   let rpFirst=true; db.ref('reports').limitToLast(50).on('value',s=>{ const nw=s.val()||{}; const n=Object.keys(nw).filter(k=>!reps[k]).length; reps=nw; if(!rpFirst&&n){ RKB.beep(); const sos=Object.values(nw).some(x=>x.type==='sos'); toast((sos?'🆘 SOS rider! ':'⚠️ Laporan baru. ')+'Semak panel Laporan') } rpFirst=false; drawReps() },e=>toast('Ralat baca laporan: '+e.code));
   let pc=null; db.ref('riders').on('value',s=>{ riders=s.val()||{}; const n=Object.values(riders).filter(r=>r.approved!==true).length; if(pc!==null&&n>pc){RKB.beep();toast('🆕 Rider baru menunggu kelulusan')} pc=n; render() });
 }
-const list=()=>Object.entries(orders).map(([k,o])=>({k,...o})).sort((a,b)=>b.createdAt-a.createdAt);
+const list=()=>Object.entries(orders).filter(([k,o])=>o&&o.pick&&o.drop&&o.pick.lat!=null&&o.drop.lat!=null).map(([k,o])=>({k,...o})).sort((a,b)=>b.createdAt-a.createdAt);
 const isAct=o=>o.status==='diterima'||o.status==='diambil';
 let srvOff=0; RKB.db.ref('.info/serverTimeOffset').on('value',s=>{ srvOff=s.val()||0 });
 const nowS=()=>Date.now()+srvOff;
@@ -125,7 +125,7 @@ function render(){
     </div></div>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
   const R=Object.entries(riders).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||(a[1].name||'').localeCompare(b[1].name||''));
   $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;return `<div class="row" style="align-items:center"><span>${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}<br><small class="mut">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?'<br>'+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</small>${ok?'<br><small>💰 '+rm(r.wallet||0)+'</small>':''}</span><span>${ok?(per[r.name]?per[r.name].n+' order · '+rm(per[r.name].s)+'<br>':'')+'<button class="btn grn sm" data-r="top" data-u="'+u+'">＋ Wallet</button> <button class="btn gry sm" data-r="ded" data-u="'+u+'">－</button><br><button class="btn gry sm" data-r="rev" data-u="'+u+'">⏸ Gantung</button>':'<button class="btn grn sm" data-r="ok" data-u="'+u+'">✅ Lulus</button>'} <button class="btn gry sm" data-r="pw" data-u="${u}">🔑 Reset</button> <button class="btn gry sm" data-r="del" data-u="${u}">🗑️</button></span></div>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
-  updMap(L);
+  try{ updMap(L) }catch(err){ console.error('updMap',err) }
 }
 $('#riders').onclick=async e=>{
   const b=e.target.closest('[data-r]'); if(!b) return; const u=b.dataset.u, a=b.dataset.r;
@@ -215,7 +215,7 @@ const navs={};
 function updMap(LST){
   if(!map) return; const keep=new Set();
   LST.filter(o=>o.status==='baru'||isAct(o)).forEach(o=>{
-    ['p','d'].forEach(w=>{ const key=o.k+w, pt=w==='p'?o.pick:o.drop; keep.add(key);
+    ['p','d'].forEach(w=>{ if(w==='p'&&o.status==='diambil') return; const key=o.k+w, pt=w==='p'?o.pick:o.drop; keep.add(key);
       if(!om[key]) om[key]=L.marker([pt.lat,pt.lng],{icon:RKB.mkIcon(w==='p'?'#10b981':'#e11d48')}).addTo(map).bindPopup(`#${esc(o.ref)} ${w==='p'?'Ambil':'Hantar'}`); });
   });
   Object.keys(om).forEach(k=>{ if(!keep.has(k)){ map.removeLayer(om[k]); delete om[k] } });

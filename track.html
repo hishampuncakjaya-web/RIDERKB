@@ -69,6 +69,7 @@ else{
     $('#map').classList.toggle('hide',over);
     if(over){ if(nav) nav.clear(); if(riderMk&&map){ map.removeLayer(riderMk); riderMk=null } if(map){ const c=map.getContainer(); c.classList.remove('fs'); document.body.style.overflow='' } }
     else{ const first=!map; initMap(); setTimeout(()=>{ map.invalidateSize(); if(first||prevSt==null||(prevSt==='selesai'||prevSt==='batal')) map.fitBounds(L.latLngBounds([pm.getLatLng(),dm.getLatLng()]),{padding:[40,40]}) },60); }
+    if(!over&&map&&pm){ if(o.status==='diambil'){ if(map.hasLayer(pm)) map.removeLayer(pm) } else if(!map.hasLayer(pm)) pm.addTo(map) }   // pin ambil hilang lepas barang diambil
     if(!over) nav.update(o,live?[o.riderLoc.lat,o.riderLoc.lng]:null);
     if(o.status==='selesai'&&prevSt!=='selesai'){ let seen=false; try{seen=localStorage.getItem('rkb-done-'+id)==='1'}catch(_){} if(!seen){ RKB.confetti(); const m=RKB.msgCust(); $('#dT').textContent=m.t; $('#dM').textContent=m.m; $('#done').classList.remove('hide'); try{localStorage.setItem('rkb-done-'+id,'1')}catch(_){} } }
     prevSt=o.status;
@@ -77,7 +78,7 @@ else{
       if(!riderMk){ riderMk=L.marker(ll,{icon:RKB.riderIcon(o.riderName),zIndexOffset:900}).addTo(map); map.fitBounds(L.latLngBounds([pm.getLatLng(),dm.getLatLng(),ll]),{padding:[40,40]}); }
       else RKB.glide(riderMk,ll,1500);
     } else if(riderMk){ map.removeLayer(riderMk); riderMk=null; }
-    $('#rinfo').innerHTML=(!over&&o.riderName)?'✅ <b>Rider disahkan</b> · '+esc(o.riderName)+(o.riderPlate?' · 🛵 '+esc(o.riderPlate):'')+(o.arrivedAt&&o.status==='diterima'?'<br>📍 <b>Rider dah sampai di lokasi ambil</b>':''):'';
+    $('#rinfo').innerHTML=(!over&&o.riderName)?'✅ <b>Rider disahkan</b> · '+esc(o.riderName)+(o.riderPlate?' · 🛵 '+esc(o.riderPlate):'')+(o.arrivedAt&&o.status==='diterima'?'<br>📍 <b>Rider dah sampai di lokasi ambil</b>':'')+(o.arrivedDropAt&&o.status==='diambil'?'<br>📍 <b>Rider dah sampai di lokasi anda</b>':''):'';
     if(chg){ const msg={diterima:RKB.say('Rider dah terima order anda 🛵','Rider doh terima order demo 🛵'),diambil:RKB.say('Barang dah diambil, rider menuju ke lokasi anda 📦','Barang doh ambik, rider tengah mari 📦'),selesai:RKB.say('Order anda dah sampai! 🎉','Doh sampai! 🎉'),batal:'Order dibatalkan'}[o.status]; if(msg) notify('Rider KB · #'+o.ref,msg) }
     if(o.arrivedAt&&!prevArr&&wasSt!==null&&o.status==='diterima') notify('Rider KB · #'+o.ref,'Rider dah sampai di lokasi ambil 📍');
     prevArr=o.arrivedAt||null;
