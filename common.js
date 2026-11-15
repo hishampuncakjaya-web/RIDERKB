@@ -166,5 +166,16 @@
   const riderPay=o=>o&&o.riderPay!=null?+o.riderPay:r2((+(o&&o.price)||0)*_sh.rider/100);          // bahagian rider (apa yang rider nampak)
   const platCut=o=>r2((+(o&&o.price)||0)-riderPay(o));                                              // untung platform daripada upah (admin sahaja)
   const vPrice=b=>r2((+b||0)*(1+_sh.mark/100));                                                     // harga pelanggan = harga vendor + markup
-  window.RKB={r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
+  // akaun admin tersangkut di halaman rider/vendor: tunjuk mesej jelas (bukan skrin kosong)
+  const adminGuard=(u,role)=>{
+    const old=document.getElementById('admGuard'); if(old) old.remove();
+    if(!u||!u.email||(cfg.admins||[]).indexOf(u.email.toLowerCase())<0) return false;
+    const d=document.createElement('div'); d.id='admGuard'; d.className='pad';
+    d.innerHTML='<div class="card" style="text-align:center"><div style="font-size:42px">🧑‍💼</div><div class="big">Anda log masuk sebagai ADMIN</div><div class="mut" style="margin:8px 0 12px;line-height:1.6">Akaun admin tak boleh guna app '+role+'. Buka panel admin, atau log keluar dan masuk dengan akaun '+role+'.</div><a class="btn full" href="admin.html" style="display:block;text-decoration:none;margin-bottom:8px">Buka panel admin</a><button class="btn full" id="admOut" type="button" style="background:transparent;border:1px solid var(--line)">Log keluar</button></div>';
+    document.body.appendChild(d);
+    d.querySelector('#admOut').onclick=()=>auth.signOut();
+    ['login','pend','susp','setup','app','gate'].forEach(x=>{const e=document.getElementById(x); if(e) e.classList.add('hide')});
+    return true;
+  };
+  window.RKB={adminGuard,r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
 })();

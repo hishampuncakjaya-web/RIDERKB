@@ -4,11 +4,11 @@
 <title>Rider | Rider KB</title><meta name="theme-color" content="#166534">
 <script src="theme.js"></script>
 <link rel="manifest" href="manifest-rider.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-rider-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-rider.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Rider KB">
+<meta name="apple-mobile-web-app-title" content="KB Rider">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
 <style>@keyframes pop{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}@keyframes ring{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
@@ -153,6 +153,7 @@ auth.onAuthStateChanged(u=>{
   user=u; detach();
   if(!u){ $('#login').classList.remove('hide'); $('#pend').classList.add('hide'); $('#app').classList.add('hide'); $('#out').classList.add('hide'); $('#who').textContent=''; return }
   $('#login').classList.add('hide'); $('#out').classList.remove('hide');
+  if(RKB.adminGuard(u,'rider')) return;
   profRef=db.ref('riders/'+u.uid);
   profRef.on('value',async s=>{
     me=s.val()||{}; $('#who').textContent=me.name||u.email;
@@ -308,7 +309,7 @@ $('#jAcc').onclick=async()=>{ const k=jobCur; $('#jAcc').disabled=true; const ok
 async function sysNotify(o){
   try{ if(!o||!('Notification' in window)||Notification.permission!=='granted'||!document.hidden) return;
     const reg=await navigator.serviceWorker.ready;
-    await reg.showNotification('🆕 Order baru #'+o.ref,{body:o.pick.addr+' ➜ '+o.drop.addr+'\n'+rm(RKB.riderPay(o)),tag:'job-'+o.ref,requireInteraction:true,vibrate:[300,120,300],icon:'icon-192.png',badge:'icon-192.png',data:{url:'rider.html'}});
+    await reg.showNotification('🆕 Order baru #'+o.ref,{body:o.pick.addr+' ➜ '+o.drop.addr+'\n'+rm(RKB.riderPay(o)),tag:'job-'+o.ref,requireInteraction:true,vibrate:[300,120,300],icon:'icon-rider-192.png',badge:'icon-rider-192.png',data:{url:'rider.html'}});
   }catch(e){}
 }
 /* Notifikasi tetap macam Grab Driver: "App is running" bila rider online */
@@ -316,7 +317,7 @@ let lastDuty='';
 async function dutyNotify(body){
   try{ if(!('Notification' in window)||Notification.permission!=='granted') return;
     const reg=await navigator.serviceWorker.ready;
-    await reg.showNotification('Rider KB',{body,tag:'rkb-duty',renotify:false,requireInteraction:true,silent:true,icon:'icon-192.png',badge:'icon-192.png',data:{url:'rider.html'}});
+    await reg.showNotification('Rider KB',{body,tag:'rkb-duty',renotify:false,requireInteraction:true,silent:true,icon:'icon-rider-192.png',badge:'icon-rider-192.png',data:{url:'rider.html'}});
   }catch(e){}
 }
 async function dutyClear(){ lastDuty=''; try{ const reg=await navigator.serviceWorker.ready; (await reg.getNotifications({tag:'rkb-duty'})).forEach(n=>n.close()) }catch(e){} }

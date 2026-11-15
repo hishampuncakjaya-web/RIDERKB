@@ -120,3 +120,9 @@ Keselamatan vendor:
 - Peraturan Firebase mengesahkan jumlah order = harga vendor × (1 + markup) di pelayan, jadi pelanggan tak boleh bayar kurang. Upah rider (`riderPay`) turut disahkan.
 - Tukar peratusan pada waktu sunyi. Order lama kekal guna nilai asal; pelanggan yang skrinnya dibuka sebelum perubahan perlu muat semula.
 - Had sebenar: peratusan disimpan dalam `settings` yang boleh dibaca app, jadi orang yang tahu menggunakan alat pembangun boleh menjumpainya. App hanya menyembunyikannya daripada paparan. Penyembunyian sepenuhnya memerlukan pelayan (Cloud Functions).
+
+## Kemas kini (v25)
+- Ikon berbeza setiap app (Pelanggan biru, Rider oren, Vendor hijau, Admin ungu) dan nama app berbeza (Rider KB, KB Rider, KB Vendor, KB Admin). Admin kini ada manifest sendiri.
+- **Pasang semula app di telefon:** buang ikon lama dari skrin utama, buka semula pautan masing-masing di Chrome, kemudian "Pasang app". Android menyimpan ikon lama untuk app yang sudah dipasang.
+- Akaun admin yang tersangkut di /rider.html atau /vendor.html kini nampak mesej jelas (bukan skrin kosong).
+- **PENTING (PERMISSION_DENIED):** tampal semula `database.rules.json` ke Realtime Database > Rules > Publish.

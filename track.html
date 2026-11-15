@@ -3,7 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Jejak Order | Rider KB</title><meta name="theme-color" content="#166534">
 <script src="theme.js"></script>
-<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-customer-192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
 <style>#toast{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:7000;background:#0d6b4d;border:1px solid #10b981;border-radius:14px;padding:12px 14px;font-weight:700;display:none}.star{background:none;border:0;font-size:34px;padding:2px 4px;filter:grayscale(1);opacity:.5}.star.on{filter:none;opacity:1}@keyframes pop{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}.modal{position:fixed;inset:0;z-index:6000;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px}.mbox{width:100%;max-width:520px;background:var(--card);border:2px solid var(--grn);border-radius:24px;padding:20px 16px calc(16px + env(safe-area-inset-bottom));animation:pop .35s ease-out;text-align:center}</style>
@@ -119,7 +119,7 @@ else{
   function notify(title,body){
     try{ navigator.vibrate&&navigator.vibrate([200,100,200]) }catch(_){}
     const tb=$('#toast'); tb.textContent=body; tb.style.display='block'; setTimeout(()=>tb.style.display='none',6000);
-    try{ if(canN&&Notification.permission==='granted'){ if(navigator.serviceWorker&&navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-192.png',data:{url:location.href}})).catch(()=>new Notification(title,{body,icon:'icon-192.png'})); else new Notification(title,{body,icon:'icon-192.png'}) } }catch(_){}
+    try{ if(canN&&Notification.permission==='granted'){ if(navigator.serviceWorker&&navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-customer-192.png',data:{url:location.href}})).catch(()=>new Notification(title,{body,icon:'icon-customer-192.png'})); else new Notification(title,{body,icon:'icon-customer-192.png'}) } }catch(_){}
   }
   function drawLg(){ $('#lg').textContent='🗣️ Loghat: '+(RKB.kb()?'Hidup':'Mati') } drawLg();
   const thb=document.createElement('button'); thb.type='button'; thb.className='themeBtn'; thb.textContent=RKB_THEME.label(); thb.onclick=()=>{ RKB_THEME.cycle(); thb.textContent=RKB_THEME.label() }; $('#lg').after(thb);

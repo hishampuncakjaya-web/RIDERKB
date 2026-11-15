@@ -4,10 +4,10 @@
 <title>Vendor | Rider KB</title><meta name="theme-color" content="#166534">
 <script src="theme.js"></script>
 <link rel="manifest" href="manifest-vendor.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-vendor-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-vendor.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Vendor KB">
+<meta name="apple-mobile-web-app-title" content="KB Vendor">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="theme.css">
 <style>
@@ -151,6 +151,7 @@ auth.onAuthStateChanged(u=>{
   offs.forEach(f=>f());offs=[];stopData();clearInterval(alarmT);clearTimeout(nullT);setupShown=false;editingProfile=false;user=u;me=shop=null;menu={};orders={};payouts={};
   if(!u){show('login');return}
   $('#who').textContent=u.email||'';
+  if(R.adminGuard(u,'vendor'))return;
   const on=(ref,cb,er)=>{ref.on('value',cb,er||(e=>toast('Ralat: '+e.code)));offs.push(()=>ref.off('value',cb))};
   on(db.ref('vendors/'+u.uid),s=>{me=s.val();gate()});
   on(db.ref('vshops/'+u.uid),s=>{shop=s.val();gate()});

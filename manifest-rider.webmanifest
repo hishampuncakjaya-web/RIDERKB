@@ -1,7 +1,7 @@
 {
   "id": "./rider.html",
-  "name": "Rider KB (Rider)",
-  "short_name": "Rider KB",
+  "name": "KB Rider (Rider)",
+  "short_name": "KB Rider",
   "description": "App rider: terima order, navigasi dan kongsi lokasi",
   "lang": "ms",
   "start_url": "./rider.html",
@@ -11,8 +11,23 @@
   "background_color": "#0b140f",
   "theme_color": "#166534",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-rider-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-rider-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-rider-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }

@@ -3,7 +3,10 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Admin | Rider KB</title><meta name="theme-color" content="#166534">
 <script src="theme.js"></script>
-<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="manifest" href="manifest-admin.webmanifest">
+<link rel="icon" type="image/png" href="icon-admin-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-admin.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="KB Admin">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="theme.css">
@@ -368,5 +371,6 @@ function updMap(LST){
   if(!updMap.fit){ const pts=[...Object.values(om),...Object.values(rm_)].map(m=>m.getLatLng()); if(pts.length){ map.fitBounds(L.latLngBounds(pts),{padding:[40,40],maxZoom:15}); updMap.fit=true } }
 }
 }
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body></html>

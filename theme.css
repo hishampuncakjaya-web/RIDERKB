@@ -95,3 +95,6 @@ html[data-theme="light"] select,html[data-theme="light"] input,html[data-theme="
 .fmsg{color:#fda4af;font-size:12.5px;margin-top:4px;min-height:0}
 html[data-theme="light"] .fmsg{color:#b4123a}
 .sumtot{font-weight:900}
+
+/* teks header sentiasa cerah di atas latar gelap (sebelum ini h1 ikut warna badan = gelap) */
+.hd,.hd h1,.hd .sm{color:#fff}
