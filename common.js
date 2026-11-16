@@ -1,2 +1,296 @@
-// MyRiderKu V40 Core Script
-console.log("MyRiderKu V40 Loaded Successfully - Kota Bharu, Kelantan");
+/* Kod kongsi: customer (index/track), rider, admin */
+(function(){
+  const cfg=window.RKB_CFG||{}, fbc=cfg.firebase||{};
+  let db=null, auth=null;
+  const configured=!!(window.firebase&&fbc.apiKey&&!/^ISI/i.test(fbc.apiKey));
+  if(configured){
+    try{ firebase.initializeApp(fbc); if(cfg.appCheckKey&&firebase.appCheck){ try{ firebase.appCheck().activate(cfg.appCheckKey,true) }catch(e){ console.warn('AppCheck',e) } } db=firebase.database(); auth=firebase.auth?firebase.auth():null; }
+    catch(e){ console.error('Firebase',e); db=null; }
+  }
+  // status order: baru > diterima > diambil > selesai  (batal = dibatalkan)
+  const ST=[['baru','🆕','Mencari rider'],['diterima','✅','Rider sedia'],['diambil','📦','Dalam perjalanan'],['selesai','🎉','Sampai']];
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const rm=n=>'RM '+(+n||0).toFixed(2);
+  const ago=t=>{const s=Math.max(0,Math.round((Date.now()-t)/1000));return s<60?s+' saat lalu':s<3600?Math.round(s/60)+' min lalu':s<86400?Math.round(s/3600)+' jam lalu':Math.round(s/86400)+' hari lalu'};
+  const hm=t=>new Date(t).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'});
+  const tel=p=>{p=String(p||'').replace(/\D/g,'');if(p.startsWith('0'))p='6'+p;return p};
+  const f6=ll=>(+ll[0]).toFixed(6)+','+(+ll[1]).toFixed(6);
+  const gmNav=ll=>`https://www.google.com/maps/dir/?api=1&destination=${f6(ll)}&travelmode=two-wheeler`;
+  const gmFull=(pick,drop,vehicle)=>`https://www.google.com/maps/dir/?api=1&destination=${f6(drop)}&waypoints=${f6(pick)}&travelmode=${vehicle==='Kereta'?'driving':'two-wheeler'}`;
+  function newId(){const a=new Uint8Array(10);crypto.getRandomValues(a);return [...a].map(x=>(x%36).toString(36)).join('')}
+  async function getRoute(a,b){ // a,b = [lat,lng]; pulang null jika gagal
+    const q=`${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`;
+    const hosts=['https://router.project-osrm.org/route/v1/driving/','https://routing.openstreetmap.de/routed-car/route/v1/driving/'];
+    for(const h of hosts){
+      try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),8000);const r=await fetch(h+q,{signal:ctl.signal});clearTimeout(t);const j=await r.json();if(j.routes&&j.routes[0])return j.routes[0]}catch(e){}
+    }
+    return null;
+  }
+  const mkIcon=c=>L.divIcon({className:'',html:`<div class="mk" style="background:${c}"></div>`,iconSize:[26,26],iconAnchor:[13,26]});
+  const riderIcon=label=>L.divIcon({className:'',html:'<div class="rdr"><span>🛵</span></div>'+(label?`<div class="rlbl">${esc(label)}</div>`:''),iconSize:[38,38],iconAnchor:[19,19]});
+  function baseMap(el){
+    const m=L.map(el,{zoomControl:true}).setView([6.1254,102.2381],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(m);
+    const FS=L.Control.extend({options:{position:'topright'},onAdd(){
+      const b=L.DomUtil.create('button','fsb'); b.type='button'; b.textContent='⛶ Skrin penuh';
+      L.DomEvent.disableClickPropagation(b);
+      let ph=null;
+      const toggle=force=>{ const c=m.getContainer(), want=(typeof force==='boolean')?force:!c.classList.contains('fs'); if(want===c.classList.contains('fs')) return;
+        if(want){ ph=document.createElement('div'); ph.style.height=c.offsetHeight+'px'; ph.style.width='100%'; c.parentNode.insertBefore(ph,c); document.body.appendChild(c); c.classList.add('fs') }
+        else { c.classList.remove('fs'); if(ph&&ph.parentNode){ ph.parentNode.insertBefore(c,ph); ph.remove() } ph=null }
+        document.body.style.overflow=want?'hidden':''; b.textContent=want?'✕ Keluar':'⛶ Skrin penuh'; [60,250,600].forEach(t=>setTimeout(()=>m.invalidateSize(),t)) };
+      b.onclick=()=>toggle();
+      addEventListener('keydown',e=>{ if(e.key==='Escape') toggle(false) });
+      m._toggleFs=toggle;
+      return b }});
+    m.addControl(new FS());
+    return m;
+  }
+  const flowLine=(geo)=>L.geoJSON(geo,{style:{color:'#2563eb',weight:6,opacity:1,lineCap:'round',lineJoin:'round',className:'flow'}});
+  function glide(m,to,ms){
+    ms=ms||1200; cancelAnimationFrame(m._raf); const f=m.getLatLng(),t0=performance.now();
+    const step=n=>{const k=Math.min(1,(n-t0)/ms);m.setLatLng([f.lat+(to[0]-f.lat)*k,f.lng+(to[1]-f.lng)*k]);if(k<1)m._raf=requestAnimationFrame(step)};
+    m._raf=requestAnimationFrame(step);
+  }
+  // Bunyi: satu AudioContext dikongsi, dibuka (unlock) pada sentuhan pertama supaya telefon tak senyapkan
+  let _ac=null;
+  function _ctx(){ try{ const A=window.AudioContext||window.webkitAudioContext; if(!A) return null; if(!_ac) _ac=new A(); if(_ac.state==='suspended') _ac.resume(); return _ac }catch(e){ return null } }
+  ['touchstart','click','keydown'].forEach(ev=>addEventListener(ev,()=>{ const c=_ctx(); if(c&&c.state==='running'){ try{ const o=c.createOscillator(),g=c.createGain(); g.gain.value=0.0001; o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+.01) }catch(e){} } },{passive:true}));
+  function beep(){
+    const c=_ctx();
+    if(c){ try{ [0,.22,.44,.66].forEach((d,i)=>{ const o=c.createOscillator(),g=c.createGain(); o.type='square'; o.frequency.value=i%2?1100:800; o.connect(g); g.connect(c.destination); const t=c.currentTime+d; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.6,t+.02); g.gain.exponentialRampToValueAtTime(.001,t+.2); o.start(t); o.stop(t+.22) }) }catch(e){} }
+    try{navigator.vibrate&&navigator.vibrate([300,120,300,120,300])}catch(e){}
+  }
+
+  const hav=(a,b)=>{const R=6371,r=x=>x*Math.PI/180,dl=r(b[0]-a[0]),dn=r(b[1]-a[1]);const h=Math.sin(dl/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+  /* Garis navigasi ikut fasa order:
+     baru      : garis ambil->hantar (sederhana)
+     diterima  : rider->ambil TERANG, ambil->hantar KABUR
+     diambil   : rider->hantar TERANG (garis lain hilang)
+     lain      : semua garis dibuang */
+  function makeNav(map){
+    let bright=null,dim=null,dimKey='',brKey='',brT=0,brLL=null,seq=0,dseq=0,brFb=false;
+    const rmv=l=>{if(l)map.removeLayer(l);return null};
+    const dimStyle=op=>({color:'#2563eb',weight:5,opacity:op,dashArray:'3 11',lineCap:'round',lineJoin:'round'});
+    async function update(o,loc){
+      const st=o&&o.status;
+      if(!o||!['baru','diterima','diambil'].includes(st)){seq++;dseq++;bright=rmv(bright);dim=rmv(dim);dimKey='';brKey='';return}
+      const P=[o.pick.lat,o.pick.lng],D=[o.drop.lat,o.drop.lng];
+      if(st==='diambil'){dim=rmv(dim);dimKey=''}
+      else{
+        const k=o.ref+st;
+        if(dimKey!==k){
+          dimKey=k;const my=++dseq;const r=await getRoute(P,D);
+          if(my===dseq&&dimKey===k){
+            dim=rmv(dim);
+            dim=(r?L.geoJSON(r.geometry,{style:dimStyle(st==='baru'?.6:.3)}):L.polyline([P,D],dimStyle(st==='baru'?.6:.3))).addTo(map);
+            if(bright&&bright.bringToFront)bright.bringToFront();
+          }
+        }
+      }
+      if(st==='baru'){bright=rmv(bright);brKey='';return}
+      // Tiada lokasi rider: guna titik ambil sebagai permulaan supaya garisan tetap terang ke lokasi hantar
+      const from=loc||(st==='diambil'?P:null);
+      if(!from){bright=rmv(bright);brKey='';return}
+      const target=st==='diterima'?P:D,k=o.ref+st,now=Date.now(),moved=brLL?hav(brLL,from):9;
+      if(k!==brKey)bright=rmv(bright);
+      if(k!==brKey||(now-brT>15000&&moved>0.08)||(brFb&&now-brT>6000)){
+        brKey=k;brT=now;brLL=from;const my=++seq;
+        const r=await getRoute(from,target);
+        if(my===seq&&brKey===k){
+          bright=rmv(bright);brFb=!r;
+          bright=(r?flowLine(r.geometry):L.polyline([from,target],{color:'#2563eb',weight:6,opacity:1,dashArray:'12 11',className:'flow'})).addTo(map);
+        }
+      }
+    }
+    return{update,clear:()=>update(null)};
+  }
+  async function osmCams(lat,lng,r){
+    const q=`[out:json][timeout:12];(node(around:${r},${lat},${lng})[highway=speed_camera];node(around:${r},${lat},${lng})[enforcement=maxspeed];);out;`;
+    try{
+      const res=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q)});
+      const j=await res.json();
+      return (j.elements||[]).map(e=>({id:'osm'+e.id,lat:e.lat,lng:e.lon,type:'aes',label:'Kamera kelajuan (OSM)',limit:parseInt(e.tags&&e.tags.maxspeed)||null,src:'osm'}));
+    }catch(err){return[]}
+  }
+  const hazIcon=t=>L.divIcon({className:'',html:`<div class="haz">${t==='speedtrap'?'🚔':'📷'}</div>`,iconSize:[30,30],iconAnchor:[15,15]});
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  const msgRider=()=>pick([
+    {t:'🎉 Alhamdulillah, tugasan selesai!',m:'Terima kasih atas usaha dan amanah anda. Semoga rezeki hari ni murah dan berkat. 🤲'},
+    {t:'💪 Mantap, rider hebat!',m:'Satu lagi order selamat dihantar. Jaga keselamatan di jalan raya, hati-hati ya.'},
+    {t:'🤲 Semoga Allah murahkan rezeki',m:'Ya Allah, permudahkanlah urusan kami dan murahkanlah rezeki kami semua. Aamiin.'},
+    {t:'🌟 Kerja yang cemerlang!',m:'Penat anda ada nilainya. Rehat sekejap, minum air dan teruskan dengan semangat. 🛵'},
+    {t:'😊 Tahniah!',m:'Senyuman pelanggan hari ni datang daripada usaha anda. Semoga sentiasa dilindungi dalam perjalanan.'}
+  ]);
+  const msgCust=()=>pick([
+    {t:'🎉 Order anda selamat sampai!',m:'Terima kasih sudi guna MYRIDERKU. Semoga hari anda indah dan penuh rezeki. 💖'},
+    {t:'🤲 Alhamdulillah, selesai!',m:'Semoga rezeki anda dimurahkan dan urusan harian dipermudahkan. Aamiin.'},
+    {t:'😊 Terima kasih!',m:'Sokongan anda sangat bermakna untuk rider kita. Jumpa lagi pada tempahan seterusnya!'},
+    {t:'🌸 Selamat menikmati!',m:'Semoga barang anda memuaskan dan hari anda dipenuhi kegembiraan. Jaga diri ya!'},
+    {t:'💛 Syukran, sahabat!',m:'Semoga Allah membalas kebaikan anda dengan yang lebih baik. Sentiasa sihat dan ceria.'}
+  ]);
+
+  /* Kategori kedai (kongsi: customer + admin). f = penapis Overpass; r = radius (m) */
+  const CATS=[
+    {id:'makan',e:'🍴',n:'Makan',f:['[amenity~"^(restaurant|fast_food|food_court)$"]']},
+    {id:'kafe',e:'☕',n:'Kafe',f:['[amenity=cafe]']},
+    {id:'boba',e:'🧋',n:'Air Viral / Boba',f:['[cuisine=bubble_tea]','[amenity~"^(cafe|fast_food|restaurant|ice_cream)$"][name~"boba|bubble|tealive|chatime|gong cha|coolblog|alley|xing fu|dakasi|jus|juice|cendol|air viral",i]']},
+    {id:'kek',e:'🎂',n:'Kek / Bakery / Roti',f:['[shop~"^(bakery|pastry|confectionery)$"]','[shop][name~"kek|cake|bakery|roti|donut|pastri|brownies",i]']},
+    {id:'runcit',e:'🛒',n:'Runcit / Pasar',f:['[shop~"^(supermarket|convenience|greengrocer|general|variety_store)$"]']},
+    {id:'basah',e:'🐟',n:'Pasar Basah / Ayam / Ikan / Daging',f:['[shop~"^(butcher|seafood|farm)$"]','[amenity=marketplace]','[shop][name~"pasar basah|ayam|ikan|daging|sotong|udang|sayur",i]']},
+    {id:'malam',e:'🌙',n:'Pasar Malam / Bazar',r:8000,f:['[name~"pasar malam|pasar tani|bazar|bazaar|night market",i][!highway]']},
+    {id:'hardware',e:'🔧',n:'Hardware',f:['[shop~"^(hardware|doityourself|trade|paint|tools|building_materials)$"]']},
+    {id:'farmasi',e:'💊',n:'Farmasi',f:['[amenity=pharmacy]','[shop=chemist]','[healthcare=pharmacy]']},
+    {id:'pos',e:'📮',n:'Pos / Kurier',f:['[amenity=post_office]','[office=courier]','[name~"j&t|poslaju|pos laju|dhl|gdex|ninja ?van|flash express|courier|kurier",i][!highway]']},
+    {id:'baby',e:'🍼',n:'Baby / Susu / Pampers',f:['[shop~"^(baby_goods|toys|children)$"]','[shop][name~"baby|bayi|mothercare|susu|pampers|kids",i]']},
+    {id:'pet',e:'🐶',n:'Pet / Makanan Kucing',f:['[shop~"^(pet|pet_grooming)$"]','[amenity=veterinary]','[shop][name~"pet|kucing|cat food|veterinar",i]']},
+    {id:'dobi',e:'👕',n:'Dobi / Laundry',f:['[shop~"^(laundry|dry_cleaning)$"]','[amenity=laundry]','[name~"dobi|laundry",i][!highway]']},
+    {id:'buku',e:'📚',n:'Buku / Alat Tulis / Print',f:['[shop~"^(books|stationery|copyshop|printing)$"]','[office=printing]','[shop][name~"print|photostat|buku|stationery|alat tulis|popular|mph",i]']},
+    {id:'topup',e:'📱',n:'Topup / Bil / E-Wallet',f:['[shop~"^(mobile_phone|telecommunication)$"]','[amenity=post_office]','[shop][name~"7-eleven|7 eleven|kk mart|99 speedmart|topup|top up|maxis|celcom|digi|umobile|unifi|tm point|bill",i]']},
+    {id:'bunga',e:'💐',n:'Bunga / Gift / Surprise',f:['[shop~"^(florist|gift|party|garden_centre)$"]','[shop][name~"bunga|florist|gift|hadiah|balloon|belon|surprise",i]']},
+    {id:'elektrik',e:'🔌',n:'Elektrik / Kedai RM2 / DIY',f:['[shop~"^(electronics|electrical|variety_store|houseware|discount)$"]','[shop][name~"rm ?2|mr ?diy|mr dollar|ecoshop|eco shop|elektrik",i]']},
+    {id:'masjid',e:'🕌',n:'Barangan Masjid / Frozen / Kuih Raya',f:['[shop~"^(frozen_food|religion|confectionery)$"]','[shop][name~"frozen|kuih|sejuk beku|tikar|sejadah|kopiah|telekung|islamic|muslim|kurma",i]']}
+  ];
+  /* Status pengesahan customer selepas order selesai (customer tekan, atau auto-sah selepas confAutoMin minit) */
+  function confState(o){
+    if(!o||o.status!=='selesai') return null;
+    if(o.conf&&o.conf.v==='ok') return {k:'ok',t:'✅ Customer sahkan terima'};
+    if(o.conf&&o.conf.v==='issue') return {k:'issue',t:'⚠️ Customer lapor: belum terima'+(o.conf.m?' ('+o.conf.m+')':'')};
+    const mins=+(cfg.confAutoMin||30), at=(o.t&&o.t.selesai)||0;
+    return (at&&Date.now()-at>mins*60000)?{k:'auto',t:'🕒 Auto-sah (tiada bantahan)'}:{k:'wait',t:'⏳ Menunggu pengesahan customer'};
+  }
+  const phoneOf=(o,c)=>(c&&c.phone)||(o&&o.phone)||'';
+  const phoneKey=p=>String(p||'').replace(/\D/g,'').slice(-10);
+  const report=o=>db?db.ref('reports').push(Object.assign({t:firebase.database.ServerValue.TIMESTAMP},o)):Promise.reject(new Error('nodb'));   // masa pelayan: tak terjejas jam telefon salah
+  function compressImg(file,max,q){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onerror=rej; fr.onload=()=>{ const im=new Image(); im.onerror=rej; im.onload=()=>{ const k=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement('canvas'); cv.width=Math.round(im.width*k); cv.height=Math.round(im.height*k); const cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(im,0,0,cv.width,cv.height); res(cv.toDataURL('image/jpeg',q)) }; im.src=fr.result }; fr.readAsDataURL(file) }) }
+  const kb=()=>{ try{ return localStorage.getItem('rkb-loghat')!=='0' }catch(e){ return true } };
+  const say=(bm,k)=>kb()?k:bm;
+  const toggleLoghat=()=>{ try{ localStorage.setItem('rkb-loghat',kb()?'0':'1') }catch(e){} return kb() };
+  const confetti=()=>{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return; const E=['🎉','✨','🌙','💛','🛵']; for(let i=0;i<26;i++){ const s=document.createElement('span'); s.className='cf'; s.textContent=E[i%E.length]; s.style.left=(Math.random()*96)+'vw'; s.style.animationDelay=(Math.random()*0.8)+'s'; s.style.fontSize=(16+Math.random()*16)+'px'; document.body.appendChild(s); setTimeout(()=>s.remove(),4200) } };
+  /* Kongsi upah rider & markup vendor. Nilai sebenar dibaca daripada settings (admin tukar), lalai daripada firebase-config.js */
+  const _sh={rider:+cfg.riderShare||80,mark:cfg.vendorMarkup!=null?+cfg.vendorMarkup:10};
+  const r2=n=>Math.round((+n||0)*100)/100;
+  const loadShares=()=>db?db.ref('settings').once('value').then(s=>{const v=s.val()||{};if(v.riderShare!=null)_sh.rider=+v.riderShare;if(v.vendorMarkup!=null)_sh.mark=+v.vendorMarkup;return _sh}).catch(()=>_sh):Promise.resolve(_sh);
+  const riderPay=o=>o&&o.riderPay!=null?+o.riderPay:r2((+(o&&o.price)||0)*_sh.rider/100);          // bahagian rider (apa yang rider nampak)
+  const platCut=o=>r2((+(o&&o.price)||0)-riderPay(o));                                              // untung platform daripada upah (admin sahaja)
+  const vPrice=b=>r2((+b||0)*(1+_sh.mark/100));                                                     // harga pelanggan = harga vendor + markup
+  // akaun admin tersangkut di halaman rider/vendor: tunjuk mesej jelas (bukan skrin kosong)
+  const adminGuard=(u,role)=>{
+    const old=document.getElementById('admGuard'); if(old) old.remove();
+    if(!u||!u.email||(cfg.admins||[]).indexOf(u.email.toLowerCase())<0) return false;
+    const d=document.createElement('div'); d.id='admGuard'; d.className='pad';
+    d.innerHTML='<div class="card" style="text-align:center"><div style="font-size:42px">🧑‍💼</div><div class="big">Anda log masuk sebagai ADMIN</div><div class="mut" style="margin:8px 0 12px;line-height:1.6">Akaun admin tak boleh guna app '+role+'. Buka panel admin, atau log keluar dan masuk dengan akaun '+role+'.</div><a class="btn full" href="admin.html" style="display:block;text-decoration:none;margin-bottom:8px">Buka panel admin</a><button class="btn full" id="admOut" type="button" style="background:transparent;border:1px solid var(--line)">Log keluar</button></div>';
+    document.body.appendChild(d);
+    d.querySelector('#admOut').onclick=()=>auth.signOut();
+    ['login','pend','susp','setup','app','gate'].forEach(x=>{const e=document.getElementById(x); if(e) e.classList.add('hide')});
+    return true;
+  };
+  window.RKB={adminGuard,r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,phoneOf,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
+})();
+
+/* ===== Pasang app (banner) =====
+   Pelayar tak benarkan pasang senyap tanpa pengguna. Ini tunjuk banner supaya pengguna cuma tekan SATU butang "Pasang". */
+(function(){
+  var dip=window.__dip||null;
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); dip=window.__dip=e; if(window.__ibShow) window.__ibShow(); });
+  function standalone(){ try{ return ['standalone','fullscreen','minimal-ui'].some(function(m){return matchMedia('(display-mode: '+m+')').matches})||navigator.standalone===true }catch(e){return false} }
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  window.RKB.installBanner=function(appName){
+    if(standalone()) return;
+    try{ if(+localStorage.getItem('rkb_ib_'+appName)>Date.now()) return }catch(e){}
+    var b=document.createElement('div');
+    var nv=document.querySelector('.nav'),off=nv?(nv.offsetHeight+14):10; b.style.cssText='position:fixed;left:10px;right:10px;bottom:calc('+off+'px + env(safe-area-inset-bottom));z-index:2500;background:#111827;color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:14px;line-height:1.4';
+    var t=document.createElement('div'); t.style.flex='1'; t.innerHTML='📲 <b>Pasang app '+appName+'</b><br><span style="opacity:.8;font-size:12px">'+(ios?'Tekan ikon Kongsi, kemudian "Tambah ke Skrin Utama".':'Terus dari skrin utama, tanpa buka pelayar.')+'</span>';
+    var go=document.createElement('button'); go.type='button'; go.textContent='Pasang'; go.style.cssText='background:#22c55e;color:#04210f;border:0;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;min-height:44px;display:'+(ios?'none':'block');
+    var x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.setAttribute('aria-label','Tutup'); x.style.cssText='background:none;border:0;color:#fff;font-size:20px;min-width:36px;min-height:44px';
+    b.appendChild(t); b.appendChild(go); b.appendChild(x); document.body.appendChild(b);
+    function hide(days){ b.style.display='none'; try{ localStorage.setItem('rkb_ib_'+appName,String(Date.now()+days*864e5)) }catch(e){} }
+    go.onclick=function(){ if(!dip) return; dip.prompt(); (dip.userChoice||Promise.resolve()).then(function(){ dip=window.__dip=null; hide(30) }).catch(function(){}); };
+    x.onclick=function(){ hide(3) };
+    window.addEventListener('appinstalled',function(){ b.style.display='none' });
+    window.__ibShow=function(){ if(dip||ios){ go.style.display=ios?'none':'block'; b.style.display='flex' } };
+    window.__ibShow();
+    // Chrome tak hantar tawaran (cth app lain dalam folder sama sudah dipasang / tawaran pernah ditolak): tunjuk cara manual
+    setTimeout(function(){ if(!dip&&!ios&&b.style.display==='none'){ t.innerHTML='📲 <b>Pasang app '+appName+'</b><br><span style="opacity:.8;font-size:12px">Tekan <b>⋮</b> di Chrome, kemudian <b>Pasang app</b> atau <b>Tambah ke skrin utama</b>.</span>'; go.style.display='none'; b.style.display='flex' } },4000);
+  };
+})();
+
+
+/* ===== Push sebenar (FCM): notifikasi sampai walaupun app ditutup =====
+   Perlu: vapidKey dalam firebase-config.js + Cloud Functions (folder functions/) sudah di-deploy. */
+(function(){
+  var R=window.RKB; if(!R||!R.ok) return;
+  var cur=null, wait=false;
+  function ok(){ return 'serviceWorker' in navigator&&'Notification' in window&&'PushManager' in window&&window.firebase&&firebase.messaging&&(!firebase.messaging.isSupported||firebase.messaging.isSupported()) }
+  async function reg(role,user){
+    try{
+      if(!ok()) return;
+      var sw=await navigator.serviceWorker.ready;
+      var tok=await firebase.messaging().getToken({vapidKey:R.cfg.vapidKey,serviceWorkerRegistration:sw});
+      if(!tok) return;
+      cur={role:role,uid:user.uid,token:tok};
+      await R.db.ref('fcmTokens/'+role+'/'+user.uid+'/'+tok).set(Date.now());
+    }catch(e){ console.warn('push',e) }
+  }
+  // pelanggan (tanpa log masuk): token dikaitkan dengan id order, dibuang bila order selesai/batal oleh Cloud Function
+  R.pushCustomer=function(id){
+    if(!id||!R.cfg.vapidKey||!('Notification' in window)||!ok()) return;
+    var go=async function(){ try{ var sw=await navigator.serviceWorker.ready; var tok=await firebase.messaging().getToken({vapidKey:R.cfg.vapidKey,serviceWorkerRegistration:sw}); if(tok) await R.db.ref('fcmTokens/customer/'+id+'/'+tok).set(Date.now()) }catch(e){ console.warn('push',e) } };
+    if(Notification.permission==='granted') return go();
+    if(Notification.permission==='default'){ var h=function(){ removeEventListener('click',h); Notification.requestPermission().then(function(p){ if(p==='granted') go() }) }; addEventListener('click',h) }
+  };
+  R.pushInit=function(role,user){
+    if(!user||!R.cfg.vapidKey||!('Notification' in window)) return;
+    if(cur&&cur.uid===user.uid&&cur.role===role) return;
+    if(Notification.permission==='granted') return reg(role,user);
+    if(Notification.permission==='default'&&!wait){ wait=true; var h=function(){ removeEventListener('click',h); Notification.requestPermission().then(function(p){ wait=false; if(p==='granted') reg(role,user) }) }; addEventListener('click',h) }
+  };
+  // buang token sebelum log keluar supaya telefon ini tak terima push akaun lama
+  if(!R.auth) return;   // halaman pelanggan tak muat modul auth
+  var os=R.auth.signOut.bind(R.auth);
+  R.auth.signOut=async function(){ try{ if(cur){ await R.db.ref('fcmTokens/'+cur.role+'/'+cur.uid+'/'+cur.token).remove(); try{ await firebase.messaging().deleteToken() }catch(e){} cur=null } }catch(e){} return os() };
+})();
+
+
+/* ===== V36: skrin wajib pasang (pelanggan) + tab navigasi seragam ===== */
+(function(){
+  var R=window.RKB; if(!R) return;
+  var dip=window.__dip||null;
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); dip=window.__dip=e; var b=document.getElementById('rkgGo'); if(b) b.style.display='block'; });
+  function standalone(){ try{ return ['standalone','fullscreen','minimal-ui'].some(function(m){return matchMedia('(display-mode: '+m+')').matches})||navigator.standalone===true }catch(e){ return false } }
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  R.gateInstall=function(appName){
+    var mode=R.cfg.customerInstall; if(mode===false||mode==='off') return;
+    if(standalone()) return;
+    try{ if(sessionStorage.getItem('rkb_skip_install')==='1') return }catch(e){}
+    var hard=(mode===true||mode==='hard');
+    var g=document.createElement('div'); g.id='rkGate';
+    g.style.cssText='position:fixed;inset:0;z-index:9000;background:linear-gradient(160deg,#075b35,#168447 70%,#54ad62);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto';
+    var help=ios?'Tekan ikon <b>Kongsi ⬆️</b> di Safari, pilih <b>Tambah ke Skrin Utama</b>, kemudian buka app dari skrin utama.':'Tekan butang <b>Pasang app</b> di bawah. Kalau tak keluar: tekan <b>⋮</b> di Chrome, pilih <b>Pasang app</b> / <b>Tambah ke skrin utama</b>.';
+    g.innerHTML='<div style="background:#fff;color:#173126;border-radius:24px;padding:26px 22px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3);font-family:system-ui,-apple-system,Segoe UI,sans-serif">'
+      +'<div style="font-size:48px">📲</div>'
+      +'<div style="font-size:21px;font-weight:800;margin:6px 0">Pasang app '+appName+'</div>'
+      +'<div style="color:#52665a;line-height:1.6;font-size:14.5px;margin-bottom:14px">Lebih laju, jejak order masa nyata dan terima notifikasi terus dari skrin utama. Percuma, tak guna ruang telefon banyak.</div>'
+      +'<div id="rkgHelp" style="background:#eaf6ec;border-radius:14px;padding:11px 13px;font-size:13.5px;line-height:1.55;color:#075b35;margin-bottom:14px">'+help+'</div>'
+      +'<button id="rkgGo" type="button" style="display:'+(ios?'none':'block')+';width:100%;min-height:50px;border:0;border-radius:16px;background:linear-gradient(135deg,#1b9852,#08713e);color:#fff;font:inherit;font-weight:800;font-size:17px">Pasang app</button>'
+      +(hard?'':'<button id="rkgSkip" type="button" style="margin-top:12px;width:100%;background:#fff;border:2px solid #168447;border-radius:16px;color:#075b35;font:inherit;font-weight:800;font-size:15px;min-height:48px">Teruskan di pelayar ›</button>')
+      +'</div>';
+    document.body.appendChild(g);
+    var go=g.querySelector('#rkgGo'); if(!ios) go.style.display='block';
+    go.onclick=function(){ if(!dip){ g.querySelector('#rkgHelp').style.boxShadow='0 0 0 2px #168447'; return; } dip.prompt(); (dip.userChoice||Promise.resolve()).then(function(){ dip=window.__dip=null }).catch(function(){}); };
+    var sk=g.querySelector('#rkgSkip'); if(sk) sk.onclick=function(){ try{ sessionStorage.setItem('rkb_skip_install','1') }catch(e){} g.remove() };
+    window.addEventListener('appinstalled',function(){ g.querySelector('#rkgHelp').innerHTML='✅ Dah dipasang! Tutup halaman ini dan buka app dari skrin utama.'; go.style.display='none'; if(sk) sk.style.display='none' });
+  };
+  R.customerTabs=function(active){
+    function build(){
+      if(document.getElementById('rkTabs')) return;
+      var h=document.querySelector('.hd')||document.querySelector('header'); if(!h) return;
+      var last=''; try{ last=localStorage.getItem('rkb-last')||'' }catch(e){}
+      var t=[['tempah','🛵','Tempah','index.html'],['kedai','🏪','Kedai','shop.html'],['jejak','📍','Jejak',last?('track.html?id='+encodeURIComponent(last)):'']];
+      var n=document.createElement('nav'); n.id='rkTabs'; n.className='rkt'; n.setAttribute('aria-label','Navigasi utama');
+      n.innerHTML=t.map(function(x){ var on=x[0]===active; return x[3]?'<a href="'+x[3]+'" class="'+(on?'on':'')+'"'+(on?' aria-current="page"':'')+'><span>'+x[1]+'</span>'+x[2]+'</a>':'<span class="off" title="Belum ada tempahan"><span>'+x[1]+'</span>'+x[2]+'</span>' }).join('');
+      h.insertAdjacentElement('afterend',n);
+    }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
+  };
+})();

@@ -304,6 +304,9 @@
         "lng": {
           ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
         },
+        "reopen": {
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        },
         "$other": {
           ".validate": "false"
         }
@@ -335,6 +338,9 @@
           },
           "c": {
             ".validate": "newData.isString() && newData.val().length <= 30"
+          },
+          "ex": {
+            ".validate": "newData.isNumber() && newData.val() > 0"
           },
           "$other": {
             ".validate": "false"

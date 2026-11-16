@@ -1,53 +1,490 @@
-<!DOCTYPE html>
-<html lang="ms">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyRiderKu V40 - Portal Vendor | Pengurusan Menu & Pesanan</title>
-    <link rel="stylesheet" href="app.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-dark text-light">
-    <header class="glass-header sticky top-0 z-50 px-4 py-3 flex justify-between items-center border-b border-gold/20">
-        <div class="flex items-center space-x-3">
-            <div class="bg-gold text-dark font-black px-3 py-1.5 rounded-lg text-lg">VND</div>
-            <div>
-                <h1 class="font-bold text-sm text-gold">PORTAL VENDOR</h1>
-                <p class="text-[10px] text-gray-400">ZUS Coffee - Jalan Temenggong</p>
-            </div>
-        </div>
-        <a href="index.html" class="text-xs bg-dark-card border border-gold/30 text-gold px-3 py-1.5 rounded-lg">Utama</a>
-    </header>
+<!doctype html>
+<html lang="ms"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MYRIDERKU Vendor</title><meta name="theme-color" content="#168447">
+<script src="theme.js"></script>
+<link rel="manifest" href="manifest-vendor.webmanifest">
+<link rel="icon" type="image/png" href="icon-vendor-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-vendor.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MYRIDERKU Vendor">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="theme.css">
+<style>
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:1000;display:flex;gap:4px;justify-content:center;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line)}
+.nav button{flex:1;max-width:130px;background:none;border:0;color:var(--mut);font:inherit;font-size:12px;font-weight:700;padding:6px 2px;border-radius:14px;position:relative;min-height:52px}
+.nav button b{display:block;font-size:20px;line-height:1.2}
+.nav button.on{background:var(--card2);color:var(--txt)}
+.nav .dot{position:absolute;top:2px;right:18%;background:#ef4444;color:#fff;border-radius:99px;font-size:11px;min-width:18px;padding:0 5px;line-height:18px}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tg{width:64px;height:36px;border-radius:99px;border:0;background:#64748b;position:relative;flex:0 0 auto;cursor:pointer;min-height:36px}
+.tg:after{content:"";position:absolute;top:4px;left:4px;width:28px;height:28px;border-radius:50%;background:#fff;transition:.2s}
+.tg.on{background:var(--grn)}.tg.on:after{left:32px}
+.oc{border-left:5px solid var(--line)}.oc.s-baru{border-left-color:#f59e0b;animation:pulse 1.2s ease-out 1}.oc.s-diterima{border-left-color:#3b82f6}.oc.s-siap{border-left-color:var(--grn)}
+.it{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:3px 0}
+.warn{background:#3b1d0a;border:1px solid #f59e0b;border-radius:12px;padding:8px 10px;font-size:13px;margin:8px 0;color:#fde68a}
+html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
+.bars{display:flex;align-items:flex-end;gap:8px;height:120px;margin-top:8px}
+.bars div{flex:1;text-align:center;font-size:11px;color:var(--mut);display:flex;flex-direction:column;justify-content:flex-end;height:100%}
+.bars i{display:block;background:var(--grn);border-radius:6px 6px 0 0;min-height:2px}
+.mi{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.mi:last-child{border:0}.mi .nm{font-weight:700}.mi.off .nm{opacity:.5;text-decoration:line-through}
+.qb{width:38px;min-height:38px;padding:0;border-radius:10px}
+.modal{position:fixed;inset:0;z-index:6000;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px}
+.mbox{width:100%;max-width:520px;max-height:92vh;overflow:auto;background:var(--card);border-radius:24px;padding:18px 16px calc(16px + env(safe-area-inset-bottom))}
+.big2{font-size:26px;font-weight:900}
+</style>
+<link rel="stylesheet" href="myriderku-brand.css">
+<link rel="stylesheet" href="myriderku-ui.css">
+<link rel="stylesheet" href="myriderku-ceria.css">
+<link rel="stylesheet" href="myriderku-v37.css?v=39">
+<link rel="stylesheet" href="myriderku-v39.css?v=39">
+<style>
+/* V40: sasaran sentuh besar, chip pilihan, kumpulan menu, saiz tulisan besar */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border:1.5px solid var(--line);background:var(--card2);color:var(--txt);border-radius:99px;padding:10px 16px;font:inherit;font-size:15px;font-weight:700;min-height:44px;cursor:pointer}
+.chip.on{background:#0f6b36!important;color:#fff!important;border-color:#0f6b36!important;box-shadow:none!important}
+.gh{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:12px 0 2px;font:inherit;font-size:15px;font-weight:800;min-height:48px;text-align:left;cursor:pointer}
+.gh small{font-weight:600;color:var(--mut)}
+.toast{bottom:calc(96px + env(safe-area-inset-bottom))}  /* jangan tutup bar navigasi */
+.qb{width:44px;min-height:44px}
+.btn.sm{min-height:44px}
+.al{border-radius:14px;padding:10px 12px;margin:10px 0;font-size:14px;border:1px solid var(--line);background:var(--card2)}
+.al.w{background:#fff4dc;color:#7a4b00;border-color:#f59e0b}
+html[data-theme="dark"] .al.w{background:#3b1d0a;color:#fde68a}
+.ck{display:flex;gap:8px;align-items:center;padding:3px 0}
+.xs{font-size:12px}
+html.rk-big body{font-size:19px}
+html.rk-big .mut,html.rk-big .sm,html.rk-big .it,html.rk-big .row,html.rk-big .al,html.rk-big .stat small{font-size:17px}
+html.rk-big .btn,html.rk-big .chip,html.rk-big input,html.rk-big select,html.rk-big .gh{font-size:18px}
+html.rk-big .btn{min-height:54px}
+html.rk-big .nav button{font-size:14px}
+html.rk-big label,html.rk-big .mi .nm{font-size:18px}
+</style>
+</head><body class="role-vendor">
+<div class="wrap">
+<header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">MYRIDERKU Vendor 🏪</h1><div class="sm" id="who"></div></div></header>
 
-    <main class="max-w-md mx-auto p-4 pb-24">
-        <div class="bg-dark-card border border-gold/30 rounded-2xl p-5 mb-5 shadow-xl">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-xs text-gray-400">Status Restoran</span>
-                <span class="bg-green-500/20 text-green-400 text-xs px-2.5 py-0.5 rounded font-bold">BUKA (Open)</span>
-            </div>
-            <h2 class="text-xl font-black text-gold">Jumlah Pesanan Hari Ini</h2>
-            <div class="text-2xl font-black text-light mt-1">14 Pesanan <span class="text-xs text-gold font-normal">(RM 210.00)</span></div>
-        </div>
+<div id="login" class="pad hide"><div class="card"><form id="lf" onsubmit="return false"><h3 id="ltitle">Log masuk vendor</h3>
+  <div id="regf" class="hide"><label>Nama pemilik</label><input id="rn" autocomplete="name" maxlength="60"><label>No. telefon</label><input id="rp" type="tel" placeholder="0123456789" autocomplete="tel" maxlength="20"><label>Nama kedai</label><input id="rs" maxlength="60"></div>
+  <label>E-mel</label><input id="em" name="username" type="email" autocomplete="username" autocapitalize="none" inputmode="email">
+  <label>Kata laluan</label><input id="pw" name="password" type="password" autocomplete="current-password" placeholder="Min. 6 aksara">
+  <div class="err" id="lerr"></div>
+  <button class="btn full" id="go" type="submit" style="margin-top:8px">Log masuk</button>
+  <button class="btn gry full" id="tg" type="button" style="margin-top:8px">Vendor baru? Daftar</button>
+  <button class="btn gry full" id="fp" type="button" style="margin-top:8px">🔑 Lupa kata laluan?</button>
+  <div class="mut" style="margin-top:10px">Pendaftaran vendor baru perlu diluluskan admin.</div></form></div></div>
 
-        <h3 class="text-sm font-bold text-gold uppercase tracking-wider mb-3"><i class="fas fa-utensils mr-2"></i> Pesanan Masuk Semasa</h3>
-        <div class="space-y-3">
-            <div class="bg-dark-card border border-gold/20 rounded-xl p-4">
-                <div class="flex justify-between items-start mb-2">
-                    <span class="bg-yellow-500/20 text-yellow-400 text-[10px] px-2 py-0.5 rounded font-bold">Sedang Disediakan</span>
-                    <span class="text-xs text-gray-400">12:40 PM</span>
-                </div>
-                <h4 class="text-xs font-bold text-light mb-1">Spanish Lattes (2x) & Croissant</h4>
-                <p class="text-[11px] text-gray-400 mb-3">Pelanggan: Wan Ramlah • Rider: Ahmad</p>
-                <button onclick="alert('Pesanan ditanda siap untuk diambil rider!')" class="w-full bg-gold text-dark text-xs font-bold py-2 rounded-lg hover:opacity-90">Tanda Sedia Diambil</button>
-            </div>
-        </div>
-    </main>
+<div id="pend" class="pad hide"><div class="card" style="text-align:center"><div style="font-size:42px">⏳</div><div class="big">Menunggu kelulusan admin</div><div class="mut" style="margin-top:8px">Skrin ni bertukar sendiri sebaik admin meluluskan kedai anda.</div><button class="btn gry full out" style="margin-top:12px">Log keluar</button></div></div>
+<div id="susp" class="pad hide"><div class="card" style="text-align:center"><div style="font-size:42px">⛔</div><div class="big">Akaun digantung</div><div class="mut" style="margin:8px 0">Sila hubungi admin.</div><a class="btn grn full" id="waSup" target="_blank" rel="noopener">💬 WhatsApp admin</a><button class="btn gry full out" style="margin-top:8px">Log keluar</button></div></div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-dark-card border-t border-gold/20 py-2 px-6 flex justify-between items-center z-50 max-w-md mx-auto">
-        <a href="index.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-home text-base"></i> Utama</a>
-        <a href="track.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-map-marked-alt text-base"></i> Jejak</a>
-        <a href="rider.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-motorcycle text-base"></i> Rider</a>
-        <a href="admin.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-user-shield text-base"></i> Admin</a>
-    </nav>
-</body>
-</html>
+<div id="setup" class="pad hide"><div class="card"><h3 id="stT">Profil kedai</h3>
+  <div class="mut">Maklumat ini dilihat pelanggan.</div>
+  <label>Nama kedai</label><input id="sn" maxlength="60">
+  <label>Kategori</label><select id="sc"><option>Makan</option><option>Kafe</option><option>Air / Boba</option><option>Kek / Bakery</option><option>Runcit</option><option>Pasar basah</option><option>Farmasi</option><option>Lain-lain</option></select>
+  <label>Alamat</label><input id="sa" maxlength="200" autocomplete="street-address">
+  <label>Penerangan ringkas</label><input id="sd" maxlength="160">
+  <label>Promosi kedai (pilihan)</label><input id="sp" maxlength="80" placeholder="Cth: Diskaun 10% sebelum 12 tengah hari">
+  <div class="mut" style="margin-top:10px">📍 Lokasi: <span id="sl">belum ditetapkan</span></div>
+  <button class="btn gry full" id="sgeo" type="button" style="margin-top:8px">📍 Guna lokasi saya sekarang</button>
+  <div class="err" id="serr"></div>
+  <button class="btn full" id="ssave" style="margin-top:8px">Simpan</button>
+  <button class="btn gry full hide" id="scan" style="margin-top:8px">Batal</button></div></div>
+
+<div id="app" class="hide">
+ <div data-p="order" class="pad">
+  <div class="card"><div class="sw"><div><div class="big" id="openT">Kedai TUTUP</div><div class="mut" id="openS">Pelanggan tak boleh tempah</div></div><button class="tg" id="openB" type="button" aria-label="Buka atau tutup kedai"></button></div><div id="pauseBox"></div></div>
+  <div id="alerts"></div>
+  <div class="stats" id="stats"></div>
+  <div id="olist"></div>
+  <div id="hwrap" class="hide"><div class="mut" style="margin:16px 4px 4px"><b>Sejarah order</b></div>
+   <div class="chips" id="hchips"><button class="chip" type="button" data-hf="0">Hari ini</button><button class="chip on" type="button" data-hf="7">7 hari</button><button class="chip" type="button" data-hf="all">Semua (300 terkini)</button></div>
+   <input id="hq" type="search" maxlength="40" placeholder="🔍 Cari no. order, nama atau telefon" autocomplete="off">
+   <div id="hlist"></div></div>
+ </div>
+ <div data-p="menu" class="pad hide">
+  <button class="btn full" id="addI">➕ Tambah produk</button>
+  <div class="card"><h3>Menu &amp; Stok</h3><input id="mq" type="search" maxlength="40" placeholder="🔍 Cari produk" class="hide" autocomplete="off"><div id="mlist"></div></div>
+ </div>
+ <div data-p="sales" class="pad hide">
+  <div class="stats" id="sstats"></div>
+  <div class="card"><h3>7 hari terakhir (jualan anda)</h3><div class="bars" id="bars"></div></div>
+  <div class="card"><h3>Produk terlaris (30 hari)</h3><div id="top"></div></div>
+  <div class="card"><h3>💸 Bayaran (Payout)</h3><div id="pay"></div></div>
+ </div>
+ <div data-p="more" class="pad hide">
+  <div class="card"><h3>⭐ Ulasan pelanggan</h3><div id="rev"></div></div>
+  <div class="card"><h3>Tetapan</h3>
+   <button class="btn gry full" id="editP" type="button">✏️ Edit profil &amp; promosi kedai</button>
+   <a class="btn grn full" id="waAdm" target="_blank" rel="noopener" style="margin-top:8px">💬 Sokongan / aduan (WhatsApp)</a>
+   <button class="btn gry full" id="thB" type="button" style="margin-top:8px"></button>
+   <button class="btn gry full" id="szB" type="button" style="margin-top:8px"></button>
+   <button class="btn gry full out" type="button" style="margin-top:8px">Log keluar</button></div>
+   </div>
+ <nav class="nav"><button data-n="order" class="on"><b>🧾</b>Order<span class="dot hide" id="nDot"></span></button><button data-n="menu"><b>🍔</b>Menu</button><button data-n="sales"><b>📊</b>Jualan</button><button data-n="more"><b>⚙️</b>Lagi</button></nav>
+</div>
+</div>
+<div class="toast hide" id="toast"></div>
+
+<script>
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.__dip=e});
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="common.js?v=39"></script>
+<script>RKB.installBanner('KB Vendor')</script>
+<script>
+/*PURE*/
+const dayStart=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+const doneAt=o=>(o.t&&+o.t.selesai)||+o.createdAt||0;
+const itemsSum=o=>Math.round(Object.values(o.items||{}).reduce((a,i)=>a+(+i.p||0)*(+i.q||0),0)*100)/100;
+const subOf=o=>o.sub!=null?+o.sub:itemsSum(o);                 // apa yang vendor terima (harga asal vendor, tanpa markup platform)
+function calc(list,from,to){let g=0,n=0;list.forEach(o=>{if(o.status!=='selesai')return;const t=doneAt(o);if(t>=from&&t<to){g+=subOf(o);n++}});return{net:Math.round(g*100)/100,n}}
+function mismatch(o,menu){ // amaran jika bahagian vendor / harga item tak sepadan menu vendor
+  const w=[];const sum=itemsSum(o);if(o.sub!=null&&Math.abs(sum-(+o.sub))>0.009)w.push('Jumlah order RM'+(+o.sub).toFixed(2)+' tak sama dengan jumlah item RM'+sum.toFixed(2));
+  Object.values(o.items||{}).forEach(i=>{const m=i.id&&menu[i.id];if(!m)return;const p=(m.pp!=null&&m.pp<m.p)?m.pp:m.p;if(Math.abs(p-(+i.p||0))>0.009)w.push(String(i.n)+': harga order RM'+(+i.p).toFixed(2)+', menu anda RM'+(+p).toFixed(2))});
+  return w}
+/*ENDPURE*/
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+/* V40: tetapan setempat (per peranti) — tidak menyentuh pangkalan data */
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const SZ={on:()=>LS.get('rkb-vsz','n')==='big',set(b){LS.set('rkb-vsz',b?'big':'n');document.documentElement.classList.toggle('rk-big',b)}};
+SZ.set(SZ.on());
+const isOut=m=>m.st===0||+m.ex>Date.now();     // habis (stok 0) atau ditanda 'habis hari ni'
+const hhmm=t=>new Date(t).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'});
+/* Dialog pilihan ringkas (ganti prompt()): chips + input pilihan. Pulang teks, atau null jika dibatalkan. */
+function ask(o){
+  return new Promise(res=>{
+    const d=document.createElement('div');d.className='modal';let done=false;
+    d.innerHTML=`<div class="mbox" role="dialog" aria-modal="true"><h3 style="margin:0 0 4px">${esc(o.title)}</h3>${o.sub?`<div class="mut">${esc(o.sub)}</div>`:''}
+    <div class="chips">${o.chips.map(c=>`<button type="button" class="chip" data-v="${esc(c[1])}">${esc(c[0])}</button>`).join('')}</div>
+    <label>${esc(o.label)}</label><input id="qv" ${o.num?'type="number" inputmode="numeric" min="1" max="180" step="1"':'type="text" maxlength="120"'} value="${esc(o.def||'')}" autocomplete="off">
+    <div class="acts" style="margin-top:12px"><button class="btn grn" id="qok" type="button">${esc(o.ok||'OK')}</button><button class="btn gry" id="qno" type="button">Batal</button></div></div>`;
+    document.body.appendChild(d);const inp=d.querySelector('#qv');
+    const sync=()=>d.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.v===inp.value.trim()));
+    const fin=v=>{if(done)return;done=true;document.removeEventListener('keydown',kd);d.remove();res(v)};
+    const kd=e=>{if(e.key==='Escape')fin(null)};document.addEventListener('keydown',kd);
+    d.onclick=e=>{if(e.target===d)fin(null);const c=e.target.closest('.chip');if(c){inp.value=c.dataset.v;sync()}};
+    inp.oninput=sync;sync();
+    d.querySelector('#qno').onclick=()=>fin(null);
+    d.querySelector('#qok').onclick=()=>fin(inp.value.trim());
+  });
+}
+const R=window.RKB,esc=R.esc,rm=R.rm,db=R.db,auth=R.auth;
+const TS=window.firebase?firebase.database.ServerValue.TIMESTAMP:0;
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3200)}
+const show=id=>['login','pend','susp','setup','app'].forEach(x=>$('#'+x).classList.toggle('hide',x!==id));
+const waLink=(m)=>'https://wa.me/'+(R.cfg.waNumber||'')+(m?'?text='+encodeURIComponent(m):'');
+$('#waAdm').href=waLink('Salam admin, saya vendor MYRIDERKU.');$('#waSup').href=waLink('Salam admin, akaun vendor saya digantung.');
+$('#thB').textContent=RKB_THEME.label();$('#thB').onclick=()=>{RKB_THEME.cycle();$('#thB').textContent=RKB_THEME.label()};
+const szLbl=()=>{$('#szB').textContent=SZ.on()?'🔠 Tulisan: BESAR (tekan untuk biasa)':'🔠 Tulisan: biasa (tekan untuk besar)'};
+szLbl();$('#szB').onclick=()=>{SZ.set(!SZ.on());szLbl()};
+const ST_L={baru:'🆕 Baru',diterima:'👨‍🍳 Disediakan',siap:'✅ Siap',selesai:'🎉 Selesai',ditolak:'❌ Ditolak',batal:'🚫 Dibatalkan'};
+
+let user=null,me=null,shop=null,menu={},orders={},payouts={},tab='order',offs=[],dataOffs=[],alarmT=null,editingProfile=false,regMode=false,setupShown=false,nullT=null;
+let L=[],tickT=null,hf='7',mQ='';
+
+/* ---------- Auth ---------- */
+if(!R.ok){show('login');$('#login').innerHTML='<div class="card">Firebase belum disetup. Lihat FIREBASE-SETUP.md.</div>'}
+else{
+$('#tg').onclick=()=>{regMode=!regMode;$('#regf').classList.toggle('hide',!regMode);$('#ltitle').textContent=regMode?'Daftar vendor baru':'Log masuk vendor';$('#go').textContent=regMode?'Daftar':'Log masuk';$('#tg').textContent=regMode?'Dah ada akaun? Log masuk':'Vendor baru? Daftar'};
+$('#go').onclick=async()=>{
+  const em=$('#em').value.trim(),pw=$('#pw').value,er=$('#lerr');er.textContent='';
+  if(!user&&(!em||pw.length<6)){er.textContent='Isi e-mel dan kata laluan (min. 6 aksara).';return}
+  try{
+    if(regMode){
+      const n=$('#rn').value.trim().slice(0,60),ph=$('#rp').value.trim().slice(0,20),sh=$('#rs').value.trim().slice(0,60);
+      if(!n||!ph||!sh){er.textContent='Isi nama, telefon dan nama kedai.';return}
+      const uid=user?user.uid:(await auth.createUserWithEmailAndPassword(em,pw)).user.uid;
+      await db.ref('vendors/'+uid).update({name:n,phone:ph,shop:sh,email:user?(user.email||em):em,reg:Date.now()});
+    }else await auth.signInWithEmailAndPassword(em,pw);
+  }catch(e){er.textContent=({'auth/email-already-in-use':'E-mel ni dah berdaftar.','auth/weak-password':'Kata laluan terlalu lemah.','auth/invalid-email':'Format e-mel salah.','auth/too-many-requests':'Terlalu banyak cubaan. Cuba sebentar lagi.'})[e.code]||(regMode?'Pendaftaran gagal. Semak maklumat.':'E-mel atau kata laluan salah.')}
+};
+$('#fp').onclick=async()=>{const em=$('#em').value.trim();if(!em){$('#lerr').textContent='Taip e-mel dahulu.';return}try{await auth.sendPasswordResetEmail(em)}catch(e){}toast('Jika e-mel berdaftar, pautan reset dihantar.')};
+$$('.out').forEach(b=>b.onclick=()=>auth.signOut());
+auth.onAuthStateChanged(u=>{
+  offs.forEach(f=>f());offs=[];stopData();clearInterval(alarmT);clearTimeout(nullT);setupShown=false;editingProfile=false;user=u;me=shop=null;menu={};orders={};payouts={};
+  if(!u){show('login');return}
+  $('#who').textContent=u.email||'';
+  if(R.adminGuard(u,'vendor'))return;
+  const on=(ref,cb,er)=>{ref.on('value',cb,er||(e=>toast('Ralat: '+e.code)));offs.push(()=>ref.off('value',cb))};
+  on(db.ref('vendors/'+u.uid),s=>{me=s.val();gate()});
+  on(db.ref('vshops/'+u.uid),s=>{shop=s.val();gate()});
+});
+}
+
+function gate(){
+  if(!user)return;
+  if(me===null){ // belum ada rekod vendor: tunggu sekejap (pendaftaran baru), kemudian minta lengkapkan
+    clearTimeout(nullT);nullT=setTimeout(()=>{if(user&&me===null){regMode=false;$('#tg').click();$('#lerr').textContent='Akaun ini belum didaftarkan sebagai vendor. Lengkapkan maklumat di bawah.';$('#em').value=user.email||'';show('login')}},5000);return}
+  clearTimeout(nullT);
+  if(me.approved===false){stopData();show('susp');return}
+  if(me.approved!==true){stopData();show('pend');return}
+  if(!shop||editingProfile){if(!setupShown){setupShown=true;openSetup()}return}
+  setupShown=false;startData();show('app');paint();
+}
+let started=false;
+function stopData(){dataOffs.forEach(f=>f());dataOffs=[];started=false;clearInterval(tickT)}
+function startData(){
+  if(started)return;started=true;R.pushInit('vendor',user);
+  const on=(ref,cb)=>{ref.on('value',cb,e=>toast('Ralat: '+e.code));dataOffs.push(()=>ref.off('value',cb))};
+  on(db.ref('vmenu/'+user.uid),s=>{menu=s.val()||{};paint()});
+  on(db.ref('vpayouts/'+user.uid),s=>{payouts=s.val()||{};paint()});
+  const q=db.ref('vorders/'+user.uid).orderByChild('createdAt').limitToLast(300);
+  let first=true;const seen=new Set();
+  on(q,s=>{const prev=orders;orders=s.val()||{};const nw=Object.keys(orders).filter(k=>orders[k].status==='baru'&&!seen.has(k));Object.keys(orders).forEach(k=>seen.add(k));
+    if(!first&&nw.length){R.beep();toast('🆕 Order baru!');notify()}
+    if(!first)Object.keys(orders).forEach(k=>{const o=orders[k],p=prev[k];if(p&&(p.status==='baru'||p.status==='diterima')&&o.status==='batal'&&!o.reason){R.beep();toast('🚫 Pelanggan batalkan order #'+o.ref)}}); // vendor sentiasa tulis 'reason' bila batal; tiada reason = pelanggan
+    first=false;paint();alarm()});
+  clearInterval(tickT);tickT=setInterval(()=>{ // rehat tamat -> buka semula (hanya bila app dibuka; jika tidak, kedai kekal TUTUP = selamat)
+    if(shop&&!shop.open&&+shop.reopen>0&&Date.now()>=+shop.reopen&&!$('#app').classList.contains('hide'))setOpen(true,true)
+    else if(tab==='menu')paintMenu()},15000);
+}
+function notify(){try{if('Notification' in window&&Notification.permission==='granted')new Notification('🆕 Order baru!',{body:'Buka app untuk terima atau tolak.',tag:'vorder'})}catch(e){}}
+function alarm(){ // ulang bunyi setiap 12s selagi ada order baru belum dijawab
+  clearInterval(alarmT);if(!L.some(o=>o.status==='baru'))return;
+  alarmT=setInterval(()=>{if(L.some(o=>o.status==='baru'))R.beep();else clearInterval(alarmT)},12000);
+}
+
+/* ---------- Profil kedai ---------- */
+let geo=null;
+function openSetup(){
+  show('setup');const s=shop||{};
+  $('#stT').textContent=shop?'Edit profil kedai':'Siapkan profil kedai';
+  $('#sn').value=s.name||me.shop||'';$('#sc').value=s.cat||'Makan';$('#sa').value=s.addr||'';$('#sd').value=s.desc||'';$('#sp').value=s.promo||'';
+  geo=(s.lat!=null&&s.lng!=null)?[s.lat,s.lng]:null;$('#sl').textContent=geo?geo[0].toFixed(5)+', '+geo[1].toFixed(5):'belum ditetapkan';
+  $('#scan').classList.toggle('hide',!shop);
+}
+$('#sgeo').onclick=()=>{navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>{geo=[p.coords.latitude,p.coords.longitude];$('#sl').textContent=geo[0].toFixed(5)+', '+geo[1].toFixed(5)},()=>{$('#serr').textContent='Lokasi tak dapat dikesan. Benarkan akses lokasi.'},{enableHighAccuracy:true,timeout:15000}):$('#serr').textContent='Peranti tak sokong lokasi.'};
+$('#scan').onclick=()=>{editingProfile=false;setupShown=false;gate()};
+$('#editP').onclick=()=>{editingProfile=true;gate()};
+$('#ssave').onclick=async()=>{
+  const n=$('#sn').value.trim();$('#serr').textContent='';
+  if(!n){$('#serr').textContent='Isi nama kedai.';return}
+  if(!geo){$('#serr').textContent='Tetapkan lokasi kedai (butang 📍) supaya rider tahu tempat ambil.';return}
+  const v={name:n.slice(0,60),cat:$('#sc').value,addr:$('#sa').value.trim().slice(0,200),desc:$('#sd').value.trim().slice(0,160),promo:$('#sp').value.trim().slice(0,80),lat:geo[0],lng:geo[1],open:!!(shop&&shop.open)};
+  try{await db.ref('vshops/'+user.uid).update(v);await db.ref('vendors/'+user.uid+'/shop').set(v.name);editingProfile=false;setupShown=false;toast('Profil disimpan ✅');gate()}
+  catch(e){$('#serr').textContent='Gagal simpan: '+(e.code||e.message)}
+};
+
+/* ---------- Buka / tutup / rehat ---------- */
+async function setOpen(to,auto){
+  if(!shop)return;
+  if(to&&!Object.values(menu).some(m=>m.on&&!isOut(m))){if(!auto)toast('Tambah sekurang-kurangnya 1 produk yang ada stok dahulu.');return}
+  try{await db.ref('vshops/'+user.uid).update({open:to,reopen:null});toast(to?(auto?'Rehat tamat, kedai dibuka semula 🟢':'Kedai dibuka 🟢'):'Kedai ditutup 🔴');if(to&&!auto&&'Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(e){toast('Gagal: '+(e.code||e.message))}
+}
+$('#openB').onclick=()=>{
+  if(!shop)return;const to=!shop.open;
+  if(!to&&L.some(o=>o.status==='baru')&&!confirm('Ada order baru belum dijawab. Tutup kedai juga?'))return;
+  setOpen(to);
+};
+$('#pauseBox').onclick=async e=>{
+  const b=e.target.closest('[data-pz]');if(!b||!shop)return;const m=+b.dataset.pz;
+  if(!m){setOpen(true);return}
+  try{await db.ref('vshops/'+user.uid).update({open:false,reopen:Date.now()+m*60000});toast('Rehat '+m+' minit ⏸')}catch(err){toast('Gagal: '+(err.code||err.message)+' (rehat perlu rules V40)')}
+};
+function paintPause(){
+  const b=$('#pauseBox');
+  if(shop.open)b.innerHTML='<div class="mut" style="margin-top:10px">Nak rehat sekejap? Pelanggan tak boleh tempah sepanjang rehat.</div><div class="chips"><button class="chip" type="button" data-pz="15">⏸ 15 min</button><button class="chip" type="button" data-pz="30">⏸ 30 min</button><button class="chip" type="button" data-pz="60">⏸ 1 jam</button></div>';
+  else if(+shop.reopen>Date.now())b.innerHTML='<div class="mut" style="margin-top:10px">⏸ Rehat sehingga <b>'+esc(hhmm(+shop.reopen))+'</b>. Kedai dibuka semula sendiri jika app ini dibuka pada masa itu.</div><div class="chips"><button class="chip on" type="button" data-pz="0">▶ Buka sekarang</button></div>';
+  else b.innerHTML='';
+}
+
+/* ---------- Navigasi tab ---------- */
+$('.nav').onclick=e=>{const b=e.target.closest('[data-n]');if(!b)return;tab=b.dataset.n;paint()};
+
+/* ---------- Lukis ---------- */
+function paint(){
+  if(!user||!me||!shop||$('#app').classList.contains('hide'))return;
+  L=Object.entries(orders).map(([id,o])=>Object.assign({id},o)).sort((a,b)=>b.createdAt-a.createdAt);
+  $('#shopT').textContent=shop.name+' 🏪';
+  $$('[data-p]').forEach(p=>p.classList.toggle('hide',p.dataset.p!==tab));
+  $$('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.n===tab));
+  const nb=L.filter(o=>o.status==='baru').length,d=$('#nDot');d.textContent=nb;d.classList.toggle('hide',!nb);
+  const op=!!shop.open;$('#openB').classList.toggle('on',op);$('#openT').textContent=op?'Kedai BUKA 🟢':'Kedai TUTUP 🔴';$('#openS').textContent=op?'Menerima tempahan':'Pelanggan tak boleh tempah';paintPause();
+  if(tab==='order')paintOrders();else if(tab==='menu')paintMenu();else if(tab==='sales')paintSales();else paintMore();
+}
+const ACT=['baru','diterima','siap'];
+function paintAlerts(){
+  let h='';
+  const low=Object.values(menu).filter(m=>m.on&&!isOut(m)&&m.st>0&&m.st<=3).map(m=>esc(m.n)+' ('+esc(m.st)+')');
+  if(low.length)h+='<div class="al w">⚠️ Stok hampir habis: '+low.join(', ')+'</div>';
+  if('Notification' in window){
+    if(Notification.permission==='default')h+='<div class="al">🔔 Hidupkan notifikasi supaya tak terlepas order.<div class="chips"><button class="chip on" type="button" id="notifB">Hidupkan notifikasi</button></div></div>';
+    else if(Notification.permission==='denied')h+='<div class="al w">🔕 Notifikasi disekat. Buka tetapan pelayar untuk laman ini dan benarkan notifikasi, supaya order baru tak terlepas.</div>';
+  }
+  const ck=[[shop.lat!=null,'Lokasi kedai ditetapkan'],[!!shop.addr,'Alamat kedai diisi'],[Object.keys(menu).length>0,'Ada produk dalam menu'],[Object.values(menu).some(m=>m.on&&!isOut(m)),'Ada produk yang sedia dijual']];
+  if(ck.some(x=>!x[0]))h+='<div class="al"><b>Siapkan kedai anda</b>'+ck.map(x=>'<div class="ck">'+(x[0]?'✅':'⬜')+' '+esc(x[1])+'</div>').join('')+'</div>';
+  $('#alerts').innerHTML=h;
+  const nb=$('#notifB');if(nb)nb.onclick=()=>Notification.requestPermission().then(()=>{try{R.pushInit('vendor',user)}catch(e){}paintAlerts()});
+}
+function paintHist(){
+  const t0=dayStart(Date.now()),from=hf==='0'?t0:hf==='7'?t0-6*864e5:0,q=$('#hq').value.trim().toLowerCase();
+  const all=L.filter(o=>!ACT.includes(o.status)),box=$('#hwrap');box.classList.toggle('hide',!all.length);
+  const H=all.filter(o=>(+o.createdAt||0)>=from&&(!q||[o.ref,o.name,o.phone].some(v=>String(v||'').toLowerCase().includes(q))));
+  $$('#hchips .chip').forEach(c=>c.classList.toggle('on',c.dataset.hf===hf));
+  $('#hlist').innerHTML=H.length?H.slice(0,30).map(card).join('')+(H.length>30?'<div class="mut" style="text-align:center">Dipaparkan 30 daripada '+H.length+'. Guna carian untuk mencari order tertentu.</div>':''):'<div class="card mut" style="text-align:center">Tiada order sepadan.</div>';
+}
+$('#hchips').onclick=e=>{const b=e.target.closest('[data-hf]');if(!b)return;hf=b.dataset.hf;paintHist()};
+$('#hq').oninput=paintHist;
+function paintOrders(){
+  const t0=dayStart(Date.now()),T=calc(L,t0,t0+864e5);
+  $('#stats').innerHTML=[['Baru',L.filter(o=>o.status==='baru').length],['Disediakan',L.filter(o=>o.status==='diterima'||o.status==='siap').length],['Selesai hari ni',T.n],['Jualan anda',rm(T.net)]].map(x=>`<div class="stat"><b>${esc(x[1])}</b><small>${esc(x[0])}</small></div>`).join('');
+  const act=L.filter(o=>ACT.includes(o.status));
+  $('#olist').innerHTML=act.length?act.map(card).join(''):'<div class="card mut" style="text-align:center">Tiada order aktif. '+(shop.open?'Menunggu order…':'Buka kedai untuk terima order.')+'</div>';
+  paintAlerts();paintHist();
+}
+function card(o){
+  const items=Object.values(o.items||{}).map(i=>`<div class="it"><span>${esc(i.q)}× ${esc(i.n)}</span><span>${rm((+i.p||0)*(+i.q||0))}</span></div>`).join('');
+  const w=['baru','diterima'].includes(o.status)?mismatch(o,menu):[];
+  let acts='';
+  if(o.status==='baru')acts=`<button class="btn grn" data-a="acc" data-id="${esc(o.id)}">✅ Terima</button><button class="btn gry" data-a="rej" data-id="${esc(o.id)}">❌ Tolak</button>`;
+  if(o.status==='diterima')acts=`<button class="btn grn" data-a="rdy" data-id="${esc(o.id)}">🍽️ Dah siap</button><button class="btn gry" data-a="can" data-id="${esc(o.id)}">🚫 Batal</button>`;
+  if(o.status==='siap')acts=`<button class="btn grn" data-a="fin" data-id="${esc(o.id)}">🎉 Dah diserah</button><button class="btn gry" data-a="can" data-id="${esc(o.id)}">🚫 Batal</button>`;
+  const ph=R.tel(o.phone);
+  return `<div class="card oc s-${esc(o.status)}"><div style="display:flex;justify-content:space-between;gap:8px"><b>#${esc(o.ref)}</b><span class="badge">${esc(ST_L[o.status]||o.status)}</span></div>
+  <div class="mut">${esc(R.ago(o.createdAt))} · ${esc(o.pay==='cash'?'Tunai':'Online')}</div>
+  <div style="margin:8px 0">${items}<div class="it" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><b>Anda terima</b><b>${rm(subOf(o))}</b></div></div>
+  ${o.notes?`<div class="mut">📝 ${esc(o.notes)}</div>`:''}
+  ${o.reason?`<div class="mut">Sebab: ${esc(o.reason)}</div>`:''}
+  ${o.addr?`<div class="mut">📍 ${esc(o.addr)}</div>`:''}
+  <div class="mut" style="margin-top:6px">👤 ${esc(o.name)} · <a href="https://wa.me/${esc(ph)}" target="_blank" rel="noopener">${esc(o.phone)}</a></div>
+  ${w.length?'<div class="warn">⚠️ Semak sebelum terima:<br>'+w.map(esc).join('<br>')+'</div>':''}
+  ${acts?`<div class="acts">${acts}</div>`:''}</div>`;
+}
+$('#olist').onclick=async e=>{
+  const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const id=b.dataset.id,o=orders[id];if(!o)return;b.disabled=true;
+  const base='vorders/'+user.uid+'/'+id+'/';
+  try{
+    if(b.dataset.a==='acc'){
+      if(o.status!=='baru'){toast('Order dah berubah status.');return}
+      const prep=await ask({title:'Berapa minit nak siap?',sub:'Pelanggan akan nampak anggaran ini.',chips:[['10 min','10'],['15 min','15'],['20 min','20'],['30 min','30'],['45 min','45']],label:'Minit (1–180)',num:true,def:LS.get('rkb-vprep','15'),ok:'✅ Terima order'});
+      if(prep===null)return;
+      if((orders[id]||{}).status!=='baru'){toast('Order dah berubah status (mungkin dibatalkan pelanggan).');return}
+      const pm=Math.max(1,Math.min(180,Math.round(+prep||15)));LS.set('rkb-vprep',String(pm));
+      const bad=await takeStock(o);if(bad){toast('Stok tak cukup: '+bad);return}
+      await db.ref().update({[base+'status']:'diterima',[base+'prep']:pm,[base+'stk']:true,[base+'t/diterima']:TS});toast('Order diterima ✅');
+    }else if(b.dataset.a==='rej'){
+      const why=await ask({title:'Kenapa order ditolak?',sub:'Pelanggan akan nampak sebab ini.',chips:[['Stok habis','Stok habis'],['Kedai sibuk','Kedai sibuk'],['Tutup awal','Tutup awal'],['Terlalu jauh','Terlalu jauh']],label:'Sebab',ok:'❌ Tolak order'});if(why===null)return;
+      if((orders[id]||{}).status!=='baru'){toast('Order dah berubah status.');return}
+      await db.ref().update({[base+'status']:'ditolak',[base+'reason']:(why||'Ditolak kedai').slice(0,120),[base+'t/ditolak']:TS});toast('Order ditolak');
+    }else if(b.dataset.a==='rdy'){await db.ref().update({[base+'status']:'siap',[base+'t/siap']:TS});toast('Ditanda siap 🍽️')}
+    else if(b.dataset.a==='fin'){if(!confirm('Pastikan pesanan sudah diserahkan. Tanda selesai?'))return;await db.ref().update({[base+'status']:'selesai',[base+'t/selesai']:TS});toast('Selesai 🎉')}
+    else if(b.dataset.a==='can'){
+      const why=await ask({title:'Kenapa order dibatalkan?',sub:'Stok akan dipulangkan.',chips:[['Stok habis','Stok habis'],['Pelanggan minta batal','Pelanggan minta batal'],['Tak dapat dihubungi','Tak dapat dihubungi'],['Masalah di kedai','Masalah di kedai']],label:'Sebab',ok:'🚫 Batalkan order'});if(why===null)return;
+      if(!ACT.includes((orders[id]||{}).status)){toast('Order dah berubah status.');return}
+      await returnStock(o);
+      await db.ref().update({[base+'status']:'batal',[base+'reason']:(why||'Dibatalkan kedai').slice(0,120),[base+'stk']:false,[base+'t/batal']:TS});toast('Order dibatalkan');
+    }
+  }catch(err){toast('Gagal: '+(err.code||err.message))}
+  finally{b.disabled=false}
+};
+/* stok: tolak semasa terima, pulang semasa batal. Transaksi atomik supaya tak jadi negatif. */
+function adj(id,delta){
+  return db.ref('vmenu/'+user.uid+'/'+id+'/st').transaction(v=>{
+    if(v===null)v=(menu[id]&&menu[id].st!=null)?menu[id].st:null;   // nilai cache tempatan; pelayan sahkan semula
+    if(v===null||v===-1)return;
+    const n=v+delta;if(n<0)return;return Math.min(9999,n)});
+}
+const tracked=i=>i.id&&menu[i.id]&&menu[i.id].st!==-1;
+async function takeStock(o){
+  const done=[];
+  for(const i of Object.values(o.items||{})){
+    if(!tracked(i))continue;const q=+i.q||0;
+    const r=await adj(i.id,-q);
+    if(!r.committed){for(const[d,dq] of done)await adj(d,dq);return i.n}
+    done.push([i.id,q]);
+  }
+  return null;
+}
+async function returnStock(o){if(!o.stk)return;for(const i of Object.values(o.items||{}))if(tracked(i))await adj(i.id,+(+i.q||0))}
+
+/* ---------- Menu & stok ---------- */
+const colMap=()=>{try{return JSON.parse(LS.get('rkb-vcol','{}'))||{}}catch(e){return{}}};
+function mRow(id,m){
+  const out=isOut(m),sold=+m.ex>Date.now()&&m.st!==0,pr=m.pp!=null&&m.pp<m.p?`<s class="mut">${rm(m.p)}</s> <b>${rm(m.pp)}</b> 🏷️`:`<b>${rm(m.p)}</b>`;
+  return `<div class="mi ${m.on&&!out?'':'off'}"><div style="min-width:0"><div class="nm">${esc(m.n)}</div><div class="mut">${pr} · ${m.st===-1?'Stok: tiada had':'Stok: '+esc(m.st)}${m.st===0?' · <b style="color:#ef4444">HABIS</b>':''}${sold?' · <b style="color:#ef4444">HABIS HARI NI</b>':''}${m.st>0&&m.st<=3?' · <b style="color:#b45309">hampir habis</b>':''}</div>
+    <div class="acts" style="margin-top:6px">${m.st===-1?'':`<button class="btn gry qb" data-m="dec" data-id="${esc(id)}" aria-label="Kurang stok">−</button><button class="btn gry qb" data-m="inc" data-id="${esc(id)}" aria-label="Tambah stok">+</button>`}<button class="btn gry sm" data-m="sold" data-id="${esc(id)}">${sold?'✅ Sedia semula':'⛔ Habis hari ni'}</button><button class="btn gry sm" data-m="edit" data-id="${esc(id)}">✏️ Edit</button><button class="btn gry sm" data-m="dup" data-id="${esc(id)}">📄 Salin</button><button class="btn gry sm" data-m="del" data-id="${esc(id)}" aria-label="Padam">🗑️</button></div></div>
+    <button class="tg ${m.on?'on':''}" data-m="tog" data-id="${esc(id)}" aria-label="Sedia / tidak sedia"></button></div>`;
+}
+function paintMenu(){
+  const all=Object.entries(menu),q=mQ.trim().toLowerCase();
+  $('#mq').classList.toggle('hide',all.length<8&&!q);
+  if(!all.length){$('#mlist').innerHTML='<div class="mut">Belum ada produk. Tekan ➕ Tambah produk.</div>';return}
+  const E=all.filter(([id,m])=>!q||String(m.n).toLowerCase().includes(q)||String(m.c||'').toLowerCase().includes(q));
+  const G={};E.forEach(e=>{const k=String(e[1].c||'').trim();(G[k]=G[k]||[]).push(e)});
+  const keys=Object.keys(G).sort((a,b)=>(a===''?1:0)-(b===''?1:0)||a.localeCompare(b)),col=colMap();
+  $('#mlist').innerHTML=E.length?keys.map(k=>{
+    const list=G[k].sort((a,b)=>String(a[1].n).localeCompare(String(b[1].n))),shut=!q&&col[k||'~'];
+    const nOut=list.filter(e=>isOut(e[1])||!e[1].on).length;
+    return `<button class="gh" type="button" data-g="${esc(k)}" aria-expanded="${shut?'false':'true'}"><span>${esc(k||'Tanpa kategori')} <small>· ${list.length} produk${nOut?' · '+nOut+' tak sedia':''}</small></span><span>${shut?'▾':'▴'}</span></button>`+(shut?'':list.map(([id,m])=>mRow(id,m)).join(''))}).join(''):'<div class="mut">Tiada produk sepadan.</div>';
+}
+$('#mq').oninput=e=>{mQ=e.target.value;paintMenu()};
+$('#mlist').onclick=async e=>{
+  const g=e.target.closest('[data-g]');
+  if(g){const c=colMap(),k=g.dataset.g||'~';if(c[k])delete c[k];else c[k]=1;LS.set('rkb-vcol',JSON.stringify(c));paintMenu();return}
+  const b=e.target.closest('[data-m]');if(!b)return;const id=b.dataset.id,m=menu[id];if(!m)return;const ref=db.ref('vmenu/'+user.uid+'/'+id);
+  try{
+    if(b.dataset.m==='tog')await ref.child('on').set(!m.on);
+    if(b.dataset.m==='inc')await adj(id,1);
+    if(b.dataset.m==='dec')await adj(id,-1);
+    if(b.dataset.m==='sold'){
+      if(+m.ex>Date.now()){await ref.child('ex').remove();toast('Produk disediakan semula ✅')}
+      else{const d=new Date();d.setHours(24,0,0,0);await ref.child('ex').set(d.getTime());toast('Ditanda habis sehingga tengah malam. Pelanggan tak boleh pesan.')}
+    }
+    if(b.dataset.m==='dup'){const c=Object.assign({},m);delete c.ex;c.n=String(m.n).slice(0,52)+' (salin)';c.on=false;await db.ref('vmenu/'+user.uid+'/'+R.newId()).set(c);toast('Disalin. Edit nama/harga, kemudian hidupkan suis. ✏️')}
+    if(b.dataset.m==='edit')itemModal(id);
+    if(b.dataset.m==='del'&&confirm('Padam "'+m.n+'"?'))await ref.remove();
+  }catch(err){toast('Gagal: '+(err.code||err.message))}
+};
+$('#addI').onclick=()=>itemModal(null);
+function itemModal(id){
+  const m=id?menu[id]:{n:'',p:'',pp:null,st:-1,on:true,d:'',c:''};
+  const d=document.createElement('div');d.className='modal';
+  d.innerHTML=`<div class="mbox"><h3 style="margin:0 0 4px">${id?'Edit':'Tambah'} produk</h3>
+  <label>Nama produk</label><input id="mn" maxlength="60" value="${esc(m.n)}">
+  <label>Harga anda (RM): jumlah yang anda terima</label><input id="mp" type="number" inputmode="decimal" min="0" max="1000" step="0.10" value="${esc(m.p)}">
+  <label>Harga promosi anda (RM, pilihan)</label><input id="mpp" type="number" inputmode="decimal" min="0" max="1000" step="0.10" value="${m.pp!=null?esc(m.pp):''}">
+  <label>Stok (kosong = tiada had)</label><input id="ms" type="number" inputmode="numeric" min="0" max="9999" step="1" value="${m.st===-1?'':esc(m.st)}">
+  <label>Kategori (pilihan, cth: Nasi, Air, Kuih)</label><input id="mc" maxlength="30" list="mcl" value="${esc(m.c||'')}"><datalist id="mcl">${[...new Set(Object.values(menu).map(x=>x.c).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+  <label>Penerangan (pilihan)</label><input id="md" maxlength="120" value="${esc(m.d||'')}">
+  <div class="err" id="merr"></div>
+  <div class="acts"><button class="btn grn" id="msv">Simpan</button><button class="btn gry" id="mcn">Batal</button></div></div>`;
+  document.body.appendChild(d);d.querySelector('#mcn').onclick=()=>d.remove();
+  d.querySelector('#msv').onclick=async()=>{
+    const n=d.querySelector('#mn').value.trim(),p=parseFloat(d.querySelector('#mp').value),ppv=d.querySelector('#mpp').value,sv=d.querySelector('#ms').value,er=d.querySelector('#merr');
+    if(!n){er.textContent='Isi nama produk.';return}
+    if(!(p>=0&&p<=1000)){er.textContent='Harga mesti antara 0 dan 1000.';return}
+    const pp=ppv===''?null:parseFloat(ppv);if(pp!==null&&!(pp>=0&&pp<p)){er.textContent='Harga promosi mesti kurang daripada harga biasa.';return}
+    const st=sv===''?-1:parseInt(sv,10);if(!(st>=-1&&st<=9999)||!Number.isFinite(st)){er.textContent='Stok tak sah (0 hingga 9999).';return}
+    const v={n:n.slice(0,60),p:Math.round(p*100)/100,st,on:m.on!==false,pp:pp===null?null:Math.round(pp*100)/100,c:d.querySelector('#mc').value.trim().slice(0,30)||null,d:d.querySelector('#md').value.trim().slice(0,120)||null};
+    try{await db.ref('vmenu/'+user.uid+'/'+(id||R.newId())).update(v);d.remove();toast('Disimpan ✅')}catch(e){er.textContent='Gagal simpan: '+(e.code||e.message)}
+  };
+}
+
+/* ---------- Jualan & payout ---------- */
+function paintSales(){
+  const now=Date.now(),t0=dayStart(now),
+    td=calc(L,t0,t0+864e5),wk=calc(L,t0-6*864e5,t0+864e5),mo=calc(L,t0-29*864e5,t0+864e5);
+  $('#sstats').innerHTML=[['Hari ini',td],['7 hari',wk],['30 hari',mo]].map(([k,x])=>`<div class="stat"><small>${k}</small><b>${rm(x.net)}</b><small>${x.n} order</small></div>`).join('');
+  const days=[];for(let i=6;i>=0;i--){const s=t0-i*864e5;days.push([new Date(s).toLocaleDateString('ms-MY',{weekday:'short'}),calc(L,s,s+864e5).net])}
+  const mx=Math.max(1,...days.map(d=>d[1]));
+  $('#bars').innerHTML=days.map(d=>`<div><small>${d[1]?Math.round(d[1]):''}</small><i style="height:${Math.round(d[1]/mx*80)}%"></i>${esc(d[0])}</div>`).join('');
+  const cnt={};L.forEach(o=>{if(o.status==='selesai'&&doneAt(o)>=t0-29*864e5)Object.values(o.items||{}).forEach(i=>{cnt[i.n]=(cnt[i.n]||0)+(+i.q||0)})});
+  const tp=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  $('#top').innerHTML=tp.length?tp.map(([n,q],i)=>`<div class="row"><span>${i+1}. ${esc(n)}</span><span>${esc(q)} unit</span></div>`).join(''):'<div class="mut">Belum ada data.</div>';
+  const P=Object.values(payouts).sort((a,b)=>b.t-a.t),last=P.length?Math.max(...P.map(p=>+p.upto||0)):0,un=calc(L,last,Infinity);
+  $('#pay').innerHTML=`<div class="row"><span>Belum dibayar kepada anda</span><span>${rm(un.net)}</span></div><div class="mut" style="margin:4px 0 8px">${un.n} order selesai selepas bayaran terakhir. Admin akan merekod bayaran.</div>`+(P.length?P.slice(0,10).map(p=>`<div class="row"><span>${esc(new Date(p.t).toLocaleDateString('ms-MY'))}${p.note?' · '+esc(p.note):''}</span><span>${rm(p.amt)}</span></div>`).join(''):'<div class="mut">Belum ada rekod bayaran.</div>');
+}
+function paintMore(){
+  const r=L.filter(o=>o.rating).slice(0,20);
+  $('#rev').innerHTML=r.length?r.map(o=>`<div class="row" style="display:block"><b>${'★'.repeat(+o.rating.stars||0)}${'☆'.repeat(5-(+o.rating.stars||0))}</b> <span class="mut">#${esc(o.ref)}</span>${o.rating.c?'<div>'+esc(o.rating.c)+'</div>':''}</div>`).join(''):'<div class="mut">Belum ada ulasan.</div>';
+}
+</script>
+</body></html>
