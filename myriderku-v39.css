@@ -1,0 +1,133 @@
+/* MYRIDERKU V39 — paparan terang, kemas & mudah dibaca (admin + rider). CSS sahaja. */
+
+/* ---------- Palet (terang = lalai, gelap = lembut & kontras baik) ---------- */
+html[data-theme="light"] body.role-admin,
+html[data-theme="light"] body.role-rider{
+  --bg:#f1f5f2;--card:#ffffff;--card2:#eef4ef;--line:#d8e3db;--txt:#14271c;--mut:#566a5d;
+  --acc:#168447;--acc2:#0d6b38;--soft:#e7f4ea;--lnk:#0d6b38;
+  background:#f1f5f2;color:#14271c;
+}
+html[data-theme="dark"] body.role-admin,
+html[data-theme="dark"] body.role-rider{
+  --bg:#17212b;--card:#1f2c38;--card2:#27384a;--line:#364a5c;--txt:#f3f7fa;--mut:#b4c3cf;
+  --acc:#2fbf71;--acc2:#1f9a58;--soft:#243f33;--lnk:#8fe0b2;
+  background:#17212b;color:#f3f7fa;
+}
+html body.role-admin,html body.role-rider{background-image:none}
+
+/* Header: hijau cerah, teks putih */
+html body.role-admin .hd,html body.role-rider .hd{
+  background:linear-gradient(125deg,#0f6b3a,#168447 70%,#2a9d5c);border:0;border-bottom:0;
+  box-shadow:0 6px 18px rgba(15,107,58,.22);color:#fff}
+html body.role-admin .hd *,html body.role-rider .hd *{color:#fff}
+
+/* Kad, statistik, tab, input */
+html body.role-admin .card,html body.role-admin .stat,
+html body.role-rider .card,html body.role-rider .stat,html body.role-rider .sum{
+  background:var(--card);color:var(--txt);border:1px solid var(--line);border-radius:18px;
+  box-shadow:0 2px 10px rgba(20,50,30,.06)}
+html body.role-admin .stat{border-top:3px solid var(--acc);text-align:left}
+html body.role-admin .stat b{color:var(--txt)}
+html body.role-admin .stat small,html body.role-rider .mut,html body.role-admin .mut,
+html body.role-rider small,html body.role-rider .sm{color:var(--mut)}
+html body.role-rider .ridercard{background:var(--card)!important;border:1px solid var(--line)!important}
+html body.role-rider #earn{background:var(--soft)!important;color:var(--txt);border:1px solid var(--line)}
+html body.role-rider #wal{background:#fff6dc!important;color:#5c4300;border:1px solid #ecd9a0}
+html[data-theme="dark"] body.role-rider #wal{background:#4a3d1c!important;color:#ffe9a8;border-color:#7a6530}
+.lnk{color:var(--lnk)!important}
+html body.role-admin a:not(.btn):not(.hbtn),html body.role-rider a:not(.btn):not(.hbtn){color:var(--lnk)}
+
+html body.role-admin input,html body.role-admin select,html body.role-admin textarea,
+html body.role-rider input,html body.role-rider select,html body.role-rider textarea{
+  background:var(--card);color:var(--txt);border:1.5px solid var(--line);border-radius:12px}
+html body.role-admin input::placeholder,html body.role-rider input::placeholder{color:var(--mut);opacity:.85}
+html body.role-admin input:focus,html body.role-admin select:focus,
+html body.role-rider input:focus,html body.role-rider select:focus{outline:3px solid rgba(22,132,71,.25);border-color:var(--acc)}
+html body.role-admin select option,html body.role-rider select option{background:var(--card);color:var(--txt)}
+
+html body.role-admin .tab,html body.role-rider .tab{
+  background:var(--card);color:var(--txt);border:1.5px solid var(--line);border-radius:99px;font-weight:700}
+html body.role-admin .tab.on,html body.role-rider .tab.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+
+/* Butang */
+html body.role-admin .btn:not(.gry):not(.grn):not(.blu),html body.role-rider .btn:not(.gry):not(.grn):not(.blu){
+  background:linear-gradient(135deg,#1c9954,#0d6b38);color:#fff;border:0;border-radius:14px;box-shadow:0 4px 12px rgba(13,107,56,.22)}
+html body.role-admin .btn.grn,html body.role-rider .btn.grn{background:linear-gradient(135deg,#1c9954,#0d6b38);color:#fff}
+html body.role-admin .btn.blu,html body.role-rider .btn.blu{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff}
+html body.role-admin .btn.gry,html body.role-rider .btn.gry{
+  background:var(--card2);color:var(--txt);border:1.5px solid var(--line);border-radius:13px;box-shadow:none}
+html body.role-admin .hbtn,html body.role-rider .hbtn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.45);color:#fff}
+
+/* Lencana status: sentiasa serasi dengan latar */
+html body.role-admin .badge,html body.role-rider .badge{border:1px solid transparent;font-weight:800;padding:4px 10px}
+html[data-theme="light"] body.role-admin .b-baru,html[data-theme="light"] body.role-rider .b-baru{background:#fff1d0;color:#8a5a00;border-color:#f0d594}
+html[data-theme="light"] body.role-admin .b-diterima,html[data-theme="light"] body.role-admin .b-diambil,
+html[data-theme="light"] body.role-rider .b-diterima,html[data-theme="light"] body.role-rider .b-diambil{background:#dfeaff;color:#1d4ed8;border-color:#b9cffb}
+html[data-theme="light"] body.role-admin .b-selesai,html[data-theme="light"] body.role-rider .b-selesai{background:#dcf4e6;color:#0b6b48;border-color:#aee0c5}
+html[data-theme="light"] body.role-admin .b-batal,html[data-theme="light"] body.role-rider .b-batal{background:#fde3e8;color:#b4123a;border-color:#f4b4c1}
+html[data-theme="dark"] body.role-admin .b-baru,html[data-theme="dark"] body.role-rider .b-baru{background:#4a3a14;color:#ffd98a;border-color:#8a6d22}
+html[data-theme="dark"] body.role-admin .b-diterima,html[data-theme="dark"] body.role-admin .b-diambil,
+html[data-theme="dark"] body.role-rider .b-diterima,html[data-theme="dark"] body.role-rider .b-diambil{background:#1d3a66;color:#bcd6ff;border-color:#3d68a8}
+html[data-theme="dark"] body.role-admin .b-selesai,html[data-theme="dark"] body.role-rider .b-selesai{background:#17462f;color:#a9f0c9;border-color:#2f8a5c}
+html[data-theme="dark"] body.role-admin .b-batal,html[data-theme="dark"] body.role-rider .b-batal{background:#5a1f2d;color:#ffc2cf;border-color:#a8445a}
+
+/* Bar amaran (menggantikan gaya sebaris yang gelap) */
+.alertbar{padding:12px 14px;border-radius:14px;font-size:14px;line-height:1.5;cursor:pointer;margin:0 0 10px}
+.alertbar.warn{background:#fff3d6;border:1.5px solid #f2b640;color:#6b4600}
+.alertbar.bad{background:#fde3e6;border:1.5px solid #e0626f;color:#7a1626}
+html[data-theme="dark"] .alertbar.warn{background:#4a3a14;border-color:#c99a2e;color:#ffe3a0}
+html[data-theme="dark"] .alertbar.bad{background:#5a1f2d;border-color:#c8566a;color:#ffd0d9}
+
+/* ---------- Baris maklumat: label tetap + nilai sejajar kiri (semua halaman admin/rider) ---------- */
+body.role-admin .row,body.role-rider .row{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+body.role-admin .row span:first-child,body.role-rider .row span:first-child{color:var(--mut);font-size:13px;font-weight:600}
+body.role-admin .row span:last-child,body.role-rider .row span:last-child{text-align:left;font-weight:600;color:var(--txt);overflow-wrap:anywhere}
+body.role-admin #riders .row{grid-template-columns:1fr auto;align-items:center}
+body.role-admin #riders .row span:last-child{text-align:right}
+body.role-admin #hazl .row,body.role-admin #vendors .row{grid-template-columns:1fr auto}
+body.role-admin #hazl .row span:last-child,body.role-admin #vendors .row span:last-child{text-align:right}
+
+/* ---------- Kad order admin ---------- */
+.oc{padding:16px!important}
+.oc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.oc-ref{font-size:19px;font-weight:900;letter-spacing:-.02em}
+.oc-star{font-size:13px;font-weight:700;color:#b7791f}
+.oc-badges{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.oc-meta{margin:6px 0 10px;font-size:13px;color:var(--mut)}
+.oc-money{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 16px;padding:10px 12px;border-radius:14px;background:var(--soft);border:1px solid var(--line)}
+.oc-money b{font-size:22px;font-weight:900;color:var(--acc2);letter-spacing:-.02em}
+html[data-theme="dark"] .oc-money b{color:var(--acc)}
+.oc-money span{font-size:13px;color:var(--mut)}
+.oc-money em{font-style:normal;font-weight:800;color:var(--txt)}
+.oc-route{position:relative;margin:14px 0 4px;padding-left:4px}
+.oc-route::before{content:"";position:absolute;left:11px;top:16px;bottom:16px;border-left:2px dashed var(--line)}
+.oc-stop{display:flex;gap:12px;align-items:flex-start;padding:6px 0;position:relative}
+.oc-stop .dot{flex:0 0 16px;width:16px;height:16px;border-radius:50%;margin-top:3px;border:3px solid var(--card);box-shadow:0 0 0 2px currentColor;background:currentColor}
+.oc-stop .dot.g{color:#1c9954}.oc-stop .dot.r{color:#dc3d4f}
+.oc-stop small,.oc-info small{display:block;font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--mut)}
+.oc-stop p,.oc-info p{margin:2px 0 0;font-size:15px;line-height:1.4;font-weight:600;color:var(--txt);overflow-wrap:anywhere}
+.oc-info{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}
+.oc-info .wide{grid-column:1/-1}
+.oc-info .mut{font-weight:500;font-size:13px}
+.oc-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.oc-acts select{grid-column:span 1;min-height:44px;font-size:14px;padding:8px 10px}
+.oc-acts .btn{min-height:44px;display:flex;align-items:center;justify-content:center;padding:8px 10px}
+.oc-acts .oc-del{grid-column:1/-1;color:#b4123a}
+@media(min-width:620px){.oc-acts{grid-template-columns:1.3fr 1fr auto auto auto}.oc-acts .oc-del{grid-column:auto}}
+.oc.st-batal{opacity:.78}
+
+/* Penapis & carian lebih kemas */
+body.role-admin #flt,body.role-rider .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+body.role-admin #flt::-webkit-scrollbar{display:none}
+body.role-admin #flt .tab{flex:0 0 auto;min-height:40px;padding:8px 16px}
+body.role-admin #q{margin:4px 0 10px}
+
+/* Kad order rider: butang berbaris kemas */
+body.role-rider .card .acts .btn.full{min-height:50px;font-size:16px}
+body.role-rider .card .acts .btn.sm{min-height:42px;flex:1 1 calc(50% - 8px)}
+
+/* Peta & modal */
+html body.role-admin .map,html body.role-rider .map{border:1px solid var(--line);border-radius:16px}
+html[data-theme="light"] .modal .mbox{background:#fff;color:var(--txt)}
+html[data-theme="dark"] .modal .mbox{background:var(--card);color:var(--txt)}
+html[data-theme="light"] #dM{color:var(--txt)!important}
