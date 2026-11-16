@@ -15,11 +15,11 @@
 <header class="hd"><div><span class="tag">ADMIN</span><h1>Rider KB Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
 
 <div id="login" class="pad hide" style="max-width:520px;margin:0 auto">
-  <div class="card"><h3>Log masuk admin</h3>
-    <label>E-mel</label><input id="em" type="email" autocomplete="username">
-    <label>Kata laluan</label><input id="pw" type="password" autocomplete="current-password">
+  <div class="card"><form id="lf" onsubmit="return false"><h3>Log masuk admin</h3>
+    <label>E-mel</label><input id="em" name="username" type="email" autocomplete="username" autocapitalize="none" inputmode="email">
+    <label>Kata laluan</label><input id="pw" name="password" type="password" autocomplete="current-password">
     <div class="err" id="lerr"></div>
-    <button class="btn full" id="go" style="margin-top:8px">Log masuk</button>
+    <button class="btn full" id="go" type="submit" style="margin-top:8px">Log masuk</button></form>
   </div>
 </div>
 
@@ -99,6 +99,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="common.js"></script>
+<script>RKB.installBanner('KB Admin')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm}=RKB;
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3000)}

@@ -126,3 +126,9 @@ Keselamatan vendor:
 - **Pasang semula app di telefon:** buang ikon lama dari skrin utama, buka semula pautan masing-masing di Chrome, kemudian "Pasang app". Android menyimpan ikon lama untuk app yang sudah dipasang.
 - Akaun admin yang tersangkut di /rider.html atau /vendor.html kini nampak mesej jelas (bukan skrin kosong).
 - **PENTING (PERMISSION_DENIED):** tampal semula `database.rules.json` ke Realtime Database > Rules > Publish.
+
+## Kemas kini (v26)
+- Borang log masuk (admin, rider, vendor) kini guna <form>, jadi Chrome menawarkan simpan e-mel dan kata laluan, dan isi automatik kali berikutnya.
+
+## Kemas kini (v27)
+- Banner "Pasang app" muncul di Vendor dan Admin (Pelanggan dan Rider sudah ada). Pengguna cuma tekan satu butang; iPhone dapat arahan Kongsi > Tambah ke Skrin Utama.

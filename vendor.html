@@ -39,15 +39,15 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">Vendor KB 🏪</h1><div class="sm" id="who"></div></div></header>
 
-<div id="login" class="pad hide"><div class="card"><h3 id="ltitle">Log masuk vendor</h3>
+<div id="login" class="pad hide"><div class="card"><form id="lf" onsubmit="return false"><h3 id="ltitle">Log masuk vendor</h3>
   <div id="regf" class="hide"><label>Nama pemilik</label><input id="rn" autocomplete="name" maxlength="60"><label>No. telefon</label><input id="rp" type="tel" placeholder="0123456789" autocomplete="tel" maxlength="20"><label>Nama kedai</label><input id="rs" maxlength="60"></div>
-  <label>E-mel</label><input id="em" type="email" autocomplete="username">
-  <label>Kata laluan</label><input id="pw" type="password" autocomplete="current-password" placeholder="Min. 6 aksara">
+  <label>E-mel</label><input id="em" name="username" type="email" autocomplete="username" autocapitalize="none" inputmode="email">
+  <label>Kata laluan</label><input id="pw" name="password" type="password" autocomplete="current-password" placeholder="Min. 6 aksara">
   <div class="err" id="lerr"></div>
-  <button class="btn full" id="go" style="margin-top:8px">Log masuk</button>
-  <button class="btn gry full" id="tg" style="margin-top:8px">Vendor baru? Daftar</button>
-  <button class="btn gry full" id="fp" style="margin-top:8px">🔑 Lupa kata laluan?</button>
-  <div class="mut" style="margin-top:10px">Pendaftaran vendor baru perlu diluluskan admin.</div></div></div>
+  <button class="btn full" id="go" type="submit" style="margin-top:8px">Log masuk</button>
+  <button class="btn gry full" id="tg" type="button" style="margin-top:8px">Vendor baru? Daftar</button>
+  <button class="btn gry full" id="fp" type="button" style="margin-top:8px">🔑 Lupa kata laluan?</button>
+  <div class="mut" style="margin-top:10px">Pendaftaran vendor baru perlu diluluskan admin.</div></form></div></div>
 
 <div id="pend" class="pad hide"><div class="card" style="text-align:center"><div style="font-size:42px">⏳</div><div class="big">Menunggu kelulusan admin</div><div class="mut" style="margin-top:8px">Skrin ni bertukar sendiri sebaik admin meluluskan kedai anda.</div><button class="btn gry full out" style="margin-top:12px">Log keluar</button></div></div>
 <div id="susp" class="pad hide"><div class="card" style="text-align:center"><div style="font-size:42px">⛔</div><div class="big">Akaun digantung</div><div class="mut" style="margin:8px 0">Sila hubungi admin.</div><a class="btn grn full" id="waSup" target="_blank" rel="noopener">💬 WhatsApp admin</a><button class="btn gry full out" style="margin-top:8px">Log keluar</button></div></div>
@@ -95,7 +95,7 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 <div class="toast hide" id="toast"></div>
 
 <script>
-addEventListener('beforeinstallprompt',e=>e.preventDefault());
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.__dip=e});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -104,6 +104,7 @@ if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWor
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="common.js"></script>
+<script>RKB.installBanner('KB Vendor')</script>
 <script>
 /*PURE*/
 const dayStart=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};

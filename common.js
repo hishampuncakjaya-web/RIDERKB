@@ -179,3 +179,28 @@
   };
   window.RKB={adminGuard,r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
 })();
+
+/* ===== Pasang app (banner) =====
+   Pelayar tak benarkan pasang senyap tanpa pengguna. Ini tunjuk banner supaya pengguna cuma tekan SATU butang "Pasang". */
+(function(){
+  var dip=window.__dip||null;
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); dip=window.__dip=e; if(window.__ibShow) window.__ibShow(); });
+  function standalone(){ try{ return ['standalone','fullscreen','minimal-ui'].some(function(m){return matchMedia('(display-mode: '+m+')').matches})||navigator.standalone===true }catch(e){return false} }
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  window.RKB.installBanner=function(appName){
+    if(standalone()) return;
+    try{ if(+localStorage.getItem('rkb_ib_'+appName)>Date.now()) return }catch(e){}
+    var b=document.createElement('div');
+    b.style.cssText='position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:5000;background:#111827;color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:14px;line-height:1.4';
+    var t=document.createElement('div'); t.style.flex='1'; t.innerHTML='📲 <b>Pasang app '+appName+'</b><br><span style="opacity:.8;font-size:12px">'+(ios?'Tekan ikon Kongsi, kemudian "Tambah ke Skrin Utama".':'Terus dari skrin utama, tanpa buka pelayar.')+'</span>';
+    var go=document.createElement('button'); go.type='button'; go.textContent='Pasang'; go.style.cssText='background:#22c55e;color:#04210f;border:0;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;min-height:44px;display:'+(ios?'none':'block');
+    var x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.setAttribute('aria-label','Tutup'); x.style.cssText='background:none;border:0;color:#fff;font-size:20px;min-width:36px;min-height:44px';
+    b.appendChild(t); b.appendChild(go); b.appendChild(x); document.body.appendChild(b);
+    function hide(days){ b.style.display='none'; try{ localStorage.setItem('rkb_ib_'+appName,String(Date.now()+days*864e5)) }catch(e){} }
+    go.onclick=function(){ if(!dip) return; dip.prompt(); (dip.userChoice||Promise.resolve()).then(function(){ dip=window.__dip=null; hide(30) }).catch(function(){}); };
+    x.onclick=function(){ hide(3) };
+    window.addEventListener('appinstalled',function(){ b.style.display='none' });
+    window.__ibShow=function(){ if(dip||ios) b.style.display='flex' };
+    window.__ibShow();
+  };
+})();

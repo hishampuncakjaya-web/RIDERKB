@@ -24,15 +24,15 @@
 <div id="gate" class="pad hide"><div class="card" style="text-align:center"><div style="font-size:46px">📲</div><div class="big">Pasang app Rider KB dahulu</div><div class="mut" style="margin:8px 0 12px;line-height:1.6">Rider wajib guna app yang dipasang supaya lokasi, order dan notifikasi sentiasa berfungsi semasa bertugas.</div><button id="gInstall" class="btn full hide">📲 Pasang app sekarang</button><div id="gHelp" class="mut" style="margin-top:12px;line-height:1.7"></div></div></div>
 
 <div id="login" class="pad hide">
-  <div class="card"><h3 id="ltitle">Log masuk rider</h3>
+  <div class="card"><form id="lf" onsubmit="return false"><h3 id="ltitle">Log masuk rider</h3>
     <div id="regf" class="hide"><label>Nama</label><input id="rn" autocomplete="name"><label>No. telefon</label><input id="rp" type="tel" placeholder="0123456789" autocomplete="tel"><label>No. plat kenderaan</label><input id="rpl" placeholder="Cth: DAB 1234" autocapitalize="characters" maxlength="12"></div>
-    <label>E-mel</label><input id="em" type="email" autocomplete="username">
-    <label>Kata laluan</label><input id="pw" type="password" autocomplete="current-password" placeholder="Min. 6 aksara">
+    <label>E-mel</label><input id="em" name="username" type="email" autocomplete="username" autocapitalize="none" inputmode="email">
+    <label>Kata laluan</label><input id="pw" name="password" type="password" autocomplete="current-password" placeholder="Min. 6 aksara">
     <div class="err" id="lerr"></div>
-    <button class="btn full" id="go" style="margin-top:8px">Log masuk</button>
-    <button class="btn gry full" id="tg" style="margin-top:8px">Rider baru? Daftar</button>
-    <button class="btn gry full" id="fp" style="margin-top:8px">🔑 Lupa kata laluan?</button>
-    <div class="mut" style="margin-top:10px">Pendaftaran rider baru perlu diluluskan admin.</div>
+    <button class="btn full" id="go" type="submit" style="margin-top:8px">Log masuk</button>
+    <button class="btn gry full" id="tg" type="button" style="margin-top:8px">Rider baru? Daftar</button>
+    <button class="btn gry full" id="fp" type="button" style="margin-top:8px">🔑 Lupa kata laluan?</button>
+    <div class="mut" style="margin-top:10px">Pendaftaran rider baru perlu diluluskan admin.</div></form>
   </div>
 </div>
 
