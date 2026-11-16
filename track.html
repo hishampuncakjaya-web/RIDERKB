@@ -1,208 +1,59 @@
-<!doctype html>
-<html lang="ms"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MYRIDERKU | Jejak Pesanan</title><meta name="theme-color" content="#168447">
-<script src="theme.js"></script>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-customer-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon-customer.png">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="app.css">
-<style>#toast{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:7000;background:#0d6b4d;border:1px solid #10b981;border-radius:14px;padding:12px 14px;font-weight:700;display:none}.star{background:none;border:0;font-size:34px;padding:2px 4px;filter:grayscale(1);opacity:.5}.star.on{filter:none;opacity:1}@keyframes pop{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}.modal{position:fixed;inset:0;z-index:6000;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px}.mbox{width:100%;max-width:520px;background:var(--card);border:2px solid var(--grn);border-radius:24px;padding:20px 16px calc(16px + env(safe-area-inset-bottom));animation:pop .35s ease-out;text-align:center}</style>
-<link rel="stylesheet" href="theme.css">
-<link rel="stylesheet" href="myriderku-brand.css">
-<link rel="stylesheet" href="myriderku-ui.css">
-<link rel="stylesheet" href="myriderku-ceria.css">
-<link rel="stylesheet" href="myriderku-v37.css?v=39">
-<link rel="stylesheet" href="myriderku-v39.css?v=39">
-</head><body class="role-customer">
-<div class="wrap">
-<header class="hd"><div><span class="tag">JEJAK ORDER</span><h1 id="ref">MYRIDERKU</h1><div class="sm" id="when"></div></div><a class="hbtn" href="index.html">＋ Tempah</a></header>
-<div class="pad">
-  <div class="card" id="msg">Memuatkan order…</div>
-  <div id="main" class="hide">
-    <div class="card"><div class="stp" id="stp"></div></div>
-    <div class="card"><div class="big" id="headline"></div><div class="mut" id="sub" style="margin-top:6px"></div><div id="rinfo" style="margin-top:8px;font-size:13px;line-height:1.6"></div><div class="acts" id="contact"></div><div class="acts" style="margin-top:8px"><button class="btn gry sm hide" id="notif" type="button">🔔 Aktifkan notifikasi</button><button class="btn gry sm" id="rep" type="button">⚠️ Lapor masalah</button></div></div>
-    <div class="acts hide" id="cxl" style="margin:8px 0"><button class="btn gry full" id="cxlB" type="button" style="border:1px solid #ef4444">🚫 Batalkan order (rider belum terima)</button></div>
-    <div class="card hide" id="conf"></div>
-    <div class="card hide" id="rate"></div>
-    <div class="card hide" id="proof"></div>
-    <div class="card hide" id="payc"></div>
-    <div id="map" class="map"></div>
-    <div class="card" id="sum" style="margin-top:12px"></div>
-    <div class="acts" style="margin:0 0 8px"><button id="shr" class="btn gry full" type="button">🔗 Kongsi pautan jejak</button></div>
-    <div id="again2" class="hide" style="margin:6px 0 4px"><a class="btn full" href="index.html" style="display:block">🔁 Tempah lagi</a></div>
-    <div style="text-align:center;margin:14px 0 6px"><button id="lg" type="button" style="background:none;border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:8px 14px;font:inherit;font-size:12.5px;min-height:0"></button></div>
-  </div>
-</div>
-</div>
-<div id="toast"></div>
-<div id="ask" class="modal hide"><div class="mbox" style="text-align:left;border-color:var(--line)">
-  <div class="big" id="askT" style="margin-bottom:10px"></div>
-  <div id="askL"></div>
-  <div id="askO" class="hide"><input id="askI" maxlength="150" placeholder="Terangkan ringkas…" style="margin:8px 0"><button class="btn full" id="askS" type="button">Hantar</button></div>
-  <button class="btn gry full" id="askX" type="button" style="margin-top:8px">Batal</button>
-</div></div>
-<div id="done" class="modal hide"><div class="mbox">
-  <div style="font-size:54px">🎉</div>
-  <div class="big" id="dT" style="margin:6px 0"></div>
-  <div style="line-height:1.6;color:#d1d5db;margin-bottom:14px" id="dM"></div>
-  <button class="btn grn full" id="dX">Terima kasih 💖</button>
-</div></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="common.js?v=39"></script>
-<script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('jejak')</script>
-<script>
-const $=s=>document.querySelector(s), {esc,rm,ST}=RKB;
-const id=new URLSearchParams(location.search).get('id');
-if(!RKB.ok||!id){ $('#msg').textContent=!id?'Pautan jejak tidak sah.':'Jejak langsung belum diaktifkan (Firebase belum disetup).'; }
-else{
-  let map=null, pm=null, dm=null, riderMk=null, o=null, nav=null, prevSt=null, prevArr=null, rateKey='', proofDone=false, stars=0;
-  RKB.db.ref('orders/'+id).on('value',s=>{ o=s.val();
-    if(!o){ $('#main').classList.add('hide'); $('#msg').classList.remove('hide'); $('#msg').textContent='Order tidak dijumpai.'; return }
-    $('#msg').classList.add('hide'); $('#main').classList.remove('hide'); render();
-  },()=>{ $('#msg').textContent='Tak dapat membaca order. Cuba lagi.'});
-  function initMap(){
-    if(map) return; map=RKB.baseMap('map');
-    pm=L.marker([o.pick.lat,o.pick.lng],{icon:RKB.mkIcon('#10b981')}).addTo(map).bindPopup('Lokasi ambil');
-    dm=L.marker([o.drop.lat,o.drop.lng],{icon:RKB.mkIcon('#e11d48')}).addTo(map).bindPopup('Lokasi hantar');
-    map.fitBounds(L.latLngBounds([pm.getLatLng(),dm.getLatLng()]),{padding:[40,40]});
-    nav=RKB.makeNav(map);
-  }
-  function render(){
-    const chg=prevSt!==null&&prevSt!==o.status, wasSt=prevSt;
-    $('#ref').textContent='#'+o.ref; $('#when').textContent='Dibuat '+RKB.hm(o.createdAt);
-    const batal=o.status==='batal', idx=ST.findIndex(x=>x[0]===o.status);
-    $('#stp').innerHTML=batal?'<div class="now" style="width:100%"><i>✖</i>Dibatalkan</div>':ST.map((x,i)=>`<div class="${i<idx?'done':i===idx?'now':''}"><i>${i<idx?'✓':x[1]}</i>${x[2]}</div>`).join('');
-    const rn=esc(o.riderName||'Rider');
-    const S_=RKB.say; $('#headline').textContent=({baru:S_('Kami tengah carikan rider terdekat untuk anda…','Kito tengah cari rider paling dekak untuk demo…'),diterima:S_(`${o.riderName||'Rider'} dah terima order anda & tengah menuju lokasi ambil 🛵`,`${o.riderName||'Rider'} doh terima, tengah gi ambik barang 🛵`),diambil:S_(`${o.riderName||'Rider'} dah ambil barang anda & dalam perjalanan ke anda 🛵`,`${o.riderName||'Rider'} doh ambik, tengah mari ko demo 🛵`),selesai:S_('Sampai! Terima kasih sebab percayakan kami 🎉','Doh sampai! Terima kaseh ye 🎉'),batal:'Order ini telah dibatalkan.'})[o.status]||o.status;
-    const live=o.riderLoc&&(o.status==='diterima'||o.status==='diambil');
-    $('#sub').textContent=live?'Lokasi rider dikemas kini '+RKB.ago(o.riderLoc.t)+(o.riderLoc.spd!=null?' · '+o.riderLoc.spd+' km/j':''):(o.status==='baru'?'Biasanya rider terima dalam beberapa minit.':o.status==='selesai'?'Lokasi rider tidak lagi dikongsi.':'');
-    const over=o.status==='selesai'||o.status==='batal';
-    const wa=RKB.tel(o.riderPhone||RKB.cfg.waNumber), c=[];
-    if(!over&&o.riderPhone) c.push(`<a class="btn blu sm" href="tel:+${wa}">📞 Call ${rn}</a>`);
-    if(!over&&wa) c.push(`<a class="btn grn sm" href="https://wa.me/${wa}?text=${encodeURIComponent('Salam, order #'+o.ref)}">💬 WhatsApp</a>`);
-    $('#contact').innerHTML=c.join('');
-    $('#cxl').classList.toggle('hide',o.status!=='baru');
-    $('#map').classList.toggle('hide',over);
-    if(over){ if(nav) nav.clear(); if(riderMk&&map){ map.removeLayer(riderMk); riderMk=null } if(map){ const c=map.getContainer(); c.classList.remove('fs'); document.body.style.overflow='' } }
-    else{ const first=!map; initMap(); setTimeout(()=>{ map.invalidateSize(); if(first||prevSt==null||(prevSt==='selesai'||prevSt==='batal')) map.fitBounds(L.latLngBounds([pm.getLatLng(),dm.getLatLng()]),{padding:[40,40]}) },60); }
-    if(!over&&map&&pm){ if(o.status==='diambil'){ if(map.hasLayer(pm)) map.removeLayer(pm) } else if(!map.hasLayer(pm)) pm.addTo(map) }   // pin ambil hilang lepas barang diambil
-    if(!over) nav.update(o,live?[o.riderLoc.lat,o.riderLoc.lng]:null);
-    if(o.status==='selesai'&&prevSt!=='selesai'){ let seen=false; try{seen=localStorage.getItem('rkb-done-'+id)==='1'}catch(_){} if(!seen){ RKB.confetti(); const m=RKB.msgCust(); $('#dT').textContent=m.t; $('#dM').textContent=m.m; $('#done').classList.remove('hide'); try{localStorage.setItem('rkb-done-'+id,'1')}catch(_){} } }
-    prevSt=o.status;
-    if(live&&!over){
-      const ll=[o.riderLoc.lat,o.riderLoc.lng];
-      if(!riderMk){ riderMk=L.marker(ll,{icon:RKB.riderIcon(o.riderName),zIndexOffset:900}).addTo(map); map.fitBounds(L.latLngBounds([pm.getLatLng(),dm.getLatLng(),ll]),{padding:[40,40]}); }
-      else RKB.glide(riderMk,ll,1500);
-    } else if(riderMk){ map.removeLayer(riderMk); riderMk=null; }
-    $('#rinfo').innerHTML=(!over&&o.riderName)?'✅ <b>Rider disahkan</b> · '+esc(o.riderName)+(o.riderPlate?' · 🛵 '+esc(o.riderPlate):'')+(o.arrivedAt&&o.status==='diterima'?'<br>📍 <b>Rider dah sampai di lokasi ambil</b>':'')+(o.arrivedDropAt&&o.status==='diambil'?'<br>📍 <b>Rider dah sampai di lokasi anda</b>':''):'';
-    if(chg){ const msg={diterima:RKB.say('Rider dah terima order anda 🛵','Rider doh terima order demo 🛵'),diambil:RKB.say('Barang dah diambil, rider menuju ke lokasi anda 📦','Barang doh ambik, rider tengah mari 📦'),selesai:RKB.say('Order anda dah sampai! 🎉','Doh sampai! 🎉'),batal:'Order dibatalkan'}[o.status]; if(msg) notify('MYRIDERKU · #'+o.ref,msg) }
-    if(o.arrivedAt&&!prevArr&&wasSt!==null&&o.status==='diterima') notify('MYRIDERKU · #'+o.ref,'Rider dah sampai di lokasi ambil 📍');
-    prevArr=o.arrivedAt||null;
-    $('#again2').classList.toggle('hide',!over); drawConf(); drawRate(); loadProof(); drawPayC();
-    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],['Anggaran upah',rm(o.price)]];
-    $('#sum').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
-  }
-  $('#dX').onclick=()=>$('#done').classList.add('hide');
-  $('#cxlB').onclick=async()=>{
-    if(!o||o.status!=='baru'||!confirm('Batalkan order ini?')) return; const b=$('#cxlB'); b.disabled=true;
-    try{ await RKB.db.ref('orders/'+id).update({status:'batal','t/batal':firebase.database.ServerValue.TIMESTAMP}); notify('MYRIDERKU','Order dibatalkan') }
-    catch(e){ notify('MYRIDERKU','Tak dapat batal: rider mungkin baru terima. Guna "Lapor masalah" atau hubungi rider.') }
-    b.disabled=false };
-  const myPhone=()=>{ try{ return String((JSON.parse(localStorage.getItem('rkb')||'{}')||{}).p||'').slice(0,20) }catch(_){ return '' } };
-  if(RKB.pushCustomer) RKB.pushCustomer(id);
-  /* butiran bayaran (transfer / QR): tunjuk bila barang dah diambil atau selesai */
-  let payData=null, payLoaded=false;
-  try{ payData=(JSON.parse(localStorage.getItem('rkb-settings')||'null')||{}).pay||null }catch(_){}
-  function drawPayC(){
-    const b=$('#payc'), show=o.pay==='online'&&(o.status==='diambil'||o.status==='selesai');
-    if(!show){ b.classList.add('hide'); return }
-    if(!payLoaded){ payLoaded=true; RKB.db.ref('settings/pay').once('value').then(sn=>{ if(sn.val()){ payData=sn.val(); drawPayC() } }).catch(()=>{}) }
-    b.classList.remove('hide');
-    const d=payData||{};
-    b.innerHTML='<div class="big">📲 Bayar upah: '+rm(o.price)+'</div>'+((d.acc||d.qr)?'<div style="margin-top:8px;line-height:1.7">'+(d.bank?esc(d.bank)+'<br>':'')+(d.acc?'No. akaun: <b>'+esc(d.acc)+'</b><br>':'')+(d.name?'Nama: '+esc(d.name)+'<br>':'')+'</div>'+(d.acc?'<button class="btn gry sm" id="cpA" type="button" style="margin-top:6px">📋 Salin no. akaun</button>':'')+(d.qr?'<img alt="QR bayaran" src="'+d.qr+'" style="display:block;max-width:240px;width:100%;margin:10px auto 0;border-radius:12px;background:#fff">':''):'<div class="mut" style="margin-top:6px">Rider akan beri butiran bayaran. Sila bayar selepas barang sampai.</div>');
-    const c=$('#cpA'); if(c) c.onclick=()=>{ try{ navigator.clipboard.writeText(d.acc); c.textContent='✓ Disalin' }catch(_){} };
-  }
-  $('#shr').onclick=async()=>{ const u=location.href, t='Jejak order MYRIDERKU #'+(o?o.ref:''); try{ if(navigator.share) await navigator.share({title:t,url:u}); else { await navigator.clipboard.writeText(u); notify('MYRIDERKU','Pautan disalin ✓') } }catch(_){} };
-  /* notifikasi (berfungsi semasa halaman ini dibuka) */
-  const canN='Notification' in window;
-  function syncN(){ $('#notif').classList.toggle('hide',!(canN&&Notification.permission==='default')) } syncN();
-  $('#notif').onclick=async()=>{ try{ await Notification.requestPermission() }catch(_){} syncN() };
-  function notify(title,body){
-    try{ navigator.vibrate&&navigator.vibrate([200,100,200]) }catch(_){}
-    const tb=$('#toast'); tb.textContent=body; tb.style.display='block'; setTimeout(()=>tb.style.display='none',6000);
-    try{ if(canN&&Notification.permission==='granted'){ if(navigator.serviceWorker&&navigator.serviceWorker.ready) navigator.serviceWorker.ready.then(r=>r.showNotification(title,{body,icon:'icon-customer-192.png',data:{url:location.href}})).catch(()=>new Notification(title,{body,icon:'icon-customer-192.png'})); else new Notification(title,{body,icon:'icon-customer-192.png'}) } }catch(_){}
-  }
-  function drawLg(){ $('#lg').textContent='🗣️ Loghat: '+(RKB.kb()?'Hidup':'Mati') } drawLg();
-  const thb=document.createElement('button'); thb.type='button'; thb.className='themeBtn'; thb.textContent=RKB_THEME.label(); thb.onclick=()=>{ RKB_THEME.cycle(); thb.textContent=RKB_THEME.label() }; $('#lg').after(thb);
-  $('#lg').onclick=()=>{ RKB.toggleLoghat(); drawLg(); if(o) render() };
-  /* helaian pilihan sebab: satu ketik, tiada kotak prompt() pelayar */
-  function askReason(title,reasons){
-    return new Promise(res=>{
-      const m=$('#ask'); $('#askT').textContent=title; $('#askO').classList.add('hide'); $('#askI').value='';
-      $('#askL').innerHTML=reasons.map(r=>'<button class="btn gry full" type="button" data-r="'+esc(r)+'" style="margin-bottom:8px;text-align:left">'+esc(r)+'</button>').join('')+'<button class="btn gry full" type="button" data-r="" style="margin-bottom:8px;text-align:left">✏️ Lain-lain…</button>';
-      m.classList.remove('hide');
-      const close=v=>{ m.classList.add('hide'); res(v) };
-      $('#askL').onclick=e=>{ const b=e.target.closest('button[data-r]'); if(!b) return; if(b.dataset.r) close(b.dataset.r); else { $('#askL').classList.add('hide'); $('#askO').classList.remove('hide'); $('#askI').focus() } };
-      $('#askS').onclick=()=>{ const v=$('#askI').value.trim(); if(v){ $('#askL').classList.remove('hide'); close(v) } };
-      $('#askX').onclick=()=>{ $('#askL').classList.remove('hide'); close(null) };
-    });
-  }
-  /* lapor masalah */
-  $('#rep').onclick=async()=>{
-    const m=await askReason('Apa masalahnya?',['Rider lambat','Barang salah / tak lengkap','Nak batal order','Nak tukar alamat']); if(!m) return;
-    try{ await RKB.report({type:'customer',orderId:id,ref:o?o.ref:'',from:'customer',name:o?o.name:'',phone:myPhone(),msg:m.slice(0,300)}); notify('MYRIDERKU','Laporan dihantar. Kami akan hubungi anda 💛') }
-    catch(e){ notify('MYRIDERKU','Tak dapat hantar laporan. Sila WhatsApp admin.') }
-  };
-  /* ajak ulasan Google (jujur, tanpa menetapkan bintang) */
-  function reviewBlock(){
-    const u=(RKB.cfg&&RKB.cfg.reviewUrl)||''; if(!u) return '<div class="mut" style="margin-top:12px">━━━━━━━━━━━━━<br><b>TERIMA KASIH ORANG BAIK</b> 💛</div>';
-    return '<div class="mut" style="margin-top:12px;line-height:1.6;text-align:left">Semoga urusan <b>ORANG BAIK</b> sentiasa dipermudahkan dan dilimpahi rezeki yang berkat. Kalau anda berpuas hati dengan servis kami, ulasan jujur anda, boleh sertakan gambar atau video, sangat bermakna untuk kami.</div>'
-      +'<a class="btn blu full" target="_blank" rel="noopener" href="'+esc(u)+'" style="margin-top:10px;display:block;text-align:center">⭐ Tulis ulasan di Google</a>'
-      +'<div class="mut" style="margin-top:12px">━━━━━━━━━━━━━<br><b>TERIMA KASIH ORANG BAIK</b> 💛</div>';
-  }
-  /* pengesahan terima barang: sekali sahaja. "Belum terima" terus masuk panel Laporan admin */
-  let confKey='';
-  function drawConf(){
-    const box=$('#conf'); if(o.status!=='selesai'){ box.classList.add('hide'); return }
-    box.classList.remove('hide');
-    const key=o.conf?o.conf.v:'-'; if(key===confKey) return; confKey=key;
-    if(o.conf){ box.innerHTML=o.conf.v==='ok'?'<div class="big">✅ Terima kasih, anda dah sahkan barang diterima.</div>':'<div class="big">⚠️ Laporan anda dah sampai kepada admin.</div><div class="mut" style="margin-top:6px">Kami akan hubungi anda secepat mungkin.</div>'; return }
-    box.innerHTML='<div class="big">Barang dah sampai pada anda?</div><div class="mut" style="margin:6px 0 10px">Kalau tiada masalah, anda tak perlu buat apa-apa pun. Order auto-disahkan selepas '+(+(RKB.cfg.confAutoMin||30))+' minit.</div><div class="acts"><button class="btn grn" id="cOk" type="button">✅ Dah terima</button><button class="btn gry" id="cNo" type="button" style="border:1px solid #ef4444">⚠️ Belum terima</button></div><div class="mut" id="cErr" style="margin-top:6px"></div>';
-    const TS=firebase.database.ServerValue.TIMESTAMP, err=m=>{ const e=$('#cErr'); if(e) e.textContent=m };
-    $('#cOk').onclick=async()=>{ $('#cOk').disabled=$('#cNo').disabled=true; try{ await RKB.db.ref('orders/'+id+'/conf').set({v:'ok',t:TS}) }catch(e){ $('#cOk').disabled=$('#cNo').disabled=false; err('Tak dapat hantar. Cuba lagi.') } };
-    $('#cNo').onclick=async()=>{
-      const m=await askReason('Apa yang berlaku?',['Barang tak sampai','Barang tak lengkap / rosak','Salah alamat / bukan saya terima']);
-      if(!m) return; $('#cOk').disabled=$('#cNo').disabled=true;
-      try{ await RKB.report({type:'customer',orderId:id,ref:o.ref||'',from:'customer',name:o.name||'',phone:myPhone(),msg:('⚠️ BELUM TERIMA: '+m).slice(0,300)}) }
-      catch(e){ $('#cOk').disabled=$('#cNo').disabled=false; err('Laporan gagal dihantar. Sila WhatsApp admin terus.'); return }
-      try{ await RKB.db.ref('orders/'+id+'/conf').set({v:'issue',t:TS,m}) }catch(e){ err('Laporan dah dihantar kepada admin, tetapi status belum dikemas kini.') }
-    };
-  }
-  /* penilaian */
-  function drawRate(){
-    const box=$('#rate'), key=o.status+'|'+(o.rating?o.rating.stars:'');
-    if(o.status!=='selesai'){ box.classList.add('hide'); return }
-    box.classList.remove('hide'); if(key===rateKey) return; rateKey=key;
-    if(o.rating){ box.innerHTML='<div class="big">Terima kasih! Penilaian anda sangat bermakna untuk rider 💖</div><div style="font-size:26px;margin-top:6px">'+'⭐'.repeat(o.rating.stars)+'</div>'+reviewBlock(); return }
-    stars=0;
-    box.innerHTML='<div class="big">Macam mana rider tadi? Pendapat anda bantu rider kami ⭐</div><div id="stars" style="margin:6px 0">'+[1,2,3,4,5].map(n=>'<button class="star" data-n="'+n+'" type="button">⭐</button>').join('')+'</div><input id="rc" maxlength="140" placeholder="Komen (pilihan)" style="width:100%;margin-bottom:8px"><button class="btn grn full" id="rs" type="button" disabled>Hantar penilaian</button><div class="mut" id="rerr"></div>';
-    $('#stars').onclick=e=>{ const b=e.target.closest('.star'); if(!b) return; stars=+b.dataset.n; [...document.querySelectorAll('.star')].forEach(x=>x.classList.toggle('on',+x.dataset.n<=stars)); $('#rs').disabled=false };
-    $('#rs').onclick=async()=>{ try{ const r={stars,t:Date.now()}, c=$('#rc').value.trim().slice(0,140); if(c) r.c=c; await RKB.db.ref('orders/'+id+'/rating').set(r) }catch(e){ $('#rerr').textContent='Tak dapat hantar penilaian. Cuba lagi.' } };
-  }
-  /* bukti hantar (gambar daripada rider) */
-  function loadProof(){
-    if(o.status!=='selesai'||proofDone) return; proofDone=true;
-    RKB.db.ref('proofs/'+id).once('value').then(s=>{ const v=s.val(); if(typeof v==='string'&&v.startsWith('data:image/')){ const b=$('#proof'); b.classList.remove('hide'); b.innerHTML='<div class="big" style="margin-bottom:8px">📷 Bukti hantar</div><img alt="Bukti hantar" style="width:100%;border-radius:14px" src="'+v+'">' } }).catch(()=>{});
-  }
-  setInterval(()=>{ if(o&&o.riderLoc&&(o.status==='diterima'||o.status==='diambil')) $('#sub').textContent='Lokasi rider dikemas kini '+RKB.ago(o.riderLoc.t) },10000);
-}
-</script>
-<script>RKB.installBanner('MYRIDERKU')</script>
-</body></html>
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyRiderKu V40 - Penjejakan Langsung | Leaflet Maps</title>
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body class="bg-dark text-light">
+    <header class="glass-header sticky top-0 z-50 px-4 py-3 flex justify-between items-center border-b border-gold/20">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gold text-dark font-black px-3 py-1.5 rounded-lg text-lg">TRK</div>
+            <div>
+                <h1 class="font-bold text-sm text-gold">PENJEJAKAN LIVE</h1>
+                <p class="text-[10px] text-gray-400">Kota Bharu, Kelantan</p>
+            </div>
+        </div>
+        <a href="index.html" class="text-xs bg-dark-card border border-gold/30 text-gold px-3 py-1.5 rounded-lg">Utama</a>
+    </header>
+
+    <main class="max-w-md mx-auto p-4 pb-24">
+        <div class="bg-dark-card border border-gold/30 rounded-2xl p-4 mb-4">
+            <h3 class="text-xs font-bold text-gold uppercase tracking-wider mb-2">Status Pesanan #MRK-8842</h3>
+            <div class="flex items-center space-x-3 text-xs text-gray-300">
+                <div class="w-8 h-8 rounded-full bg-gold text-dark flex items-center justify-center font-bold">2</div>
+                <div>
+                    <strong class="text-light block">Rider Sedang Menuju ke Lokasi Anda</strong>
+                    <span class="text-gray-400">Anggaran Masa Ketibaan: 8 minit</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map" class="w-full h-96 rounded-2xl border border-gold/30 shadow-2xl"></div>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-dark-card border-t border-gold/20 py-2 px-6 flex justify-between items-center z-50 max-w-md mx-auto">
+        <a href="index.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-home text-base"></i> Utama</a>
+        <a href="track.html" class="text-gold flex flex-col items-center text-xs"><i class="fas fa-map-marked-alt text-base"></i> Jejak</a>
+        <a href="rider.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-motorcycle text-base"></i> Rider</a>
+        <a href="admin.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-user-shield text-base"></i> Admin</a>
+    </nav>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([6.1254, 102.2381], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        L.marker([6.1254, 102.2381]).addTo(map)
+            .bindPopup('<b>Lokasi Anda</b><br>Kota Bharu, Kelantan')
+            .openPopup();
+    </script>
+</body>
+</html>

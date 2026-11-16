@@ -1,472 +1,87 @@
-<!doctype html>
-<html lang="ms"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MYRIDERKU Rider</title><meta name="theme-color" content="#168447">
-<script src="theme.js"></script>
-<link rel="manifest" href="manifest-rider.webmanifest">
-<link rel="icon" type="image/png" href="icon-rider-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon-rider.png">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="MYRIDERKU Rider">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="app.css">
-<style>@keyframes pop{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}@keyframes ring{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
-.modal{position:fixed;inset:0;z-index:6000;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px}
-.mbox{width:100%;max-width:520px;background:var(--card);border-radius:24px;padding:18px 16px calc(16px + env(safe-area-inset-bottom));animation:pop .35s ease-out}
-#hazbar{position:sticky;top:0;z-index:2500;margin:10px 16px 0;padding:12px 14px;border-radius:14px;font-size:14px;line-height:1.5;border:2px solid #f59e0b}.more summary{list-style:none;cursor:pointer}.more summary::-webkit-details-marker{display:none}.more[open] summary{opacity:.7}
-</style>
-<link rel="stylesheet" href="theme.css">
-<link rel="stylesheet" href="myriderku-brand.css">
-<link rel="stylesheet" href="myriderku-ui.css">
-<link rel="stylesheet" href="myriderku-ceria.css">
-<link rel="stylesheet" href="myriderku-v37.css?v=39">
-<link rel="stylesheet" href="myriderku-v39.css?v=39">
-</head><body class="role-rider">
-<div class="wrap">
-<header class="hd"><div><span class="tag">APP RIDER</span><h1>MYRIDERKU Rider 🛵</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyRiderKu V40 - Portal Rider | Pendapatan & Tugasan</title>
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-dark text-light">
+    <!-- Header -->
+    <header class="glass-header sticky top-0 z-50 px-4 py-3 flex justify-between items-center border-b border-gold/20">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gold text-dark font-black px-3 py-1.5 rounded-lg text-lg">RDR</div>
+            <div>
+                <h1 class="font-bold text-sm text-gold">PORTAL RIDER</h1>
+                <p class="text-[10px] text-gray-400">Status: <span class="text-green-400 font-bold">● Aktif (Online)</span></p>
+            </div>
+        </div>
+        <a href="index.html" class="text-xs bg-dark-card border border-gold/30 text-gold px-3 py-1.5 rounded-lg">Utama</a>
+    </header>
 
-<div id="gate" class="pad hide"><div class="card" style="text-align:center"><div style="font-size:46px">📲</div><div class="big">Pasang app MYRIDERKU dahulu</div><div class="mut" style="margin:8px 0 12px;line-height:1.6">Rider wajib guna app yang dipasang supaya lokasi, order dan notifikasi sentiasa berfungsi semasa bertugas.</div><button id="gInstall" class="btn full hide">📲 Pasang app sekarang</button><div id="gHelp" class="mut" style="margin-top:12px;line-height:1.7"></div></div></div>
+    <main class="max-w-md mx-auto p-4 pb-24">
+        <!-- Earnings Summary Card -->
+        <div class="bg-dark-card border border-gold/30 rounded-2xl p-5 mb-5 shadow-xl">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs text-gray-400 uppercase tracking-wider">Pendapatan Hari Ini</span>
+                <span class="bg-gold/20 text-gold text-xs px-2.5 py-1 rounded-full font-bold">Isnin, 16 Nov</span>
+            </div>
+            <div class="text-3xl font-black text-gold mb-1">RM 36.60</div>
+            <p class="text-xs text-gray-400"><i class="fas fa-check-circle text-green-400"></i> 9 tugasan selesai hari ini di Kota Bharu</p>
+            <div class="mt-4 pt-4 border-t border-gray-800 grid grid-cols-2 gap-2 text-center">
+                <div class="bg-dark p-2.5 rounded-xl border border-gold/10">
+                    <span class="text-[10px] text-gray-400 block">Bahagian Rider (80%)</span>
+                    <strong class="text-sm text-gold">RM 29.28</strong>
+                </div>
+                <div class="bg-dark p-2.5 rounded-xl border border-gold/10">
+                    <span class="text-[10px] text-gray-400 block">Tabung Platform (20%)</span>
+                    <strong class="text-sm text-gray-300">RM 7.32</strong>
+                </div>
+            </div>
+        </div>
 
-<div id="login" class="pad hide">
-  <div class="card"><form id="lf" onsubmit="return false"><h3 id="ltitle">Log masuk rider</h3>
-    <div id="regf" class="hide"><label>Nama</label><input id="rn" autocomplete="name"><label>No. telefon</label><input id="rp" type="tel" placeholder="0123456789" autocomplete="tel"><label>No. plat kenderaan</label><input id="rpl" placeholder="Cth: DAB 1234" autocapitalize="characters" maxlength="12"></div>
-    <label>E-mel</label><input id="em" name="username" type="email" autocomplete="username" autocapitalize="none" inputmode="email">
-    <label>Kata laluan</label><input id="pw" name="password" type="password" autocomplete="current-password" placeholder="Min. 6 aksara">
-    <div class="err" id="lerr"></div>
-    <button class="btn full" id="go" type="submit" style="margin-top:8px">Log masuk</button>
-    <button class="btn gry full" id="tg" type="button" style="margin-top:8px">Rider baru? Daftar</button>
-    <button class="btn gry full" id="fp" type="button" style="margin-top:8px">🔑 Lupa kata laluan?</button>
-    <div class="mut" style="margin-top:10px">Pendaftaran rider baru perlu diluluskan admin.</div></form>
-  </div>
-</div>
+        <!-- Available Jobs Queue -->
+        <h3 class="text-sm font-bold text-gold uppercase tracking-wider mb-3"><i class="fas fa-list-alt mr-2"></i> Senarai Tugasan Aktif</h3>
+        <div class="space-y-3">
+            <div class="bg-dark-card border border-gold/20 rounded-xl p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="bg-green-500/20 text-green-400 text-[10px] px-2 py-0.5 rounded font-bold">Sedia Diambil</span>
+                    <span class="text-sm font-black text-gold">RM 10.30</span>
+                </div>
+                <h4 class="text-xs font-bold text-light mb-1"><i class="fas fa-store text-gold mr-1"></i> Oh My Soto ! - Kampung Khatib Ali</h4>
+                <p class="text-[11px] text-gray-400 mb-2"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> Penghantaran ke: Lembah Sireh</p>
+                <div class="flex space-x-2">
+                    <button onclick="acceptJob('Oh My Soto')" class="flex-1 bg-gold text-dark text-xs font-bold py-2 rounded-lg hover:opacity-90">Terima Tugasan</button>
+                    <a href="https://wa.me/601139900099" target="_blank" class="px-3 py-2 bg-dark border border-gold/40 text-gold text-xs rounded-lg"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
 
-<div id="pend" class="pad hide"><div class="card" style="text-align:center"><div style="font-size:42px">⏳</div><div class="big">Menunggu kelulusan admin</div><div class="mut" style="margin-top:8px">Akaun anda sudah didaftarkan. Skrin ni akan bertukar sendiri sebaik admin meluluskan.</div></div></div>
+            <div class="bg-dark-card border border-gold/20 rounded-xl p-4">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="bg-blue-500/20 text-blue-400 text-[10px] px-2 py-0.5 rounded font-bold">Parcel Express</span>
+                    <span class="text-sm font-black text-gold">RM 8.00</span>
+                </div>
+                <h4 class="text-xs font-bold text-light mb-1"><i class="fas fa-box text-gold mr-1"></i> Pengambilan Dokumen - Wakaf Bharu</h4>
+                <p class="text-[11px] text-gray-400 mb-2"><i class="fas fa-map-marker-alt text-red-400 mr-1"></i> Penghantaran ke: Wisma Persekutuan KB</p>
+                <button onclick="acceptJob('Parcel Wakaf Bharu')" class="w-full bg-gold text-dark text-xs font-bold py-2 rounded-lg hover:opacity-90">Terima Tugasan</button>
+            </div>
+        </div>
+    </main>
 
-<div id="app" class="hide">
-  <div id="dutybar" class="hide alertbar bad" style="position:sticky;top:0;z-index:2600;margin:10px 16px 0"></div>
-  <div id="hazbar" class="hide"></div>
-  <div class="pad" style="padding-bottom:0">
-    <div class="card ridercard" style="margin:0">
-      <div><b id="onTxt">Offline</b><div class="mut" id="earn"></div><div class="mut" id="wal"></div><a class="mut lnk" id="prof" href="#" style="display:block;font-weight:700;text-decoration:none">🪪 Profil &amp; no. plat</a><a class="mut" id="topup" class="lnk" target="_blank" style="font-weight:700;text-decoration:none">➕ Top up wallet</a></div>
-      <div class="acts"><button class="btn sm" id="onBtn">Mula kongsi lokasi</button>
-      <button class="btn gry sm" id="tstSnd">🔊 Test bunyi order</button>
-      <button class="btn gry sm" id="thBtn" type="button"></button></div>
-    </div>
-  </div>
-  <div class="tabs" id="tabs"></div>
-  <div class="pad">
-    <div id="mapbox"><div id="map" class="map"></div><div class="mut" style="margin:8px 0 4px">🟠 Order baru &nbsp; 🟢 Ambil &nbsp; 🔴 Hantar &nbsp; 🛵 Anda &nbsp; 📷🚔 Kamera/AES</div></div>
-    <div id="list"></div>
-  </div>
-</div>
-</div>
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-dark-card border-t border-gold/20 py-2 px-6 flex justify-between items-center z-50 max-w-md mx-auto">
+        <a href="index.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-home text-base"></i> Utama</a>
+        <a href="track.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-map-marked-alt text-base"></i> Jejak</a>
+        <a href="rider.html" class="text-gold flex flex-col items-center text-xs"><i class="fas fa-motorcycle text-base"></i> Rider</a>
+        <a href="admin.html" class="text-gray-400 hover:text-gold flex flex-col items-center text-xs"><i class="fas fa-user-shield text-base"></i> Admin</a>
+    </nav>
 
-<input type="file" id="proofIn" accept="image/*" capture="environment" class="hide">
-<div id="job" class="modal hide"><div class="mbox" style="border:2px solid var(--org)">
-  <div style="text-align:center;font-size:44px;animation:ring .6s ease-in-out infinite alternate">🔔</div>
-  <div style="text-align:center;font-weight:900;font-size:20px;letter-spacing:.5px">ORDER BARU MASUK!</div>
-  <div class="mut" style="text-align:center;margin-bottom:6px" id="jMeta"></div>
-  <div class="row"><span>📍 Ambil</span><span id="jP"></span></div>
-  <div class="row"><span>🏁 Hantar</span><span id="jD"></span></div>
-  <div class="row"><span>📝 Nota</span><span id="jN"></span></div>
-  <div class="row"><span>💳 Bayaran</span><span id="jPay"></span></div>
-  <div class="mut" style="text-align:center;margin-top:10px">💰 Upah anda</div><div style="text-align:center;font-size:34px;font-weight:900;margin:0 0 4px" id="jPrice"></div>
-  <div class="acts"><button class="btn gry" id="jSkip" style="flex:0 0 32%">Bukan sekarang</button><button class="btn grn" id="jAcc" style="flex:1">✅ TERIMA</button></div>
-</div></div>
-
-<div id="done" class="modal hide"><div class="mbox" style="border:2px solid var(--grn);text-align:center">
-  <div style="font-size:54px">🎉</div>
-  <div class="big" id="dT" style="margin:6px 0"></div>
-  <div style="line-height:1.6;color:#d1d5db" id="dM"></div>
-  <div class="mut" id="dE" style="margin:10px 0"></div>
-  <button class="btn grn full" id="dX">Aamiin, terima kasih 🤲</button>
-</div></div>
-<div id="toast" class="toast hide"></div>
-<script>
-window.__standalone=['standalone','fullscreen','minimal-ui'].some(function(m){return matchMedia('(display-mode: '+m+')').matches})||navigator.standalone===true;
-window.__dip=null;
-addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__dip=e;var b=document.getElementById('gInstall');if(b)b.classList.remove('hide')});
-if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="common.js?v=39"></script>
-<script>
-const $=s=>document.querySelector(s), {esc,rm,hav}=RKB;
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3200)}
-function showGate(){
-  $('#gate').classList.remove('hide');
-  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent), b=$('#gInstall');
-  $('#gHelp').innerHTML=ios?'Tekan ikon <b>Kongsi ⬆️</b> di Safari, pilih <b>Tambah ke Skrin Utama</b>, kemudian buka app <b>MYRIDERKU</b> dari skrin utama.':'Kalau butang tak keluar: tekan <b>⋮</b> di Chrome, pilih <b>Pasang app</b> (atau <b>Tambah ke skrin utama</b>), kemudian buka app <b>MYRIDERKU</b> dari skrin utama.';
-  if(window.__dip) b.classList.remove('hide');
-  b.onclick=async()=>{ if(!window.__dip) return; window.__dip.prompt(); try{await window.__dip.userChoice}catch(e){} window.__dip=null; b.classList.add('hide') };
-  addEventListener('appinstalled',()=>{ $('#gHelp').innerHTML='✅ Dah dipasang! Tutup halaman ni dan buka app <b>MYRIDERKU</b> dari skrin utama.'; b.classList.add('hide') });
-}
-const mustInstall=(RKB.cfg.riderMustInstall!==false)&&!window.__standalone;
-if(mustInstall){ showGate() }
-else if(!RKB.ok){ $('#login').classList.remove('hide'); $('#login').innerHTML='<div class="card">Firebase belum disetup. Lihat FIREBASE-SETUP.md.</div>'; }
-else{
-const db=RKB.db, auth=RKB.auth;
-let user=null, me={}, orders={}, tab='baru', first=true, watchId=null, online=false, lastPush=0, wl=null, sel=null, manual=false;
-let map=null, nav=null, mm={}, routeFor=null, selfMk=null, selfPos=null, spd=0, prevPos=null, selfFit=false, ovSig='';
-let regMode=false, registering=false, prompted=false, ordersRef=null, profRef=null, hazRef=null, gpsAuto=false;
-let gpsErr='', netOk=true, lastFix=0, lastBeep=0;
-let contacts={}, cTry={}, cPend={};
-let hazAdmin={}, hazOsm=[], hazLayer=null, lastOsm={ll:null,t:0}, lastAlert={};
-const jobTimers={};
-
-/* ---------- Log masuk / daftar / kelulusan ---------- */
-$('#tg').onclick=()=>{ regMode=!regMode; $('#regf').classList.toggle('hide',!regMode); $('#go').textContent=regMode?'Daftar rider':'Log masuk'; $('#ltitle').textContent=regMode?'Daftar rider baru':'Log masuk rider'; $('#tg').textContent=regMode?'Dah ada akaun? Log masuk':'Rider baru? Daftar'; $('#lerr').textContent='' };
-$('#go').onclick=async()=>{
-  const err=t=>$('#lerr').textContent=t; err('');
-  const em=$('#em').value.trim(), pw=$('#pw').value;
-  try{
-    if(regMode){
-      const n=$('#rn').value.trim(), ph=$('#rp').value.trim();
-      if(!n||!ph) return err('Isi nama dan no. telefon.');
-      if(pw.length<6) return err('Kata laluan minimum 6 aksara.');
-      registering=true;
-      const c=await auth.createUserWithEmailAndPassword(em,pw);
-      await db.ref('riders/'+c.user.uid).update({name:n,phone:ph,email:em,plate:($('#rpl').value||'').trim().toUpperCase().slice(0,12),reg:Date.now()});
-      registering=false;
-    } else await auth.signInWithEmailAndPassword(em,pw);
-  }catch(e){
-    registering=false;
-    err(e.code==='auth/email-already-in-use'?'E-mel ini sudah didaftar. Sila log masuk.':e.code==='auth/invalid-email'?'Format e-mel tak betul.':e.code==='auth/weak-password'?'Kata laluan terlalu lemah.':regMode?'Pendaftaran gagal. Cuba lagi.':'E-mel atau kata laluan salah.');
-  }
-};
-$('#fp').onclick=async()=>{
-  const em=$('#em').value.trim(); if(!em){ $('#lerr').textContent='Isi e-mel anda dahulu, kemudian tekan Lupa kata laluan.'; return }
-  try{ await auth.sendPasswordResetEmail(em); $('#lerr').textContent='✅ Pautan tetapan semula dihantar ke '+em+' (semak juga folder Spam).' }
-  catch(e){ $('#lerr').textContent=e.code==='auth/invalid-email'?'Format e-mel tak betul.':'Tak dapat hantar. Minta admin bantu.' }
-};
-$('#out').onclick=()=>{ if(hasActive()){ toast('⛔ Tak boleh log keluar semasa ada tugas aktif'); return } stopGps(); detach(); auth.signOut() };
-const hasActive=()=>!!user&&Object.values(orders).some(o=>o.riderUid===user.uid&&(o.status==='diterima'||o.status==='diambil'));
-addEventListener('beforeunload',e=>{ if(hasActive()){ e.preventDefault(); e.returnValue='' } });
-function detach(){
-  jobQ=[]; clearInterval(jobTimer); jobCur=null; $('#job').classList.add('hide');
-  Object.keys(jobTimers).forEach(k=>{clearTimeout(jobTimers[k]);delete jobTimers[k]});
-  if(ordersRef){ordersRef.off();ordersRef=null} if(profRef){profRef.off();profRef=null} if(hazRef){hazRef.off();hazRef=null}
-  orders={}; contacts={}; cTry={}; cPend={}; gpsAuto=false; first=true;
-}
-RKB.loadShares().then(()=>{try{render()}catch(e){}});
-auth.onAuthStateChanged(u=>{
-  user=u; detach();
-  if(!u){ $('#login').classList.remove('hide'); $('#pend').classList.add('hide'); $('#app').classList.add('hide'); $('#out').classList.add('hide'); $('#who').textContent=''; return }
-  $('#login').classList.add('hide'); $('#out').classList.remove('hide');
-  if(RKB.adminGuard(u,'rider')) return;
-  profRef=db.ref('riders/'+u.uid);
-  profRef.on('value',async s=>{
-    me=s.val()||{}; $('#who').textContent=me.name||u.email;
-    if(u.email&&me.email!==u.email) db.ref('riders/'+u.uid+'/email').set(u.email).catch(()=>{});
-    if((!me.name||!me.phone)&&!registering&&!prompted){
-      prompted=true;
-      const n=prompt('Nama anda (pelanggan akan nampak):',(u.email||'').split('@')[0])||(u.email||'').split('@')[0];
-      const ph=prompt('No. telefon anda (cth 0123456789):')||'';
-      await db.ref('riders/'+u.uid).update({name:n,phone:ph,reg:Date.now()}); return;
-    }
-    if(me.approved===true){
-      RKB.pushInit('rider',u);
-      $('#pend').classList.add('hide'); $('#app').classList.remove('hide');
-      if(!ordersRef){ listen(); listenHaz(); }
-      if(!gpsAuto){ gpsAuto=true; manual=true; startGps(); }   // lokasi dikongsi automatik supaya dapat order terdekat
-      render();
-    } else {
-      $('#app').classList.add('hide'); $('#pend').classList.remove('hide');
-      if(ordersRef){ordersRef.off();ordersRef=null} stopGps(); gpsAuto=false;
-    }
-  },e=>toast('Ralat profil: '+e.code));
-});
-
-/* ---------- Order ---------- */
-function listen(){
-  ordersRef=db.ref('orders').orderByChild('createdAt').limitToLast(80);
-  ordersRef.on('value',s=>{
-    const prev=new Set(Object.keys(orders).filter(k=>orders[k].status==='baru'));
-    orders=s.val()||{};
-    const nw=Object.keys(orders).filter(k=>orders[k].status==='baru');
-    if(first) nw.filter(k=>Date.now()-orders[k].createdAt<600000).forEach(scheduleJob);
-    else nw.filter(k=>!prev.has(k)).forEach(scheduleJob);
-    first=false; render();
-  },e=>toast('Tak dapat baca order: '+e.code));
-}
-function listenHaz(){ hazRef=db.ref('hazards'); hazRef.on('value',s=>{ hazAdmin=s.val()||{}; drawHaz() },()=>{}) }
-const mine=o=>o.riderUid===user.uid;
-const active=o=>mine(o)&&(o.status==='diterima'||o.status==='diambil');
-const list=()=>Object.entries(orders).map(([k,o])=>({k,...o})).sort((a,b)=>b.createdAt-a.createdAt);
-const eligible=o=>!(o.pay==='cash'&&(+me.wallet||0)<(+o.need||0));
-const distTo=o=>selfPos?hav(selfPos,[o.pick.lat,o.pick.lng]):null;
-const dropR=()=>+(RKB.cfg.dropRadiusM||300);
-const dropDistM=o=>selfPos?Math.round(hav(selfPos,[o.drop.lat,o.drop.lng])*1000):null;   // null = GPS tiada
-const tooFar=o=>{ const d=dropDistM(o); return (d!=null&&d>dropR())?d:null };
-function renderTabs(){
-  const L=list(), n={baru:L.filter(o=>o.status==='baru').length,aktif:L.filter(active).length,selesai:L.filter(o=>mine(o)&&o.status==='selesai').length};
-  $('#tabs').innerHTML=[['baru','🆕 Baru'],['aktif','🛵 Aktif'],['selesai','✅ Selesai']].map(t=>`<button class="tab ${tab===t[0]?'on':''}" data-t="${t[0]}">${t[1]} (${n[t[0]]})</button>`).join('');
-  const today=new Date().setHours(0,0,0,0), e=L.filter(o=>mine(o)&&o.status==='selesai'&&(o.t&&o.t.selesai||0)>=today);
-  const dn=L.filter(o=>mine(o)&&o.status==='selesai'), sum=a=>a.reduce((s,o)=>s+RKB.riderPay(o),0), wk=dn.filter(o=>(o.t&&o.t.selesai||0)>=Date.now()-7*864e5), mo=dn.filter(o=>(o.t&&o.t.selesai||0)>=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime()), rt=dn.filter(o=>o.rating&&o.rating.stars);
-  $('#earn').innerHTML=`Hari ini: ${e.length} order · ${rm(sum(e))}<br>7 hari: ${wk.length} order · ${rm(sum(wk))}<br>Bulan ini: ${mo.length} order · ${rm(sum(mo))}`+(rt.length?`<br>⭐ <b>${(rt.reduce((s,o)=>s+o.rating.stars,0)/rt.length).toFixed(1)}</b> (${rt.length} penilaian)`:'');
-  const w=+me.wallet||0, mc=+(RKB.cfg.walletMinCash??0), mx=Math.max(0,w-mc);
-  $('#wal').innerHTML='💰 Credit Wallet: <b>'+rm(w)+'</b><br>'+(mx>0?'Layak job barang sehingga <b>'+rm(mx)+'</b>':'Layak job tanpa talangan barang sahaja');
-  $('#topup').href='https://wa.me/'+RKB.tel(RKB.cfg.waNumber)+'?text='+encodeURIComponent('Salam admin, saya rider '+(me.name||'')+'. Nak top up wallet.');
-}
-$('#tabs').onclick=e=>{ askNotif();const b=e.target.closest('.tab'); if(b){tab=b.dataset.t;render()}};
-const payTxt=o=>(o.pay==='online'?'📲 Online/Transfer':'💵 Tunai')+(+o.itemEst?` · barang ≈ ${rm(o.itemEst)}`:'');
-/* nombor pelanggan disimpan di orderContacts: hanya boleh dibaca selepas order ini ditugaskan kepada rider */
-function ensureContact(k){
-  if(contacts[k]||cPend[k]||(cTry[k]||0)>=6) return; cPend[k]=1; cTry[k]=(cTry[k]||0)+1;
-  db.ref('orderContacts/'+k).once('value').then(s=>{ cPend[k]=0; contacts[k]=s.val()||{}; render() },()=>{ cPend[k]=0; setTimeout(()=>{ if(orders[k]&&active(orders[k])) ensureContact(k) },1500*cTry[k]) });
-}
-function card(o){
-  const ok=eligible(o), C=contacts[o.k]||{}, ph=RKB.phoneOf(o,C), rv=C.recv||o.recv||'';
-  const nx=o.status==='baru'?(ok?['terima','✅ Terima order','grn']:['lock','🔒 Tak layak: wallet '+rm(me.wallet||0)+', perlu '+rm(o.need),'gry']):{diterima:(o.pickPhoto?['diambil','📦 Barang dah diambil','blu']:null),diambil:(o.dropPhoto?['selesai','🎉 Hantar selesai','grn']:null)}[o.status];
-  const p=[o.pick.lat,o.pick.lng], d=[o.drop.lat,o.drop.lng], dd=o.status==='baru'?distTo(o):null;
-  return `<div class="card" ${o.status==='baru'&&!ok?'style="opacity:.55"':''}><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}</b><span class="badge b-${o.status}">${o.status}</span></div>
-  <div class="mut" style="margin:4px 0 8px">${RKB.hm(o.createdAt)} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM${dd!=null?` · 📏 ${dd.toFixed(1)} KM dari anda`:''}</div>
-  <div class="row"><span>📍 Ambil</span><span>${esc(o.pick.addr)}</span></div>
-  <div class="row"><span>🏁 Hantar</span><span>${esc(o.drop.addr)}</span></div>
-  <div class="row"><span>📝 Nota</span><span>${esc(o.notes||'-')}</span></div>
-  <div class="row"><span>👤 Pelanggan</span><span>${esc(o.name)} · ${o.status==='selesai'?'🔒 nombor disembunyikan':(ph?esc(ph):'🔒 nombor dipaparkan selepas anda terima')}${rv&&o.status!=='selesai'?'<br>Penerima: '+esc(rv):''}</span></div>
-  <div class="row"><span>💳 Bayaran</span><span>${payTxt(o)}</span></div>
-  <div class="row"><span>💰 Upah</span><span>${rm(RKB.riderPay(o))}${o.rain?' (hujan)':''}</span></div>
-  ${o.status==='selesai'&&RKB.confState(o)?`<div class="row"><span>🧾 Pengesahan</span><span>${esc(RKB.confState(o).t)}</span></div>`:''}
-  <div class="acts">${nx?`<button class="btn ${nx[2]} full" data-a="${nx[0]}" data-k="${o.k}" ${nx[0]==='lock'?'disabled':''}>${nx[1]}</button>`:''}
-  ${mine(o)&&o.status==='diterima'&&!o.arrivedAt?`<button class="btn blu full" data-a="arrive" data-k="${o.k}">📍 Dah sampai di lokasi ambil</button>`:''}${mine(o)&&o.status==='diterima'&&o.arrivedAt&&!o.pickPhoto?`<button class="btn blu full" data-a="proofP" data-k="${o.k}">📷 Ambil gambar barang</button>`:''}${mine(o)&&o.status==='diambil'&&!o.arrivedDropAt?`<button class="btn blu full" data-a="arriveD" data-k="${o.k}">📍 Dah sampai di lokasi hantar</button>`:''}${mine(o)&&o.status==='diambil'&&o.arrivedDropAt&&!o.dropPhoto?`<button class="btn blu full" data-a="proofD" data-k="${o.k}">📷 Ambil gambar bukti hantar</button>`:''}</div>
-  ${active(o)?`<div class="acts" style="margin-top:8px"><a class="btn gry sm" href="tel:+${RKB.tel(ph)}">📞 Call</a><a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(ph)}">💬 WhatsApp</a><a class="btn blu sm" target="_blank" href="${RKB.gmNav(o.status==='diterima'?p:d)}">🧭 ${o.status==='diterima'?'Ke Ambil':'Ke Hantar'}</a><a class="btn gry sm" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${RKB.f6(o.status==='diterima'?p:d)}&navigate=yes">🚙 Waze</a>${(()=>{ const m=String(rv).match(/\+?\d[\d\s-]{7,14}\d/), rp=m?RKB.tel(m[0]):''; return rp?`<a class="btn gry sm" href="tel:+${rp}">📞 Penerima</a><a class="btn gry sm" target="_blank" href="https://wa.me/${rp}">💬 Penerima</a>`:'' })()}</div>
-  <div class="acts"><details class="more" style="flex:1 1 auto"><summary class="btn gry sm" style="display:block">⋯ Lagi</summary><div class="acts"><button class="btn gry sm" data-a="show" data-k="${o.k}">🗺️ Peta</button><a class="btn gry sm" target="_blank" href="${RKB.gmNav(p)}">🧭 Ke Ambil</a><a class="btn gry sm" target="_blank" href="${RKB.gmNav(d)}">🧭 Ke Hantar</a><a class="btn gry sm" target="_blank" href="${RKB.gmFull(p,d,o.vehicle)}">🗺️ Laluan penuh</a></div></details><button class="btn gry sm" data-a="sos" data-k="${o.k}" style="flex:0 0 auto;border:1px solid #ef4444">🆘 SOS</button></div>`:''}</div>`;
-}
-function render(){
-  if(!user||me.approved!==true) return; renderTabs();
-  if(jobCur&&(!orders[jobCur]||orders[jobCur].status!=='baru')) nextJob();
-  const L=list().filter(o=>tab==='baru'?o.status==='baru':tab==='aktif'?active(o):(mine(o)&&o.status==='selesai'));
-  if(tab==='baru') L.sort((a,b)=>(eligible(b)-eligible(a))||(b.createdAt-a.createdAt));
-  let shownHdr=false;
-  $('#list').innerHTML=L.length?L.map(o=>{ let h=''; if(tab==='baru'&&!eligible(o)&&!shownHdr){ shownHdr=true; h='<div class="mut" style="margin:14px 2px 0;font-weight:700">🔒 Tak layak (nilai job melebihi wallet anda)</div>' } return h+card(o) }).join(''):`<div class="card mut" style="text-align:center">${tab==='baru'?'Tiada order baru. Skrin ni kemas kini sendiri.':'Tiada order.'}</div>`;
-  const a=list().filter(active); a.forEach(o=>ensureContact(o.k));
-  if(!a.length){ sel=null } else if(!sel||!a.find(o=>o.k===sel)){ sel=a[0].k }
-  updMap(); dutyUpdate();
-}
-$('#list').onclick=async e=>{
-  const b=e.target.closest('button[data-a]'); if(!b) return; const k=b.dataset.k, a=b.dataset.a;
-  if(a==='lock') return;
-  if(a==='show'){ sel=k; updMap(); window.scrollTo({top:0,behavior:'smooth'}); return }
-  if(a==='arrive'||a==='arriveD'||a==='proofP'||a==='proofD'){
-    if(a==='arriveD'){ const fd=tooFar(orders[k]||{pick:{},drop:{lat:0,lng:0}}); if(fd!=null){ toast('Anda masih '+fd+' m dari lokasi hantar (had '+dropR()+' m). Dekati lokasi dulu 📍'); return } }
-    const drop=(a==='arriveD'||a==='proofD'); proofK=k; proofT=drop?'D':'P'; $('#proofIn').value=''; $('#proofIn').click();   // kamera terus dibuka
-    if(a==='arrive'||a==='arriveD'){ const up=drop?{arrivedDropAt:Date.now(),'t/arrivedDrop':Date.now()}:{arrivedAt:Date.now(),'t/arrived':Date.now()};
-      try{ await db.ref('orders/'+k).update(up); toast(drop?'Dah sampai di lokasi hantar 📍. Ambil gambar':'Customer dimaklumkan rider dah sampai 📍. Ambil gambar barang') }catch(err){ toast('Gagal: '+err.code) } }
-    return }
-  if(a==='sos'){ if(!confirm('Hantar SOS kepada admin dengan lokasi anda sekarang?')) return; const o=orders[k]||{}; try{ await RKB.report({type:'sos',orderId:k,ref:o.ref||'',from:'rider',name:me.name||'',phone:me.phone||'',msg:'🆘 SOS rider',loc:selfPos?{lat:+selfPos[0].toFixed(6),lng:+selfPos[1].toFixed(6)}:null}); toast('🆘 SOS dihantar kepada admin') }catch(err){ toast('SOS gagal dihantar. Hubungi admin terus.') } return }
-  b.disabled=true;
-  if(a==='terima'){ await acceptOrder(k); }
-  else {
-    const up={status:a}; up['t/'+a]=Date.now();
-    if(a==='selesai'){
-      const o=orders[k]||{}, fd=tooFar(o);
-      if(fd!=null){ toast('Anda masih '+fd+' m dari lokasi hantar (had '+dropR()+' m). Hantar dulu, baru tekan selesai.'); b.disabled=false; return }
-      const dm=dropDistM(o); if(dm==null) up.doneGps=false; else up.doneDist=dm;   // direkod untuk semakan admin
-      up.riderLoc=null; finishing.add(k)                                         // customer tak nampak lokasi rider lagi
-    }
-    try{ await db.ref('orders/'+k).update(up); }catch(err){ toast('Gagal: '+err.code); render(); return }
-    if(a==='selesai') showDone(k);
-    else toast('Barang diambil. Menuju lokasi hantar 🛵');
-  }
-  render();
-};
-async function acceptOrder(k){
-  try{
-    const r=await db.ref('orders/'+k).transaction(o=>{ if(!o) return o; if(o.status!=='baru') return;
-      if(o.pay==='cash'&&(+me.wallet||0)<(+o.need||0)) return;
-      o.status='diterima';o.riderUid=user.uid;o.riderName=me.name;o.riderPhone=me.phone;o.riderPlate=me.plate||'';o.t=Object.assign({},o.t,{diterima:Date.now()});return o });
-    if(!r.committed){ toast('Order tak dapat diambil (rider lain dah ambil atau wallet tak cukup).'); return false }
-  }catch(err){ toast('Gagal terima: '+err.code); return false }
-  tab='aktif'; sel=k; startGps(); toast('Order diterima ✅'); render(); return true;
-}
-function showDone(k){
-  const o=orders[k]||{}, m=RKB.msgRider();
-  $('#dT').textContent=m.t; $('#dM').textContent=m.m; $('#dE').textContent='Upah order ni: '+rm(RKB.riderPay(o))+' · #'+(o.ref||'');
-  $('#done').classList.remove('hide'); RKB.beep();
-}
-$('#dX').onclick=()=>$('#done').classList.add('hide');
-
-/* ---------- Pop up order baru (terdekat dulu) ---------- */
-let jobQ=[], jobCur=null, jobTimer=null;
-function scheduleJob(k){
-  const o=orders[k]; if(!o||jobTimers[k]||!eligible(o)) return;
-  const d=distTo(o), delay=d==null?2000:Math.min(10000,Math.round(d*1500));   // makin dekat, makin cepat dapat tawaran
-  jobTimers[k]=setTimeout(()=>{ delete jobTimers[k]; const x=orders[k]; if(x&&x.status==='baru'&&eligible(x)) queueJob(k) },delay);
-}
-function queueJob(k){
-  if(!jobQ.includes(k)&&k!==jobCur) jobQ.push(k);
-  sysNotify(orders[k]); if(!jobCur) nextJob();
-}
-function nextJob(){
-  clearInterval(jobTimer); jobCur=null;
-  while(jobQ.length){ const k=jobQ.shift(); if(orders[k]&&orders[k].status==='baru'){ jobCur=k; break } }
-  if(!jobCur){ $('#job').classList.add('hide'); return }
-  const o=orders[jobCur], d=distTo(o);
-  $('#jMeta').textContent=`#${o.ref} · ${o.service} · ${o.vehicle} · ${(+o.km||0).toFixed(1)} KM`+(d!=null?` · 📏 ${d.toFixed(1)} KM dari anda`:'')+(jobQ.length?` · +${jobQ.length} lagi`:'');
-  $('#jP').textContent=o.pick.addr; $('#jD').textContent=o.drop.addr; $('#jN').textContent=o.notes||'-'; $('#jPay').textContent=payTxt(o); $('#jPrice').textContent=rm(RKB.riderPay(o));
-  $('#jAcc').disabled=false; $('#job').classList.remove('hide'); RKB.beep();
-  jobTimer=setInterval(()=>{ if(!orders[jobCur]||orders[jobCur].status!=='baru'){ toast('Order dah diambil rider lain'); nextJob(); return } RKB.beep() },4000);
-}
-$('#jSkip').onclick=nextJob;
-$('#tstSnd').onclick=()=>{ RKB.beep(); toast('Kalau tak dengar bunyi: naikkan volume media & lepaskan mod senyap') };
-$('#thBtn').textContent=RKB_THEME.label(); $('#thBtn').onclick=()=>{ RKB_THEME.cycle(); $('#thBtn').textContent=RKB_THEME.label() };
-$('#jAcc').onclick=async()=>{ const k=jobCur; $('#jAcc').disabled=true; const ok=await acceptOrder(k); nextJob(); if(ok) window.scrollTo({top:0}) };
-async function sysNotify(o){
-  try{ if(!o||!('Notification' in window)||Notification.permission!=='granted'||!document.hidden) return;
-    const reg=await navigator.serviceWorker.ready;
-    await reg.showNotification('🆕 Order baru #'+o.ref,{body:o.pick.addr+' ➜ '+o.drop.addr+'\n'+rm(RKB.riderPay(o)),tag:'job-'+o.ref,requireInteraction:true,vibrate:[300,120,300],icon:'icon-rider-192.png',badge:'icon-rider-192.png',data:{url:'rider.html'}});
-  }catch(e){}
-}
-/* Notifikasi tetap macam Grab Driver: "App is running" bila rider online */
-let lastDuty='';
-async function dutyNotify(body){
-  try{ if(!('Notification' in window)||Notification.permission!=='granted') return;
-    const reg=await navigator.serviceWorker.ready;
-    await reg.showNotification('MYRIDERKU',{body,tag:'rkb-duty',renotify:false,requireInteraction:true,silent:true,icon:'icon-rider-192.png',badge:'icon-rider-192.png',data:{url:'rider.html'}});
-  }catch(e){}
-}
-async function dutyClear(){ lastDuty=''; try{ const reg=await navigator.serviceWorker.ready; (await reg.getNotifications({tag:'rkb-duty'})).forEach(n=>n.close()) }catch(e){} }
-function dutyUpdate(){
-  if(!online||!user) return;
-  const a=Object.values(orders).find(o=>o.riderUid===user.uid&&(o.status==='diterima'||o.status==='diambil'));
-  const txt=a?(a.status==='diterima'?'🛵 Tugas aktif #'+a.ref+' · menuju lokasi ambil':'📦 Tugas aktif #'+a.ref+' · menuju lokasi hantar'):'🟢 App sedang berjalan · kongsi lokasi aktif, menunggu order';
-  if(txt!==lastDuty){ lastDuty=txt; dutyNotify(txt) }
-}
-document.addEventListener('click',askNotif,{once:true});
-function askNotif(){ try{ if('Notification' in window&&Notification.permission==='default') Notification.requestPermission() }catch(e){} }
-
-/* ---------- GPS, kelajuan, kamera/AES ---------- */
-async function startGps(){
-  if(online||!user) return;
-  if(!navigator.geolocation){ toast('Peranti tak sokong GPS'); return }
-  online=true; updOn(); lastDuty=''; dutyUpdate();
-  db.ref('riders/'+user.uid+'/online').onDisconnect().set(false);
-  watchId=navigator.geolocation.watchPosition(p=>{
-    const ll=[p.coords.latitude,p.coords.longitude], now=Date.now();
-    let v=p.coords.speed;
-    if((v==null||isNaN(v))&&prevPos){ const dt=(now-prevPos.t)/1000; if(dt>0.5) v=hav(prevPos.ll,ll)*1000/dt }
-    spd=(v!=null&&isFinite(v))?Math.max(0,Math.round(v*3.6)):0;
-    prevPos={ll,t:now}; selfPos=ll; lastFix=now; gpsErr='';
-    push(p); updSelf(); updNav(); checkHaz(); fetchOsm();
-  },e=>{ gpsErr=e.code===1?'Kebenaran lokasi ditolak. Benarkan lokasi untuk app ini di tetapan telefon':e.code===2?'GPS tak tersedia. Hidupkan lokasi telefon':'GPS lambat bertindak balas'; dutyCheck() },{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
-  try{ wl=await navigator.wakeLock.request('screen') }catch(e){}
-  clearInterval(window.__hb);
-  window.__hb=setInterval(()=>{ if(!online||!user||!selfPos||Date.now()-lastFix<20000) return; const b='riders/'+user.uid+'/'; db.ref().update({[b+'lat']:+selfPos[0].toFixed(6),[b+'lng']:+selfPos[1].toFixed(6),[b+'t']:firebase.database.ServerValue.TIMESTAMP,[b+'online']:true,[b+'spd']:0}).catch(()=>{}) },25000);
-}
-function stopGps(){
-  online=false; manual=false; clearInterval(window.__hb); if(watchId!=null&&navigator.geolocation) navigator.geolocation.clearWatch(watchId); watchId=null;
-  try{wl&&wl.release()}catch(e){} wl=null;
-  if(user) db.ref('riders/'+user.uid+'/online').set(false).catch(()=>{});
-  updOn(); dutyClear();
-}
-document.addEventListener('visibilitychange',async()=>{
-  if(document.visibilityState!=='visible'||!user||me.approved!==true) return;
-  lastDuty=''; dutyUpdate();
-  if(online){ try{wl=await navigator.wakeLock.request('screen')}catch(e){} if(Date.now()-lastFix>30000) restartGps() }
-  else if(manual||hasActive()) startGps();
-});
-function restartGps(){ try{ if(watchId!=null) navigator.geolocation.clearWatch(watchId) }catch(e){} watchId=null; online=false; gpsErr=''; startGps() }
-
-/* ---------- Pemantauan semasa bertugas (tak boleh offline) ---------- */
-db.ref('.info/connected').on('value',s=>{ netOk=s.val()===true; if(netOk&&online&&user) db.ref('riders/'+user.uid+'/online').onDisconnect().set(false).catch(()=>{}); dutyCheck() });
-addEventListener('offline',()=>{ netOk=false; dutyCheck() }); addEventListener('online',()=>dutyCheck());
-setInterval(dutyCheck,5000);
-function dutyCheck(){
-  const bar=$('#dutybar'); if(!user||me.approved!==true){ bar.classList.add('hide'); return }
-  const act=hasActive(), p=[];
-  if(!netOk||!navigator.onLine) p.push('📡 Tiada sambungan internet');
-  if(act){
-    if(gpsErr) p.push('📍 '+gpsErr);
-    else if(!online) p.push('📍 Kongsi lokasi tidak aktif');
-    else if(Date.now()-lastFix>45000) p.push('📍 Isyarat GPS hilang. Pastikan lokasi dihidupkan');
-  }
-  if(!p.length){ bar.classList.add('hide'); return }
-  bar.classList.remove('hide');
-  bar.innerHTML='⚠️ <b>'+p.join('<br>')+'</b><br><small>'+(act?'Anda sedang bertugas: pelanggan dan admin tak boleh jejak anda. Jangan tutup app.':'Anda tak akan terima order sehingga sambungan pulih.')+'</small><br><button class="btn sm" id="dutyRetry" style="margin-top:8px">🔄 Cuba lagi</button>';
-  $('#dutyRetry').onclick=()=>{ restartGps(); toast('Menyambung semula…') };
-  if(act&&Date.now()-lastBeep>15000){ lastBeep=Date.now(); RKB.beep() }
-}
-const finishing=new Set(); let proofK=null, proofT='D';
-$('#prof').onclick=async e=>{ e.preventDefault(); const p=(prompt('No. plat kenderaan anda (pelanggan akan nampak):',me.plate||'')||'').trim().toUpperCase().slice(0,12); if(!p) return; try{ await db.ref('riders/'+user.uid+'/plate').set(p); toast('Plat dikemas kini ✅') }catch(err){ toast('Gagal: '+err.code) } };
-$('#proofIn').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!proofK) return; try{ const d=await RKB.compressImg(f,720,.6), P=proofT==='P'; await db.ref((P?'proofsP/':'proofs/')+proofK).set(d); await db.ref('orders/'+proofK).update(P?{pickPhoto:true}:{dropPhoto:true}); toast(P?'📷 Gambar barang disimpan. Tekan "Barang dah diambil" ✅':'📷 Bukti hantar disimpan. Tekan "Hantar selesai" ✅'); render() }catch(err){ toast('Gagal simpan gambar: '+(err.code||'cuba lagi')) } };
-function push(p){
-  const now=Date.now(); if(now-lastPush<4000) return; lastPush=now;
-  const loc={lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),t:now,spd}, up={};
-  const b='riders/'+user.uid+'/'; up[b+'lat']=loc.lat; up[b+'lng']=loc.lng; up[b+'t']=firebase.database.ServerValue.TIMESTAMP; up[b+'online']=true; up[b+'spd']=spd;
-  db.ref().update(up).catch(()=>{});
-  Object.keys(orders).forEach(k=>{ if(active(orders[k])&&!finishing.has(k)) db.ref('orders/'+k+'/riderLoc').set(loc).catch(()=>{}) });
-}
-function updOn(){ $('#onTxt').innerHTML=online?'<span class="on-dot"></span>Online · kongsi lokasi':'<span class="off-dot"></span>Offline'; $('#onBtn').textContent=online?'Berhenti':'Mula kongsi lokasi'; $('#onBtn').className='btn sm '+(online?'gry':'grn'); }
-$('#onBtn').onclick=()=>{ askNotif(); if(online&&hasActive()){ toast('⛔ Tak boleh offline semasa ada tugas aktif'); return } if(online) stopGps(); else { manual=true; startGps() } };
-updOn();
-
-const allHaz=()=>[...Object.entries(hazAdmin).map(([k,h])=>({id:k,...h})),...hazOsm];
-function drawHaz(){
-  if(!map||!hazLayer) return; hazLayer.clearLayers();
-  allHaz().forEach(h=>L.marker([h.lat,h.lng],{icon:RKB.hazIcon(h.type)}).addTo(hazLayer).bindPopup(`<b>${esc(h.label||'Kamera laju / AES')}</b>${h.limit?'<br>Had laju '+h.limit+' km/j':''}`));
-}
-async function fetchOsm(){
-  if(!selfPos) return; const now=Date.now();
-  if(lastOsm.ll&&hav(lastOsm.ll,selfPos)<1.2&&now-lastOsm.t<600000) return;
-  lastOsm={ll:selfPos,t:now}; hazOsm=await RKB.osmCams(selfPos[0],selfPos[1],3000); drawHaz();
-}
-function checkHaz(){
-  const bar=$('#hazbar'); if(!selfPos){ return }
-  let best=null; allHaz().forEach(h=>{ const d=hav(selfPos,[h.lat,h.lng])*1000; if(d<450&&(!best||d<best.d)) best={h,d} });
-  if(!best){ bar.classList.add('hide'); return }
-  const {h,d}=best, over=h.limit&&spd>h.limit;
-  bar.classList.remove('hide'); bar.style.background=over?'#7f1d1d':'#7c2d12';
-  bar.innerHTML=`${h.type==='speedtrap'?'🚔':'📷'} <b>${esc(h.label||'Kamera laju / AES')}</b> · ${Math.round(d)} m berhampiran${h.limit?` · had ${h.limit} km/j`:''}<br>Laju anda: <b>${spd} km/j</b>${over?' ⚠️ LEBIH LAJU, perlahankan!':' · sila perlahankan'}`;
-  if(Date.now()-(lastAlert[h.id]||0)>120000){ lastAlert[h.id]=Date.now(); RKB.beep(); }
-}
-
-/* ---------- Peta ---------- */
-function ensureMap(){
-  if(map) return;
-  map=RKB.baseMap('map'); nav=RKB.makeNav(map); hazLayer=L.layerGroup().addTo(map);
-  const C=L.Control.extend({options:{position:'bottomleft'},onAdd(){ const d=L.DomUtil.create('div','spd'); d.id='spdBox'; d.innerHTML='🚀 <b>0</b> km/j'; return d }});
-  map.addControl(new C()); drawHaz();
-}
-function clearMarkers(){ Object.values(mm).forEach(m=>map.removeLayer(m)); mm={} }
-function updNav(){ if(!map||!nav) return; const o=sel&&orders[sel]; nav.update(o&&active(o)?o:null,selfPos) }
-async function updMap(){
-  ensureMap();
-  const o=sel&&orders[sel], act=o&&active(o);
-  if(act){
-    ovSig='';
-    if(routeFor!==sel+o.status){
-      routeFor=sel+o.status; clearMarkers();
-      if(o.status==='diterima') mm.p=L.marker([o.pick.lat,o.pick.lng],{icon:RKB.mkIcon('#10b981')}).addTo(map);   // pin ambil hilang lepas barang diambil
-      mm.d=L.marker([o.drop.lat,o.drop.lng],{icon:RKB.mkIcon('#e11d48')}).addTo(map);
-      map.invalidateSize(); const pts=[mm.d.getLatLng()]; if(mm.p) pts.push(mm.p.getLatLng()); if(selfPos) pts.push(L.latLng(selfPos[0],selfPos[1]));
-      map.fitBounds(L.latLngBounds(pts),{padding:[40,40]});
-    }
-  } else {
-    const nw=list().filter(x=>x.status==='baru'), sig=nw.map(x=>x.k).join(',');
-    if(routeFor!=='ov'||sig!==ovSig){
-      routeFor='ov'; ovSig=sig; clearMarkers();
-      nw.forEach(x=>{ mm['n'+x.k]=L.marker([x.pick.lat,x.pick.lng],{icon:RKB.mkIcon('#f59e0b')}).addTo(map).bindPopup(`#${esc(x.ref)} · ${esc(x.pick.addr)} · ${rm(RKB.riderPay(x))}`) });
-      map.invalidateSize();
-      const pts=Object.values(mm).map(m=>m.getLatLng()); if(selfPos) pts.push(L.latLng(selfPos[0],selfPos[1]));
-      if(pts.length>1) map.fitBounds(L.latLngBounds(pts),{padding:[40,40],maxZoom:15}); else if(pts.length) map.setView(pts[0],14);
-    }
-  }
-  updNav(); updSelf();
-}
-function updSelf(){
-  const sb=document.querySelector('#spdBox b'); if(sb) sb.textContent=spd;
-  if(!map||!selfPos) return;
-  if(!selfMk){ selfMk=L.marker(selfPos,{icon:RKB.riderIcon(),zIndexOffset:900}).addTo(map) } else RKB.glide(selfMk,selfPos,1200);
-  if(!selfFit&&routeFor==='ov'){ selfFit=true; map.setView(selfPos,14) }
-}
-}
-</script>
-</body></html>
+    <script src="common.js"></script>
+    <script>
+        function acceptJob(title) {
+            alert("Anda telah menerima tugasan: " + title + ". Sila rujuk WhatsApp admin di 01139900099 untuk pengesahan.");
+        }
+    </script>
+</body>
+</html>

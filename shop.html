@@ -1,175 +1,30 @@
-<!doctype html>
-<html lang="ms"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>MYRIDERKU | Kedai</title><meta name="theme-color" content="#168447">
-<script src="theme.js"></script>
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-customer-192.png">
-<link rel="apple-touch-icon" href="apple-touch-icon-customer.png">
-<link rel="stylesheet" href="app.css">
-<style>
-.shop{display:block;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer}
-.shop.off{opacity:.55}
-.it{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
-.it:last-child{border:0}.it .nm{font-weight:700}
-.qty{display:flex;align-items:center;gap:8px;flex:0 0 auto}.qty b{min-width:22px;text-align:center}
-.qty button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card2);color:var(--txt);font:inherit;font-size:20px;font-weight:800}
-.qty button:disabled{opacity:.35}
-#cartbar{position:fixed;left:0;right:0;bottom:0;z-index:1000;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--line)}
-#cartbar .btn{width:100%}
-label.l{display:block;font-size:14px;font-weight:600;margin:12px 0 6px}
-input.f,textarea.f{width:100%;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:14px;padding:13px;font:inherit}
-.opts{display:flex;gap:10px}.opts button{flex:1;padding:13px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-weight:600}
-.opts button.on{border-color:var(--gold,#a3e635);color:var(--gold,#a3e635)}
-.star{background:none;border:0;font-size:28px;opacity:.35;padding:4px}.star.on{opacity:1}
-body{padding-bottom:90px}
-</style>
-<link rel="stylesheet" href="theme.css">
-<link rel="stylesheet" href="myriderku-brand.css">
-<link rel="stylesheet" href="myriderku-ui.css">
-<link rel="stylesheet" href="myriderku-ceria.css">
-<link rel="stylesheet" href="myriderku-v37.css?v=39">
-<link rel="stylesheet" href="myriderku-v39.css?v=39">
-</head><body class="role-customer">
-<div class="wrap">
-<header class="hd"><div><span class="tag">MARKETPLACE</span><h1 id="ttl">Kedai MYRIDERKU</h1><div class="sm" id="sub">Pesan terus dari kedai rakan kami</div></div><a class="hbtn" href="index.html">‹ Utama</a></header>
-<div class="pad"><div id="v"><div class="card mut">Memuatkan…</div></div></div>
-</div>
-<div id="cartbar" class="hide"><button class="btn" id="cartGo" type="button"></button></div>
-<div id="toast" class="toast hide"></div>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="common.js?v=39"></script>
-<script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('kedai')</script>
-<script>
-const $=s=>document.querySelector(s), {esc,rm,r2}=RKB;
-const Q=new URLSearchParams(location.search);
-const ST_L={baru:'🆕 Menunggu kedai terima',diterima:'👨‍🍳 Kedai sedang sediakan',siap:'✅ Siap! Boleh diambil',selesai:'🎉 Selesai',ditolak:'❌ Ditolak kedai',batal:'🚫 Dibatalkan'};
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3500)}
-const view=h=>{ $('#v').innerHTML=h; scrollTo({top:0}) };
-const base=m=>(m.pp!=null&&+m.pp<+m.p)?+m.pp:+m.p;          // harga vendor (apa yang vendor terima)
-let shops={}, uid=null, shop=null, menu={}, cart={}, off=null, geo=null;
-const SK='rkb-vlast';
-
-if(!RKB.ok){ view('<div class="card">Sistem belum tersedia. Sila cuba sebentar lagi.</div>') }
-else RKB.loadShares().then(()=>{ const v=Q.get('v'), o=Q.get('o'); if(v&&o) track(v,o); else home() });
-
-/* ---------- Senarai kedai ---------- */
-async function home(){
-  cart={}; $('#cartbar').classList.add('hide'); $('#ttl').textContent='Kedai MYRIDERKU';
-  view('<div class="card mut">Memuatkan kedai…</div>');
-  let last=null; try{ last=JSON.parse(localStorage.getItem(SK)||'null') }catch(_){}
-  try{ shops=(await RKB.db.ref('vshops').once('value')).val()||{} }catch(e){ view('<div class="card">Tak dapat memuatkan kedai. Semak internet dan cuba lagi.<div class="acts"><button class="btn" onclick="home()">🔄 Cuba lagi</button></div></div>'); return }
-  const E=Object.entries(shops).sort((a,b)=>(!!b[1].open-!!a[1].open)||String(a[1].name).localeCompare(String(b[1].name)));
-  let h='';
-  if(last) h+=`<a class="card" href="shop.html?v=${encodeURIComponent(last.v)}&o=${encodeURIComponent(last.o)}" style="display:block;text-decoration:none;border-color:#3b82f6">📡 <b>Order kedai anda</b> · tekan untuk lihat status</a>`;
-  h+=E.length?E.map(([u,s])=>`<button class="card shop ${s.open?'':'off'}" data-u="${esc(u)}" type="button"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(s.name)}</b><span class="badge">${s.open?'🟢 Buka':'🔴 Tutup'}</span></div><div class="mut">${esc(s.cat||'')}${s.addr?' · '+esc(s.addr):''}</div>${s.promo?`<div style="margin-top:4px">🏷️ ${esc(s.promo)}</div>`:''}${s.desc?`<div class="mut" style="margin-top:4px">${esc(s.desc)}</div>`:''}</button>`).join(''):'<div class="card mut" style="text-align:center">Belum ada kedai berdaftar. Datang semula tak lama lagi!</div>';
-  view(h);
-  $('#v').onclick=e=>{ const b=e.target.closest('.shop'); if(b) openShop(b.dataset.u) };
-}
-window.home=home;
-
-/* ---------- Menu ---------- */
-async function openShop(u){
-  const s=shops[u]; if(!s) return; if(!s.open){ toast('Kedai ini sedang tutup.'); return }
-  uid=u; shop=s; cart={}; $('#ttl').textContent=s.name;
-  view('<div class="card mut">Memuatkan menu…</div>');
-  try{ menu=(await RKB.db.ref('vmenu/'+u).once('value')).val()||{} }catch(e){ toast('Tak dapat memuatkan menu.'); home(); return }
-  drawMenu();
-}
-const items=()=>Object.entries(menu).filter(([k,m])=>m&&m.on!==false&&m.n).sort((a,b)=>String(a[1].c||'~').localeCompare(String(b[1].c||'~'))||String(a[1].n).localeCompare(String(b[1].n)));
-function sums(){ let sub=0,n=0; Object.entries(cart).forEach(([k,q])=>{ const m=menu[k]; if(m){ sub+=base(m)*q; n+=q } }); sub=r2(sub); return {sub,n,total:r2(sub*(1+RKB.shares().mark/100))} }
-function drawMenu(){
-  const I=items(); let cat=null, h=`<button class="btn gry sm" id="bk" type="button">‹ Semua kedai</button><div class="card"><div class="mut">${esc(shop.addr||'')}</div>${shop.promo?`<div>🏷️ ${esc(shop.promo)}</div>`:''}</div>`;
-  h+=I.length?'<div class="card">'+I.map(([k,m])=>{ const out=m.st===0, q=cart[k]||0, max=m.st>0?Math.min(99,m.st):99, pr=RKB.vPrice(base(m)), was=(m.pp!=null&&+m.pp<+m.p)?RKB.vPrice(+m.p):0;
-    return `<div class="it"><div style="min-width:0"><div class="nm">${esc(m.n)}</div>${m.d?`<div class="mut">${esc(m.d)}</div>`:''}<div>${was?`<s class="mut">${rm(was)}</s> `:''}<b>${rm(pr)}</b>${out?' · <b style="color:#ef4444">HABIS</b>':m.st>0&&m.st<=5?` · <span class="mut">tinggal ${esc(m.st)}</span>`:''}</div></div>
-    <div class="qty">${out?'':`<button data-k="${esc(k)}" data-d="-1" type="button" ${q?'':'disabled'} aria-label="Kurang">−</button><b>${q}</b><button data-k="${esc(k)}" data-d="1" type="button" ${q>=max?'disabled':''} aria-label="Tambah">+</button>`}</div></div>` }).join('')+'</div>':'<div class="card mut">Kedai ini belum ada menu.</div>';
-  view(h); cartBar();
-  $('#bk').onclick=home;
-  $('#v').onclick=e=>{ const b=e.target.closest('button[data-k]'); if(!b||b.disabled) return; const k=b.dataset.k, q=Math.max(0,(cart[k]||0)+(+b.dataset.d)); if(q) cart[k]=q; else delete cart[k]; const y=scrollY; drawMenu(); scrollTo({top:y}) };
-}
-function cartBar(){ const s=sums(), b=$('#cartbar'); b.classList.toggle('hide',!s.n); $('#cartGo').textContent=`🛒 ${s.n} item · ${rm(s.total)} · Semak & pesan`; $('#cartGo').onclick=checkout }
-
-/* ---------- Pesan ---------- */
-const phoneOk=v=>{ let d=String(v).replace(/\D/g,''); if(d.startsWith('60')) d='0'+d.slice(2); return /^01\d{8,9}$/.test(d)||/^0[3-9]\d{7,8}$/.test(d) };
-function checkout(){
-  const s=sums(); if(!s.n) return; $('#cartbar').classList.add('hide');
-  let nm='',ph=''; try{ const d=JSON.parse(localStorage.getItem('rkb')||'null')||{}; nm=d.n||''; ph=d.p||'' }catch(_){}
-  let mode='ambil', pay='cash';
-  const lines=Object.entries(cart).map(([k,q])=>`<div class="row"><span>${q}× ${esc(menu[k].n)}</span><span>${rm(RKB.vPrice(base(menu[k]))*q)}</span></div>`).join('');
-  view(`<button class="btn gry sm" id="bk" type="button">‹ Ubah pesanan</button>
-  <div class="card"><div class="big">${esc(shop.name)}</div>${lines}<div class="row"><span><b>Jumlah makanan/barang</b></span><span><b>${rm(s.total)}</b></span></div><div class="mut">Belum termasuk upah rider jika anda mahu dihantar.</div></div>
-  <div class="card"><div class="big">Cara terima</div><div class="opts" id="mode" style="margin-top:8px"><button class="on" data-m="ambil" type="button">🚶 Ambil sendiri</button><button data-m="hantar" type="button">🛵 Hantar (rider)</button></div>
-  <div id="addrBox" class="hide"><label class="l">Alamat hantar</label><input class="f" id="addr" maxlength="200" placeholder="No rumah, taman, kawasan"><div class="acts"><button class="btn gry sm" id="gps" type="button">📍 Guna lokasi saya</button></div><div class="mut" id="gpsT"></div><div class="mut" style="margin-top:6px">Selepas kedai terima, anda boleh tekan “Panggil rider” di halaman status. Upah rider dikira berasingan.</div></div></div>
-  <div class="card"><label class="l" style="margin-top:0">Nama</label><input class="f" id="nm" maxlength="60" value="${esc(nm)}" autocomplete="name"><label class="l">No. telefon</label><input class="f" id="ph" type="tel" inputmode="tel" maxlength="20" value="${esc(ph)}" placeholder="0123456789" autocomplete="tel"><label class="l">Catatan (pilihan)</label><textarea class="f" id="nt" maxlength="200" rows="2" placeholder="Cth: kurang pedas"></textarea>
-  <div class="big" style="margin-top:12px">Bayaran</div><div class="opts" id="pay" style="margin-top:8px"><button class="on" data-p="cash" type="button">💵 Tunai</button><button data-p="online" type="button">📲 Transfer / QR</button></div></div>
-  <div class="err" id="err" style="color:#fda4af;min-height:20px"></div><button class="btn full" id="go" type="button">🛒 Hantar pesanan · ${rm(s.total)}</button>`);
-  $('#bk').onclick=drawMenu;
-  $('#mode').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.m; [...$('#mode').children].forEach(x=>x.classList.toggle('on',x===b)); $('#addrBox').classList.toggle('hide',mode!=='hantar') };
-  $('#pay').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; pay=b.dataset.p; [...$('#pay').children].forEach(x=>x.classList.toggle('on',x===b)) };
-  geo=null;
-  $('#gps').onclick=()=>{ if(!navigator.geolocation){ $('#gpsT').textContent='Peranti tak sokong lokasi.'; return } $('#gpsT').textContent='Mengesan…'; navigator.geolocation.getCurrentPosition(p=>{ geo=[+p.coords.latitude.toFixed(6),+p.coords.longitude.toFixed(6)]; $('#gpsT').textContent='✅ Lokasi dikesan'; if(!$('#addr').value.trim()) $('#addr').value='Lokasi GPS saya ('+geo.join(', ')+')' },()=>{ $('#gpsT').textContent='Tak dapat akses lokasi. Taip alamat sahaja.' },{enableHighAccuracy:true,timeout:12000}) };
-  $('#go').onclick=()=>place({get mode(){return mode},get pay(){return pay}},s);
-}
-async function place(st,s){
-  const err=t=>{ $('#err').textContent=t }, nm=$('#nm').value.trim(), ph=$('#ph').value.trim(), addr=($('#addr')?$('#addr').value.trim():'');
-  if(!nm) return err('Isi nama anda.'); if(!phoneOk(ph)) return err('Nombor telefon nampak tak betul. Contoh: 0123456789');
-  if(st.mode==='hantar'&&!addr) return err('Isi alamat hantar.');
-  try{ const w=30000-(Date.now()-(+localStorage.getItem('rkb-lastsend')||0)); if(w>0) return err('Sila tunggu '+Math.ceil(w/1000)+' saat sebelum hantar lagi.') }catch(_){}
-  const b=$('#go'); b.disabled=true; b.textContent='⏳ Menghantar…'; err('');
-  // semak semula: kedai masih buka & stok mencukupi
-  try{
-    const [o,m]=await Promise.all([RKB.db.ref('vshops/'+uid+'/open').once('value'),RKB.db.ref('vmenu/'+uid).once('value')]);
-    if(o.val()!==true){ b.disabled=false; b.textContent='🛒 Hantar pesanan'; return err('Maaf, kedai baru sahaja tutup.') }
-    menu=m.val()||{}; const bad=Object.entries(cart).find(([k,q])=>{ const x=menu[k]; return !x||x.on===false||x.st===0||(x.st>0&&q>x.st) });
-    if(bad){ b.disabled=false; b.textContent='🛒 Hantar pesanan'; toast('Stok berubah, sila semak semula pesanan.'); drawMenu(); return }
-  }catch(e){}
-  const S2=sums(), id=RKB.newId(), ref='KDI-'+id.slice(0,4).toUpperCase(), TS=firebase.database.ServerValue.TIMESTAMP, its={};
-  Object.entries(cart).forEach(([k,q],i)=>{ const m=menu[k]; its['i'+i]={n:String(m.n).slice(0,60),q,p:r2(base(m)),id:k.slice(0,40)} });
-  const note=(st.mode==='hantar'?'[HANTAR] ':'[AMBIL SENDIRI] ')+$('#nt').value.trim();
-  const od={ref,createdAt:TS,name:nm.slice(0,60),phone:ph.slice(0,20),phoneKey:RKB.phoneKey(ph),items:its,sub:S2.sub,total:S2.total,status:'baru',pay:st.pay,notes:note.slice(0,300)};
-  if(st.mode==='hantar'){ od.addr=addr.slice(0,200); if(geo){ od.lat=geo[0]; od.lng=geo[1] } }
-  const up={}; up['vorders/'+uid+'/'+id]=od; up['ratelimit/'+od.phoneKey]=TS;
-  try{
-    await Promise.race([RKB.db.ref().update(up),new Promise((_,r)=>setTimeout(()=>r({code:'TIMEOUT'}),9000))]);
-    try{ localStorage.setItem('rkb',JSON.stringify({n:nm,p:ph})); localStorage.setItem('rkb-lastsend',String(Date.now())); localStorage.setItem(SK,JSON.stringify({v:uid,o:id})) }catch(_){}
-    track(uid,id);
-  }catch(e){
-    // tulisan tertunda mungkin sudah sampai
-    try{ const ex=await Promise.race([RKB.db.ref('vorders/'+uid+'/'+id+'/ref').once('value'),new Promise((_,r)=>setTimeout(r,4000))]); if(ex&&ex.exists()){ try{ localStorage.setItem(SK,JSON.stringify({v:uid,o:id})) }catch(_){} track(uid,id); return } }catch(_){}
-    b.disabled=false; b.textContent='🛒 Hantar pesanan · '+rm(S2.total);
-    err(e&&e.code==='TIMEOUT'?'⚠️ Talian lemah. Pesanan belum masuk, tekan sekali lagi.':e&&e.code==='PERMISSION_DENIED'?'⚠️ Pesanan ditolak: kedai mungkin baru tutup, atau terlalu kerap dalam masa singkat. Cuba lagi sebentar lagi.':'⚠️ Sambungan bermasalah. Tekan sekali lagi.');
-  }
-}
-
-/* ---------- Status pesanan ---------- */
-function track(u,id){
-  $('#cartbar').classList.add('hide'); $('#ttl').textContent='Status pesanan'; if(off) off();
-  view('<div class="card mut">Memuatkan pesanan…</div>');
-  let sh=null, payD=null, rated=false;
-  RKB.db.ref('vshops/'+u).once('value').then(s=>{ sh=s.val(); if(cur) draw(cur) }).catch(()=>{});
-  RKB.db.ref('settings/pay').once('value').then(s=>{ payD=s.val(); if(cur) draw(cur) }).catch(()=>{});
-  let cur=null; const ref=RKB.db.ref('vorders/'+u+'/'+id), cb=s=>{ cur=s.val(); if(!cur){ view('<div class="card">Pesanan tak dijumpai.<div class="acts"><a class="btn" href="shop.html">Ke senarai kedai</a></div></div>'); return } draw(cur) };
-  ref.on('value',cb,()=>view('<div class="card">Tak dapat membaca pesanan. Cuba lagi.</div>')); off=()=>ref.off('value',cb);
-  function draw(o){
-    const its=Object.values(o.items||{}).map(i=>`<div class="row"><span>${esc(i.q)}× ${esc(i.n)}</span><span>${rm((+i.p||0)*(+i.q||0))}</span></div>`).join('');
-    const fin=['selesai','ditolak','batal'].includes(o.status); if(fin){ try{ const l=JSON.parse(localStorage.getItem(SK)||'null'); if(l&&l.o===id) localStorage.removeItem(SK) }catch(_){} }
-    let h=`<div class="card"><div class="mut">#${esc(o.ref)} · ${esc(sh?sh.name:'')}</div><div class="big">${esc(ST_L[o.status]||o.status)}</div>${o.status==='diterima'&&o.prep?`<div class="mut">Anggaran siap ≈ ${esc(o.prep)} minit</div>`:''}${o.reason?`<div class="mut">Sebab: ${esc(o.reason)}</div>`:''}</div>`;
-    h+=`<div class="card">${its}<div class="row"><span><b>Jumlah</b></span><span><b>${rm(o.total)}</b></span></div><div class="row"><span>Bayaran</span><span>${o.pay==='cash'?'Tunai':'Transfer / QR'}</span></div>${o.notes?`<div class="row"><span>Catatan</span><span>${esc(o.notes)}</span></div>`:''}${o.addr?`<div class="row"><span>Hantar ke</span><span>${esc(o.addr)}</span></div>`:''}</div>`;
-    if(o.pay==='online'&&!fin&&payD&&(payD.acc||payD.qr)) h+=`<div class="card"><div class="big">📲 Bayar ${rm(o.total)}</div><div style="margin-top:6px;line-height:1.7">${payD.bank?esc(payD.bank)+'<br>':''}${payD.acc?'No. akaun: <b>'+esc(payD.acc)+'</b><br>':''}${payD.name?'Nama: '+esc(payD.name):''}</div>${payD.qr&&/^data:image\//.test(payD.qr)?`<img alt="QR bayaran" src="${esc(payD.qr)}" style="display:block;max-width:240px;width:100%;margin:10px auto 0;border-radius:12px;background:#fff">`:''}</div>`;
-    const wantRider=o.addr&&['diterima','siap'].includes(o.status)&&sh&&sh.lat!=null;
-    if(wantRider){ const p=new URLSearchParams({pk:sh.lat+','+sh.lng,pa:(sh.name+(sh.addr?', '+sh.addr:'')).slice(0,200),da:o.addr,n:('Ambil pesanan kedai '+sh.name+' #'+o.ref+(o.pay==='online'?' (sudah dibayar kepada kedai)':' (bayar kedai: '+rm(o.total)+')')).slice(0,300)}); if(o.lat!=null) p.set('dk',o.lat+','+o.lng); h+=`<a class="btn full" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="index.html?${p.toString().replace(/\+/g,'%20')}">🛵 Panggil rider hantar</a>`; }
-    if(o.status==='baru') h+='<div class="acts"><button class="btn gry full" id="cx" type="button" style="border:1px solid #ef4444">🚫 Batalkan pesanan</button></div>';
-    if(o.status==='selesai'){ h+=o.rating?`<div class="card"><div class="big">Terima kasih! ${'⭐'.repeat(+o.rating.stars||0)}</div></div>`:'<div class="card"><div class="big">Macam mana pesanan tadi?</div><div id="stars">'+[1,2,3,4,5].map(n=>`<button class="star" data-n="${n}" type="button">⭐</button>`).join('')+'</div></div>'; }
-    h+='<div class="acts"><a class="btn gry" href="shop.html">🏪 Semua kedai</a><a class="btn gry" href="index.html">🛵 Hantar barang</a></div>';
-    view(h);
-    const cx=$('#cx'); if(cx) cx.onclick=async()=>{ if(!confirm('Batalkan pesanan ini?')) return; cx.disabled=true; try{ await ref.child('status').set('batal') }catch(e){ toast('Tak dapat batal: kedai mungkin baru terima.'); cx.disabled=false } };
-    const st=$('#stars'); if(st) st.onclick=async e=>{ const b=e.target.closest('.star'); if(!b||rated) return; rated=true; try{ await ref.child('rating').set({stars:+b.dataset.n,t:Date.now()}) }catch(_){ rated=false; toast('Tak dapat hantar penilaian.') } };
-  }
-}
-if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-</script>
-<script>RKB.installBanner('MYRIDERKU')</script>
-</body></html>
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyRiderKu V40 - Senarai Vendor</title>
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-dark text-light p-4 max-w-md mx-auto">
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-lg font-bold text-gold">Senarai Vendor Kota Bharu</h1>
+        <a href="index.html" class="text-xs bg-dark-card border border-gold/30 text-gold px-3 py-1.5 rounded-lg">Kembali</a>
+    </div>
+    <div class="space-y-3">
+        <div class="bg-dark-card border border-gold/20 rounded-xl p-4">
+            <h3 class="font-bold text-gold">ZUS Coffee - Jalan Temenggong</h3>
+            <p class="text-xs text-gray-400">Kopi, Teh & Pastri Premium</p>
+        </div>
+        <div class="bg-dark-card border border-gold/20 rounded-xl p-4">
+            <h3 class="font-bold text-gold">CHAGEE - KB Mall</h3>
+            <p class="text-xs text-gray-400">Teh Susu Buah-Buahan</p>
+        </div>
+        <div class="bg-dark-card border border-gold/20 rounded-xl p-4">
+            <h3 class="font-bold text-gold">Mr Wow Laksa - Pasir Pekan</h3>
+            <p class="text-xs text-gray-400">Laksa Kelantan Asli</p>
+        </div>
+    </div>
+</body>
+</html>
