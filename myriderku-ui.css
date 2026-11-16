@@ -1,0 +1,62 @@
+/* MYRIDERKU V33 UI: lapisan rupa baharu (CSS sahaja). Dimuat selepas myriderku-brand.css */
+:root{--ui-r:22px;--ui-sh:0 12px 32px rgba(10,60,32,.10);--ui-lime:#c8f26b}
+body{-webkit-font-smoothing:antialiased}
+@keyframes uiUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes uiPulse{0%,100%{box-shadow:0 0 0 0 rgba(200,242,107,.55)}60%{box-shadow:0 0 0 10px rgba(200,242,107,0)}}
+.card,.stat,.svc{animation:uiUp .38s ease both}
+/* Header: lebih tegas, tag mudah dibaca */
+.hd{position:relative;overflow:hidden;padding:22px 18px 26px!important}
+.hd::after{content:"";position:absolute;right:-60px;top:-70px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(200,242,107,.32),transparent 68%);pointer-events:none}
+.hd h1{font-size:26px!important;font-weight:900;line-height:1.1}
+.tag{background:rgba(255,255,255,.18)!important;color:#f2ffd6!important;border:1px solid rgba(255,255,255,.4)!important;backdrop-filter:blur(6px)}
+.hd .sm{opacity:.95}
+/* Butang */
+.btn{transition:transform .12s,filter .12s;letter-spacing:.01em}
+.btn:active,.svc:active,.pin:active,.opt:active,.popt:active,.chip:active{transform:scale(.97)}
+body:not(.role-admin) .btn:not(.gry){color:#fff!important;text-shadow:0 1px 0 rgba(0,0,0,.12)}
+body:not(.role-admin) a.btn{color:#fff!important}
+#admOut{color:var(--txt)!important;background:transparent}
+.btn.sm{border-radius:13px}
+/* Kad */
+body:not(.role-admin) .card,body:not(.role-admin) .sum{border-radius:var(--ui-r);box-shadow:var(--ui-sh)}
+.card h3{font-size:16px}
+/* Pelanggan: langkah, servis, harga, CTA */
+.steps{gap:0}
+.steps .on,.steps .active{box-shadow:0 0 0 5px rgba(22,132,71,.15)}
+body:not(.role-admin) .svc{border-radius:20px;padding:14px 10px;font-weight:800;transition:transform .15s,box-shadow .15s,border-color .15s}
+body:not(.role-admin) .svc.on{box-shadow:0 10px 24px rgba(22,132,71,.22)}
+body:not(.role-admin) .price{border-radius:22px;background:linear-gradient(135deg,#eaf8ee,#d8f1df);border:1px solid #bfe3c9;box-shadow:var(--ui-sh)}
+body:not(.role-admin) .price b{font-size:34px;letter-spacing:-.03em;color:#0d7a40}
+body:not(.role-admin) .bar{backdrop-filter:blur(10px)}
+body:not(.role-admin) .bar .btn,body:not(.role-admin) .btn.full{font-size:17px;padding:16px;border-radius:18px;box-shadow:0 12px 26px rgba(14,125,65,.32)}
+body:not(.role-admin) h2{font-weight:900;letter-spacing:-.02em;color:#0b5f33}
+body:not(.role-admin) .nb{border-radius:22px;border:1px solid #cfe9d4;background:linear-gradient(120deg,#fff,#f0f9f1 60%,#e6f6c8);box-shadow:var(--ui-sh)}
+body:not(.role-admin) .nb b{font-size:16px}
+body:not(.role-admin) input:focus,body:not(.role-admin) textarea:focus,body:not(.role-admin) select:focus{outline:3px solid rgba(22,132,71,.25);border-color:#168447}
+/* Rider: kad status kemas */
+.ridercard{display:block!important;padding:16px!important;background:linear-gradient(150deg,#ffffff,#f1f9f2)!important}
+.ridercard #onTxt{font-size:20px;display:flex;align-items:center;gap:8px}
+.ridercard #earn,.ridercard #wal{margin-top:6px;line-height:1.55;padding:8px 12px;border-radius:14px;background:#eef7ef;border:1px solid #dcebdf}
+.ridercard #wal{background:#fff8e1;border-color:#f3e2a6}
+.ridercard #prof,.ridercard #topup{display:inline-block!important;margin:10px 14px 0 0;color:#0d7a40!important}
+.ridercard .acts{margin-top:12px}
+.ridercard #onBtn{flex:1 1 100%;font-size:17px;padding:15px;border-radius:16px}
+.ridercard .acts .btn.gry{flex:1 1 calc(50% - 4px);margin:0!important}
+.tab{border-radius:99px;font-weight:800}
+/* Admin: kad statistik berwarna dengan ikon */
+body.role-admin .stats{grid-template-columns:repeat(2,1fr);gap:12px}
+body.role-admin .stat{position:relative;padding:16px 12px 14px;border-radius:20px;overflow:hidden;text-align:left;border-left:4px solid var(--ac,#a8dc58)}
+body.role-admin .stat::before{content:var(--ic,"📊");display:block;font-size:22px;margin-bottom:6px}
+body.role-admin .stat b{font-size:26px;letter-spacing:-.02em;color:#fff}
+body.role-admin .stat small{font-size:12.5px}
+#stats .stat:nth-child(1){--ic:"📦";--ac:#60a5fa}
+#stats .stat:nth-child(2){--ic:"🆕";--ac:#f59e0b}
+#stats .stat:nth-child(3){--ic:"🛵";--ac:#a78bfa}
+#stats .stat:nth-child(4){--ic:"✅";--ac:#34d399}
+#stats .stat:nth-child(5){--ic:"💵";--ac:#a8dc58}
+#stats .stat:nth-child(6){--ic:"🤝";--ac:#2dd4bf}
+#stats .stat:nth-child(7){--ic:"🏦";--ac:#fbbf24}
+#stats .stat:nth-child(8){--ic:"🟢";--ac:#4ade80}
+#stats .stat:nth-child(9){--ic:"⏳";--ac:#fb7185}
+body.role-admin .tab{background:#122219;border:1px solid #294333}
+@media(prefers-reduced-motion:reduce){.card,.stat,.svc{animation:none}}

@@ -12,3 +12,18 @@
     cycle:function(){ var m=get(), n=m==='auto'?'light':m==='light'?'dark':'auto'; try{ localStorage.setItem(K,n) }catch(e){} apply(); return n }
   };
 })();
+
+/* Gaya: ceria (lalai) / klasik. Butang 🎨 dalam header. */
+(function(){
+  var K='rkb-style', d=document.documentElement;
+  function get(){ try{ return localStorage.getItem(K)||'ceria' }catch(e){ return 'ceria' } }
+  function set(v){ d.setAttribute('data-style',v); try{ localStorage.setItem(K,v) }catch(e){} }
+  d.setAttribute('data-style',get());
+  window.RKB_STYLE={mode:get,set:set};
+  document.addEventListener('DOMContentLoaded',function(){
+    var h=document.querySelector('.hd'); if(!h||document.getElementById('styBtn')) return;
+    var b=document.createElement('button'); b.id='styBtn'; b.type='button'; b.textContent='🎨'; b.setAttribute('aria-label','Tukar gaya (ceria / klasik)');
+    b.onclick=function(){ var n=get()==='ceria'?'klasik':'ceria'; set(n); if(window.RKB&&RKB.toast) RKB.toast(n==='ceria'?'Gaya Ceria 🎉':'Gaya Klasik'); };
+    h.appendChild(b);
+  });
+})();
