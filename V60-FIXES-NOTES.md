@@ -7,3 +7,8 @@
 
 Langkah staging: deploy rules v60 ke projek STAGING -> buka admin.html (auto-seed) atau import payload dari prepare-public-config.mjs -> uji index/track/shop -> baru pertimbang production.
 Belum diuji: Firebase Emulator, `npm install` functions, Android/iOS PWA.
+
+## V61 (app berasingan setiap peranan)
+- manifest rider/vendor/admin: scope kini ./rider.html, ./vendor.html, ./admin.html (customer kekal ./). Chrome kini anggap 4 app berasingan dengan ikon masing-masing.
+- common.js: rider/vendor/admin guna sesi Firebase Auth bernama sendiri, jadi tak perlu log keluar bila tukar app. Customer kekal app lalai.
+- Cache dinaikkan ke v61. Rider/vendor/admin perlu log masuk sekali lagi.

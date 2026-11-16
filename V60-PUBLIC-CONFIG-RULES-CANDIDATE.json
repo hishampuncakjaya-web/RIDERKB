@@ -1,0 +1,12 @@
+{
+  "_notice": "STAGING CANDIDATE ONLY. Do not deploy before client migration and emulator tests.",
+  "rules": {
+    "settings": {
+      ".read": "auth != null && (root.child('admins').child(auth.uid).val() === true || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified === true))"
+    },
+    "publicConfig": {
+      ".read": true,
+      ".write": "auth != null && (root.child('admins').child(auth.uid).val() === true || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified === true))"
+    }
+  }
+}
