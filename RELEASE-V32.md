@@ -2,7 +2,7 @@
 
 ## ⚠️ Urutan deploy (WAJIB ikut, supaya admin tak terkunci)
 1. **Sahkan e-mel admin dahulu.** Log masuk `/admin.html` (rules lama masih berfungsi), tekan **📧 Hantar e-mel pengesahan**, klik pautan dalam e-mel, kemudian tekan **✅ Dah sahkan, muat semula**.
-   - Jika e-mel admin anda bukan `admin@riderkb.com`, tukar di `firebase-config.js` (`admins`), `functions/index.js` (`ADMIN_EMAILS`) dan cari-ganti dalam `database.rules.json`.
+   - Jika e-mel admin anda bukan `mnhzuan@gmail.com`, tukar di `firebase-config.js` (`admins`), `functions/index.js` (`ADMIN_EMAILS`) dan cari-ganti dalam `database.rules.json`.
 2. **Uji dahulu di Firebase Emulator / projek staging.** Rules baharu BELUM diuji dalam Emulator (tiada alat itu semasa penyediaan). Gunakan Rules Playground di Console sekurang-kurangnya untuk: pelanggan buat order, pelanggan batal, rider terima/ambil/selesai, admin ubah status, vendor terima order.
 3. Upload semua fail ke Netlify (V32 menukar `common.js?v=32`, `sw.js` dan `shop.html`).
 4. Tampal `database.rules.json` ke Realtime Database > Rules > **Publish** (atau `firebase deploy --only database,functions`).

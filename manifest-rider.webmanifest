@@ -24,7 +24,7 @@
       "purpose": "any"
     },
     {
-      "src": "icon-rider-512.png",
+      "src": "icon-rider-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

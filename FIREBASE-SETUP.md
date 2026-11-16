@@ -9,12 +9,12 @@ Firebase Console > **Build > Realtime Database > Create Database**
 Salin URL database (cth `https://riderkb-fe7e1-default-rtdb.asia-southeast1.firebasedatabase.app`).
 
 ## 2. Rules
-Tab **Rules** > padam semua > tampal isi `database.rules.json` > tukar `admin@riderkb.com` kepada e-mel admin sebenar (huruf kecil) > **Publish**.
+Tab **Rules** > padam semua > tampal isi `database.rules.json` > tukar `mnhzuan@gmail.com` kepada e-mel admin sebenar (huruf kecil) > **Publish**.
 **V32:** e-mel admin mesti DISAHKAN dahulu (lihat urutan deploy dalam `RELEASE-V32.md`), atau tambah `admins/{UID}: true` di Console.
 
 ## 3. Akaun admin & rider
 **Build > Authentication > Get started > Email/Password > Enable.**
-Tab **Users > Add user**: buat akaun admin `admin@riderkb.com` **dahulu sekali** (sebelum kongsi pautan rider supaya orang lain tak boleh daftar e-mel ni).
+Tab **Users > Add user**: buat akaun admin `mnhzuan@gmail.com` **dahulu sekali** (sebelum kongsi pautan rider supaya orang lain tak boleh daftar e-mel ni).
 Rider tak perlu dibuat di sini: mereka daftar sendiri di `/rider.html` dan menunggu kelulusan admin.
 
 ## 4. Config web app
