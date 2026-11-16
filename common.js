@@ -273,7 +273,7 @@
       +'<div style="color:#52665a;line-height:1.6;font-size:14.5px;margin-bottom:14px">Lebih laju, jejak order masa nyata dan terima notifikasi terus dari skrin utama. Percuma, tak guna ruang telefon banyak.</div>'
       +'<div id="rkgHelp" style="background:#eaf6ec;border-radius:14px;padding:11px 13px;font-size:13.5px;line-height:1.55;color:#075b35;margin-bottom:14px">'+help+'</div>'
       +'<button id="rkgGo" type="button" style="display:'+(ios?'none':'block')+';width:100%;min-height:50px;border:0;border-radius:16px;background:linear-gradient(135deg,#1b9852,#08713e);color:#fff;font:inherit;font-weight:800;font-size:17px">Pasang app</button>'
-      +(hard?'':'<button id="rkgSkip" type="button" style="margin-top:12px;background:none;border:0;color:#52665a;font:inherit;font-size:13.5px;text-decoration:underline;min-height:44px">Teruskan di pelayar buat sementara</button>')
+      +(hard?'':'<button id="rkgSkip" type="button" style="margin-top:12px;width:100%;background:#fff;border:2px solid #168447;border-radius:16px;color:#075b35;font:inherit;font-weight:800;font-size:15px;min-height:48px">Teruskan di pelayar ›</button>')
       +'</div>';
     document.body.appendChild(g);
     var go=g.querySelector('#rkgGo'); if(!ios) go.style.display='block';

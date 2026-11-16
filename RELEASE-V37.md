@@ -25,3 +25,8 @@
 - **Peta skrin penuh (punca sebenar):** animasi kad `uiUp` meninggalkan `transform` pada `.card`, dan ancestor yang ada `transform` menjadikan `position:fixed` terikat pada kad itu (bukan skrin). Peta admin berada dalam kad, jadi skrin penuh tersangkut kecil. Animasi kini hanya `opacity`, dan peta dipindah sementara ke `<body>` semasa skrin penuh (pulih semula bila keluar). Esc untuk keluar.
 - **Admin nampak rider online:** rider kini hantar degupan lokasi setiap 25 saat jika tiada kemas kini GPS (rider berhenti/senyap), sebab admin hanya papar rider yang isyaratnya <120 saat. Admin juga papar rider yang masih `online` hingga 15 minit (pudar = isyarat lama), dengan senarai butang di bawah peta; tekan untuk zum ke rider.
 - Banner "Pasang app" diturunkan z-index supaya tak menutup peta skrin penuh. Cache `myriderku-v38`; `myriderku-v37.css` ditambah ke precache.
+
+## V38 semakan (pembetulan kecil)
+- `database.rules.json`: pesanan kedai (vorders) tidak lagi ditolak jika `settings/vendorMarkup` belum pernah disimpan admin (guna lalai 10%, sama seperti `firebase-config.js`). Semakan jumlah masih dikuatkuasa, jadi harga tak boleh dimanipulasi.
+- `common.js`: butang "Teruskan di pelayar" pada skrin pasang app kini butang jelas, bukan pautan kecil.
+- **WAJIB: tampal semula `database.rules.json` ke Firebase Console > Realtime Database > Rules > Publish.**
