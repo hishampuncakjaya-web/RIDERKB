@@ -5,7 +5,7 @@
   "description": "Tempah runner Kota Bharu: tapau, pos, beli barang, ambil & hantar",
   "lang": "ms",
   "start_url": "./index.html",
-  "scope": "./",
+  "scope": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b140f",

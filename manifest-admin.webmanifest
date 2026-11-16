@@ -5,7 +5,7 @@
   "description": "Panel admin: order, rider, vendor dan tetapan",
   "lang": "ms",
   "start_url": "./admin.html",
-  "scope": "./",
+  "scope": "./admin.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b140f",

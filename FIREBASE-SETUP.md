@@ -132,3 +132,8 @@ Keselamatan vendor:
 
 ## Kemas kini (v27)
 - Banner "Pasang app" muncul di Vendor dan Admin (Pelanggan dan Rider sudah ada). Pengguna cuma tekan satu butang; iPhone dapat arahan Kongsi > Tambah ke Skrin Utama.
+
+## Kemas kini (v28)
+- Setiap app kini ada `scope` sendiri (index.html, rider.html, vendor.html, admin.html). Sebelum ini semua berkongsi `./`, jadi Chrome anggap satu app sudah meliputi yang lain dan hanya benarkan satu dipasang.
+- Pautan pelanggan: gunakan `.../RIDERKB/index.html`.
+- Buang semua app lama dari skrin utama sebelum pasang semula.

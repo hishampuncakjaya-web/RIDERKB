@@ -1,4 +1,4 @@
-const CACHE = 'rkb-v34';
+const CACHE = 'rkb-v35';
 const SHELL = ['./', './index.html', './track.html', './manifest-rider.webmanifest', './rider.html', './admin.html', './vendor.html', './manifest-vendor.webmanifest', './app.css', './theme.css', './theme.js', './common.js', './firebase-config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './manifest-admin.webmanifest', './icon-customer-192.png', './icon-customer-512.png', './icon-rider-192.png', './icon-rider-512.png', './icon-vendor-192.png', './icon-vendor-512.png', './icon-admin-192.png', './icon-admin-512.png', './apple-touch-icon-customer.png', './apple-touch-icon-rider.png', './apple-touch-icon-vendor.png', './apple-touch-icon-admin.png'];
 const CDN = ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'];
 
