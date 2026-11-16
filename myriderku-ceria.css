@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap");
 /* Gaya CERIA (happy go lucky). Hanya aktif bila <html data-style="ceria">. Klasik = tanpa fail ini. */
 html[data-style="ceria"]{--cy:#ffd93d;--cp:#ff5d8f;--co:#ff9f1c;--cb:#4d96ff;--cg:#2ecc71;--cv:#8e5bff;--ink:#2b2350}
 @keyframes cBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}

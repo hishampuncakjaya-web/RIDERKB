@@ -60,3 +60,11 @@ body.role-admin .stat small{font-size:12.5px}
 #stats .stat:nth-child(9){--ic:"⏳";--ac:#fb7185}
 body.role-admin .tab{background:#122219;border:1px solid #294333}
 @media(prefers-reduced-motion:reduce){.card,.stat,.svc{animation:none}}
+
+/* ===== V36: tab navigasi seragam (Tempah / Kedai / Jejak) ===== */
+.rkt{display:flex;gap:6px;padding:8px 10px;position:sticky;top:0;z-index:60;background:var(--bg,#f3f7f3);border-bottom:1px solid var(--line,#e1ebe2)}
+.rkt a,.rkt .off{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;border-radius:14px;font-size:14px;font-weight:700;text-decoration:none;color:var(--mut,#52665a);background:var(--card,#fff);border:1px solid var(--line,#e1ebe2)}
+.rkt a.on{background:#168447;color:#fff;border-color:#168447}
+.rkt .off{opacity:.5}
+.rkt span span{font-size:16px}
+@media(prefers-reduced-motion:reduce){html[data-style="ceria"] *{animation:none!important}}

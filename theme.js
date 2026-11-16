@@ -16,7 +16,7 @@
 /* Gaya: ceria (lalai) / klasik. Butang 🎨 dalam header. */
 (function(){
   var K='rkb-style', d=document.documentElement;
-  function get(){ try{ return localStorage.getItem(K)||'ceria' }catch(e){ return 'ceria' } }
+  function get(){ try{ return localStorage.getItem(K)||'klasik' }catch(e){ return 'klasik' } }
   function set(v){ d.setAttribute('data-style',v); try{ localStorage.setItem(K,v) }catch(e){} }
   d.setAttribute('data-style',get());
   window.RKB_STYLE={mode:get,set:set};

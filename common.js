@@ -192,7 +192,7 @@
     if(standalone()) return;
     try{ if(+localStorage.getItem('rkb_ib_'+appName)>Date.now()) return }catch(e){}
     var b=document.createElement('div');
-    b.style.cssText='position:fixed;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:5000;background:#111827;color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:14px;line-height:1.4';
+    var nv=document.querySelector('.nav'),off=nv?(nv.offsetHeight+14):10; b.style.cssText='position:fixed;left:10px;right:10px;bottom:calc('+off+'px + env(safe-area-inset-bottom));z-index:5000;background:#111827;color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:14px;line-height:1.4';
     var t=document.createElement('div'); t.style.flex='1'; t.innerHTML='📲 <b>Pasang app '+appName+'</b><br><span style="opacity:.8;font-size:12px">'+(ios?'Tekan ikon Kongsi, kemudian "Tambah ke Skrin Utama".':'Terus dari skrin utama, tanpa buka pelayar.')+'</span>';
     var go=document.createElement('button'); go.type='button'; go.textContent='Pasang'; go.style.cssText='background:#22c55e;color:#04210f;border:0;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;min-height:44px;display:'+(ios?'none':'block');
     var x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.setAttribute('aria-label','Tutup'); x.style.cssText='background:none;border:0;color:#fff;font-size:20px;min-width:36px;min-height:44px';
@@ -242,4 +242,48 @@
   if(!R.auth) return;   // halaman pelanggan tak muat modul auth
   var os=R.auth.signOut.bind(R.auth);
   R.auth.signOut=async function(){ try{ if(cur){ await R.db.ref('fcmTokens/'+cur.role+'/'+cur.uid+'/'+cur.token).remove(); try{ await firebase.messaging().deleteToken() }catch(e){} cur=null } }catch(e){} return os() };
+})();
+
+
+/* ===== V36: skrin wajib pasang (pelanggan) + tab navigasi seragam ===== */
+(function(){
+  var R=window.RKB; if(!R) return;
+  var dip=window.__dip||null;
+  window.addEventListener('beforeinstallprompt',function(e){ e.preventDefault(); dip=window.__dip=e; var b=document.getElementById('rkgGo'); if(b) b.style.display='block'; });
+  function standalone(){ try{ return ['standalone','fullscreen','minimal-ui'].some(function(m){return matchMedia('(display-mode: '+m+')').matches})||navigator.standalone===true }catch(e){ return false } }
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  R.gateInstall=function(appName){
+    var mode=R.cfg.customerInstall; if(mode===false||mode==='off') return;
+    if(standalone()) return;
+    try{ if(sessionStorage.getItem('rkb_skip_install')==='1') return }catch(e){}
+    var hard=(mode===true||mode==='hard');
+    var g=document.createElement('div'); g.id='rkGate';
+    g.style.cssText='position:fixed;inset:0;z-index:9000;background:linear-gradient(160deg,#075b35,#168447 70%,#54ad62);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto';
+    var help=ios?'Tekan ikon <b>Kongsi ⬆️</b> di Safari, pilih <b>Tambah ke Skrin Utama</b>, kemudian buka app dari skrin utama.':'Tekan butang <b>Pasang app</b> di bawah. Kalau tak keluar: tekan <b>⋮</b> di Chrome, pilih <b>Pasang app</b> / <b>Tambah ke skrin utama</b>.';
+    g.innerHTML='<div style="background:#fff;color:#173126;border-radius:24px;padding:26px 22px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.3);font-family:system-ui,-apple-system,Segoe UI,sans-serif">'
+      +'<div style="font-size:48px">📲</div>'
+      +'<div style="font-size:21px;font-weight:800;margin:6px 0">Pasang app '+appName+'</div>'
+      +'<div style="color:#52665a;line-height:1.6;font-size:14.5px;margin-bottom:14px">Lebih laju, jejak order masa nyata dan terima notifikasi terus dari skrin utama. Percuma, tak guna ruang telefon banyak.</div>'
+      +'<div id="rkgHelp" style="background:#eaf6ec;border-radius:14px;padding:11px 13px;font-size:13.5px;line-height:1.55;color:#075b35;margin-bottom:14px">'+help+'</div>'
+      +'<button id="rkgGo" type="button" style="display:'+(ios?'none':'block')+';width:100%;min-height:50px;border:0;border-radius:16px;background:linear-gradient(135deg,#1b9852,#08713e);color:#fff;font:inherit;font-weight:800;font-size:17px">Pasang app</button>'
+      +(hard?'':'<button id="rkgSkip" type="button" style="margin-top:12px;background:none;border:0;color:#52665a;font:inherit;font-size:13.5px;text-decoration:underline;min-height:44px">Teruskan di pelayar buat sementara</button>')
+      +'</div>';
+    document.body.appendChild(g);
+    var go=g.querySelector('#rkgGo'); if(!ios) go.style.display='block';
+    go.onclick=function(){ if(!dip){ g.querySelector('#rkgHelp').style.boxShadow='0 0 0 2px #168447'; return; } dip.prompt(); (dip.userChoice||Promise.resolve()).then(function(){ dip=window.__dip=null }).catch(function(){}); };
+    var sk=g.querySelector('#rkgSkip'); if(sk) sk.onclick=function(){ try{ sessionStorage.setItem('rkb_skip_install','1') }catch(e){} g.remove() };
+    window.addEventListener('appinstalled',function(){ g.querySelector('#rkgHelp').innerHTML='✅ Dah dipasang! Tutup halaman ini dan buka app dari skrin utama.'; go.style.display='none'; if(sk) sk.style.display='none' });
+  };
+  R.customerTabs=function(active){
+    function build(){
+      if(document.getElementById('rkTabs')) return;
+      var h=document.querySelector('.hd')||document.querySelector('header'); if(!h) return;
+      var last=''; try{ last=localStorage.getItem('rkb-last')||'' }catch(e){}
+      var t=[['tempah','🛵','Tempah','index.html'],['kedai','🏪','Kedai','shop.html'],['jejak','📍','Jejak',last?('track.html?id='+encodeURIComponent(last)):'']];
+      var n=document.createElement('nav'); n.id='rkTabs'; n.className='rkt'; n.setAttribute('aria-label','Navigasi utama');
+      n.innerHTML=t.map(function(x){ var on=x[0]===active; return x[3]?'<a href="'+x[3]+'" class="'+(on?'on':'')+'"'+(on?' aria-current="page"':'')+'><span>'+x[1]+'</span>'+x[2]+'</a>':'<span class="off" title="Belum ada tempahan"><span>'+x[1]+'</span>'+x[2]+'</span>' }).join('');
+      h.insertAdjacentElement('afterend',n);
+    }
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
+  };
 })();

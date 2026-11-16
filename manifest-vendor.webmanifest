@@ -5,7 +5,7 @@
   "description": "App vendor: terima order, urus menu dan stok",
   "lang": "ms",
   "start_url": "./vendor.html",
-  "scope": "./vendor.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f3f7f3",

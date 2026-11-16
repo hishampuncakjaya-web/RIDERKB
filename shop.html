@@ -39,7 +39,8 @@ body{padding-bottom:90px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=32"></script>
+<script src="common.js?v=36"></script>
+<script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('kedai')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,r2}=RKB;
 const Q=new URLSearchParams(location.search);
@@ -168,4 +169,5 @@ function track(u,id){
 }
 if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
+<script>RKB.installBanner('MYRIDERKU')</script>
 </body></html>

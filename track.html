@@ -53,7 +53,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=32"></script>
+<script src="common.js?v=36"></script>
+<script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('jejak')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,ST}=RKB;
 const id=new URLSearchParams(location.search).get('id');
@@ -201,4 +202,5 @@ else{
   setInterval(()=>{ if(o&&o.riderLoc&&(o.status==='diterima'||o.status==='diambil')) $('#sub').textContent='Lokasi rider dikemas kini '+RKB.ago(o.riderLoc.t) },10000);
 }
 </script>
+<script>RKB.installBanner('MYRIDERKU')</script>
 </body></html>

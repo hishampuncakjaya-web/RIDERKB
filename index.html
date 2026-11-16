@@ -220,7 +220,8 @@ body.typing{padding-bottom:24px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=32"></script>
+<script src="common.js?v=36"></script>
+<script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('tempah')</script>
 <script>
 /* ===== TETAPAN (ubah di sini) ===== */
 let WA_NUMBER = (window.RKB_CFG&&RKB_CFG.waNumber)||"601139900099";  // nombor WhatsApp rider, format 60xxxxxxxxx
@@ -727,12 +728,12 @@ $('#saved').onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return; const
 /* ---- PWA: pasang di telefon ---- */
 (function(){
   const box=$('#install'), btn=$('#installBtn'), txt=$('#installTxt');
-  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-  let dismissed=false; try{dismissed=localStorage.getItem('rkb-install-x')==='1'}catch(_){}
+  const standalone=['standalone','fullscreen','minimal-ui'].some(m=>matchMedia('(display-mode: '+m+')').matches)||navigator.standalone===true;
+  let dismissed=false; try{dismissed=+localStorage.getItem('rkb-install-x')>Date.now()}catch(_){}
   if(standalone||dismissed) return;
   let deferred=null;
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
-  $('#installX').onclick=()=>{box.classList.remove('show');try{localStorage.setItem('rkb-install-x','1')}catch(_){}};
+  $('#installX').onclick=()=>{box.classList.remove('show');try{localStorage.setItem('rkb-install-x',String(Date.now()+3*864e5))}catch(_){}};
   window.addEventListener('beforeinstallprompt',e=>{   // Android / Chrome: tawaran pasang terus
     e.preventDefault(); deferred=e; btn.style.display='';
     box.classList.add('show');
@@ -742,6 +743,7 @@ $('#saved').onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return; const
     deferred.prompt(); await deferred.userChoice; deferred=null; box.classList.remove('show');
   };
   window.addEventListener('appinstalled',()=>box.classList.remove('show'));
+  if(!ios) setTimeout(()=>{ if(!deferred&&!box.classList.contains('show')){ btn.style.display='none'; txt.innerHTML='Tekan <b style="display:inline">⋮</b> di Chrome, kemudian <b style="display:inline">Pasang app</b> / <b style="display:inline">Tambah ke skrin utama</b>.'; box.classList.add('show') } },4000);
   if(ios){                                              // iPhone: tiada prompt, tunjuk arahan
     btn.style.display='none';
     txt.innerHTML='Tekan ikon <b style="display:inline">Kongsi ⬆️</b> di Safari, kemudian <b style="display:inline">Tambah ke Skrin Utama</b>.';
