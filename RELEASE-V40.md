@@ -32,7 +32,7 @@ Fokus: kurangkan kerja harian vendor tanpa mengubah formula harga, komisen, wall
 
 ## Diuji
 Skrip pelayar (Playwright + Firebase palsu): 29 semakan lulus: sejarah/carian, rehat dan buka semula auto, terima/tolak/batal + pulang stok, perlumbaan pelanggan-batal, lipat/carian menu, habis hari ni, salin, tulisan besar; tiada ralat konsol.
-**Belum diuji pada Firebase sebenar dan telefon sebenar.** Uji dengan satu akaun vendor ujian dahulu sebelum semua vendor.
+**Belum diuji pada Firebase sebenar dan telefon sebenar.**
 
 ## Belum dibuat (cadangan seterusnya)
 Pilihan/tambahan produk (option groups), waktu operasi berjadual, gambar produk, penyata CSV, laporan mingguan automatik, rehat auto-buka tanpa app (perlu Cloud Function berjadual).

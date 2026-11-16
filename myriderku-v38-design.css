@@ -20,3 +20,129 @@ body.role-admin{background:#09150f!important;color:#eff8f1}body.role-admin .wrap
 @media(min-width:900px){.wrap{width:min(100% - 36px,900px)}.wrap.wide{width:min(100% - 48px,1400px)}body.role-vendor #app>[data-p]{max-width:100%}body.role-vendor .stats{grid-template-columns:repeat(4,minmax(0,1fr))}body.role-rider #app>.pad{display:grid;grid-template-columns:minmax(300px,.9fr) minmax(0,1.1fr);gap:14px;align-items:start}body.role-rider #mapbox{position:sticky;top:14px}body.role-rider #mapbox .map{height:calc(100vh - 190px)!important;min-height:440px}body.role-admin #app>.stats{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:520px){header.hd,.role-customer .wrap>header{padding:22px 18px 24px!important}.pad{padding:12px}.card{padding:15px!important;margin:10px 0!important}.stats{gap:8px}body.role-admin .stats{grid-template-columns:repeat(2,minmax(0,1fr))}body.role-admin .wrap.wide{width:100%}body.role-admin .tabs{padding-left:10px!important;padding-right:10px!important}body.role-admin .tab{padding:9px 12px!important}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* =========================================================
+   MYRIDERKU OFFICIAL BRAND — MIDNIGHT SAPPHIRE
+   Navy #182E4A | Amber Gold #E7A64B | Ivory #F5F0E5 | Steel #7793AE
+   Visual-only overrides. Firebase, pricing, dispatch and order logic untouched.
+   ========================================================= */
+:root{
+ --mr-primary:#182E4A;--mr-primary-dark:#102238;--mr-accent:#E7A64B;
+ --mr-bg:#F5F0E5;--mr-surface:#FFFCF6;--mr-ink:#182E4A;
+ --mr-muted:#64778B;--mr-line:#D9DFE4;--mr-shadow:0 12px 32px rgba(24,46,74,.10);
+ --mr-radius:22px;--m41-navy:#182E4A;--m41-deep:#102238;--m41-gold:#E7A64B;
+ --m41-ivory:#F5F0E5;--m41-steel:#7793AE;--m41-white:#FFFCF6;
+}
+html{background:#F5F0E5}
+body.role-customer,body.role-vendor{background:#F5F0E5!important;color:#182E4A!important}
+body.role-rider,body.role-admin{background:#EAF0F4!important;color:#182E4A!important}
+body.role-customer .wrap>header,body.role-customer header,body.role-rider header.hd,
+body.role-vendor header.hd,body.role-admin header.hd{
+ background:linear-gradient(125deg,#102238 0%,#182E4A 62%,#29496B 100%)!important;
+ color:#FFFCF6!important;box-shadow:0 12px 28px rgba(16,34,56,.18)!important
+}
+header.hd:after,body.role-customer .wrap>header:after{
+ border-color:#ffffff24!important;box-shadow:0 0 0 24px #ffffff0c,0 0 0 50px #ffffff08!important
+}
+body.role-customer .card,body.role-customer .nb,body.role-customer .shop,
+body.role-vendor .card,body.role-rider .card,body.role-admin .card,body.role-admin .stat{
+ background:#FFFCF6!important;color:#182E4A!important;border:1px solid #D9DFE4!important;
+ box-shadow:0 8px 24px rgba(24,46,74,.075)!important
+}
+body.role-customer label,body.role-vendor label,body.role-rider label,body.role-admin label,
+body.role-customer .l,body.role-vendor .l,body.role-rider .l,body.role-admin .l{color:#40566E!important}
+body.role-customer input,body.role-customer select,body.role-customer textarea,body.role-customer .f,
+body.role-vendor input,body.role-vendor select,body.role-vendor textarea,body.role-vendor .f,
+body.role-rider input,body.role-rider select,body.role-rider textarea,body.role-rider .f,
+body.role-admin input,body.role-admin select,body.role-admin textarea,body.role-admin .f{
+ background:#FFFCF6!important;color:#182E4A!important;border:1px solid #B9C7D3!important
+}
+body.role-customer input::placeholder,body.role-customer textarea::placeholder,
+body.role-vendor input::placeholder,body.role-vendor textarea::placeholder{color:#71849A!important;opacity:1}
+body.role-customer .svc{background:#FFFCF6!important;border:1px solid #D9DFE4!important;color:#182E4A!important}
+body.role-customer .svc.on{background:#FFF0D7!important;border:2px solid #E7A64B!important;color:#182E4A!important}
+body.role-customer .btn:not(.gry),body.role-rider .btn:not(.gry),
+body.role-vendor .btn:not(.gry),body.role-admin .btn:not(.gry),
+body.role-customer .hbtn,body.role-rider .hbtn,body.role-vendor .hbtn,body.role-admin .hbtn{
+ background:linear-gradient(135deg,#F0B85D,#D9912F)!important;color:#182E4A!important;
+ border:1px solid #D18B2D!important;box-shadow:0 7px 16px rgba(180,117,35,.20)!important
+}
+body.role-customer .price{background:#FFF0D7!important;border:1px solid #E7A64B!important;color:#182E4A!important}
+body.role-customer .price b{color:#182E4A!important;white-space:nowrap}
+body.role-customer .tabs,body.role-customer .chips{background:#102238!important}
+body.role-customer .tab{background:#203A58!important;color:#EAF0F5!important;border:1px solid #49617B!important}
+body.role-customer .tab.on{background:#E7A64B!important;color:#182E4A!important;border-color:#E7A64B!important}
+body.role-rider .ridercard{background:linear-gradient(130deg,#102238,#24496C)!important;color:#FFFCF6!important;border:1px solid #42617D!important;box-shadow:0 14px 30px rgba(16,34,56,.18)!important}
+body.role-rider .ridercard .mut,body.role-rider .ridercard a{color:#E3ECF3!important}
+body.role-rider .ridercard .btn.gry{background:#ffffff1c!important;color:#fff!important;border-color:#ffffff38!important}
+body.role-rider #tabs{background:#EAF0F4!important}
+body.role-rider #list>.card{border-left:5px solid #E7A64B!important}
+body.role-rider .tab.on{background:#182E4A!important;color:#fff!important}
+body.role-vendor .nav{background:#FFFCF6ed!important;border:1px solid #D9DFE4!important;box-shadow:0 -8px 30px rgba(24,46,74,.10)!important}
+body.role-vendor .nav button.on{background:#FFF0D7!important;color:#182E4A!important;border-radius:14px!important}
+body.role-admin .tabs{background:#EAF0F4ee!important;border-bottom:1px solid #D9DFE4!important}
+body.role-admin .tab{background:#FFFCF6!important;color:#40566E!important;border:1px solid #D9DFE4!important}
+body.role-admin .tab.on{background:#182E4A!important;color:#fff!important;border-color:#182E4A!important}
+body.role-admin .btn.gry,body.role-admin .hbtn{background:#EAF0F4!important;color:#182E4A!important;border:1px solid #B9C7D3!important;box-shadow:none!important}
+body.role-admin .mut,body.role-admin small{color:#64778B!important}
+body.role-customer .toast,body.role-rider .toast,body.role-vendor .toast,body.role-admin .toast,
+body.role-customer #toast{background:#182E4A!important;color:#FFFCF6!important;border-color:#7793AE!important}
+body.role-customer .bar{background:linear-gradient(#F5F0E5e8,#F5F0E5 30%)!important}
+body.role-customer .map,body.role-rider .map,body.role-admin .map{border:1px solid #B9C7D3!important}
+@media(max-width:520px){
+ body.role-customer .price{display:flex;align-items:center;justify-content:space-between;gap:12px}
+ body.role-customer .price b{font-size:clamp(24px,7vw,36px)!important;line-height:1.05}
+ body.role-admin .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* Final palette token overrides for both light and dark system preferences.
+   Keeps every role on the same official brand without changing application logic. */
+html[data-theme="light"] body.role-customer,
+html[data-theme="light"] body.role-rider,
+html[data-theme="light"] body.role-vendor,
+html[data-theme="light"] body.role-admin,
+html[data-theme="dark"] body.role-customer,
+html[data-theme="dark"] body.role-rider,
+html[data-theme="dark"] body.role-vendor,
+html[data-theme="dark"] body.role-admin,
+body.role-customer,body.role-rider,body.role-vendor,body.role-admin{
+ --bg:#EAF0F4;--card:#FFFCF6;--card2:#F5F0E5;--line:#D9DFE4;
+ --txt:#182E4A;--mut:#64778B;--acc:#E7A64B;--acc2:#182E4A;
+ --soft:#FFF0D7;--lnk:#29496B;
+}
+html[data-theme="dark"] body.role-admin,
+html[data-theme="dark"] body.role-rider{
+ background:#EAF0F4!important;color:#182E4A!important;
+}
+html[data-theme="dark"] body.role-admin .card,
+html[data-theme="dark"] body.role-admin .stat,
+html[data-theme="dark"] body.role-rider .card,
+html[data-theme="dark"] body.role-rider .stat,
+html[data-theme="dark"] body.role-rider .sum{
+ background:#FFFCF6!important;color:#182E4A!important;border:1px solid #D9DFE4!important;
+ box-shadow:0 8px 24px rgba(24,46,74,.075)!important;
+}
+html[data-theme="dark"] body.role-admin .hd,
+html[data-theme="dark"] body.role-rider .hd{
+ background:linear-gradient(125deg,#102238 0%,#182E4A 62%,#29496B 100%)!important;
+ color:#FFFCF6!important;
+}
+html[data-theme="dark"] body.role-admin .tab,
+html[data-theme="dark"] body.role-rider .tab{
+ background:#FFFCF6!important;color:#40566E!important;border:1px solid #D9DFE4!important;
+}
+html[data-theme="dark"] body.role-admin .tab.on,
+html[data-theme="dark"] body.role-rider .tab.on{
+ background:#182E4A!important;color:#fff!important;border-color:#182E4A!important;
+}
+html[data-theme="dark"] body.role-admin input,
+html[data-theme="dark"] body.role-admin textarea,
+html[data-theme="dark"] body.role-admin select,
+html[data-theme="dark"] body.role-rider input,
+html[data-theme="dark"] body.role-rider textarea,
+html[data-theme="dark"] body.role-rider select{
+ background:#FFFCF6!important;color:#182E4A!important;border:1px solid #B9C7D3!important;
+}
