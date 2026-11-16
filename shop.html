@@ -83,7 +83,7 @@ const items=()=>Object.entries(menu).filter(([k,m])=>m&&m.on!==false&&m.n).sort(
 function sums(){ let sub=0,n=0; Object.entries(cart).forEach(([k,q])=>{ const m=menu[k]; if(m){ sub+=base(m)*q; n+=q } }); sub=r2(sub); return {sub,n,total:r2(sub*(1+RKB.shares().mark/100))} }
 function drawMenu(){
   const I=items(); let cat=null, h=`<button class="btn gry sm" id="bk" type="button">‹ Semua kedai</button><div class="card"><div class="mut">${esc(shop.addr||'')}</div>${shop.promo?`<div>🏷️ ${esc(shop.promo)}</div>`:''}</div>`;
-  h+=I.length?'<div class="card">'+I.map(([k,m])=>{ const out=m.st===0||+m.ex>Date.now(), q=cart[k]||0, max=m.st>0?Math.min(99,m.st):99, pr=RKB.vPrice(base(m)), was=(m.pp!=null&&+m.pp<+m.p)?RKB.vPrice(+m.p):0;
+  h+=I.length?'<div class="card">'+I.map(([k,m])=>{ const out=m.st===0, q=cart[k]||0, max=m.st>0?Math.min(99,m.st):99, pr=RKB.vPrice(base(m)), was=(m.pp!=null&&+m.pp<+m.p)?RKB.vPrice(+m.p):0;
     return `<div class="it"><div style="min-width:0"><div class="nm">${esc(m.n)}</div>${m.d?`<div class="mut">${esc(m.d)}</div>`:''}<div>${was?`<s class="mut">${rm(was)}</s> `:''}<b>${rm(pr)}</b>${out?' · <b style="color:#ef4444">HABIS</b>':m.st>0&&m.st<=5?` · <span class="mut">tinggal ${esc(m.st)}</span>`:''}</div></div>
     <div class="qty">${out?'':`<button data-k="${esc(k)}" data-d="-1" type="button" ${q?'':'disabled'} aria-label="Kurang">−</button><b>${q}</b><button data-k="${esc(k)}" data-d="1" type="button" ${q>=max?'disabled':''} aria-label="Tambah">+</button>`}</div></div>` }).join('')+'</div>':'<div class="card mut">Kedai ini belum ada menu.</div>';
   view(h); cartBar();
@@ -123,7 +123,7 @@ async function place(st,s){
   try{
     const [o,m]=await Promise.all([RKB.db.ref('vshops/'+uid+'/open').once('value'),RKB.db.ref('vmenu/'+uid).once('value')]);
     if(o.val()!==true){ b.disabled=false; b.textContent='🛒 Hantar pesanan'; return err('Maaf, kedai baru sahaja tutup.') }
-    menu=m.val()||{}; const bad=Object.entries(cart).find(([k,q])=>{ const x=menu[k]; return !x||x.on===false||x.st===0||+x.ex>Date.now()||(x.st>0&&q>x.st) });
+    menu=m.val()||{}; const bad=Object.entries(cart).find(([k,q])=>{ const x=menu[k]; return !x||x.on===false||x.st===0||(x.st>0&&q>x.st) });
     if(bad){ b.disabled=false; b.textContent='🛒 Hantar pesanan'; toast('Stok berubah, sila semak semula pesanan.'); drawMenu(); return }
   }catch(e){}
   const S2=sums(), id=RKB.newId(), ref='KDI-'+id.slice(0,4).toUpperCase(), TS=firebase.database.ServerValue.TIMESTAMP, its={};
