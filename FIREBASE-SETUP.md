@@ -10,6 +10,7 @@ Salin URL database (cth `https://riderkb-fe7e1-default-rtdb.asia-southeast1.fire
 
 ## 2. Rules
 Tab **Rules** > padam semua > tampal isi `database.rules.json` > tukar `admin@riderkb.com` kepada e-mel admin sebenar (huruf kecil) > **Publish**.
+**V32:** e-mel admin mesti DISAHKAN dahulu (lihat urutan deploy dalam `RELEASE-V32.md`), atau tambah `admins/{UID}: true` di Console.
 
 ## 3. Akaun admin & rider
 **Build > Authentication > Get started > Email/Password > Enable.**
@@ -35,7 +36,7 @@ Upload semula zip. Pautan:
 
 ## Nota keselamatan
 - Pelanggan tak perlu log masuk. Link jejak sukar diteka (10 aksara rawak).
-- Hanya akaun e-mel/kata laluan (rider/admin) boleh lihat senarai order. Hanya e-mel admin dalam rules boleh padam order.
+- Hanya akaun e-mel/kata laluan (rider/admin) boleh lihat senarai order. Hanya admin sah (e-mel disahkan atau `admins/{UID}`) boleh padam order. Nombor pelanggan ada di `orderContacts/`, hanya admin dan rider yang ditugaskan boleh baca.
 - Skala percuma (Spark) cukup untuk permulaan.
 
 ## Ciri baru (v12)
@@ -122,7 +123,7 @@ Keselamatan vendor:
 - Had sebenar: peratusan disimpan dalam `settings` yang boleh dibaca app, jadi orang yang tahu menggunakan alat pembangun boleh menjumpainya. App hanya menyembunyikannya daripada paparan. Penyembunyian sepenuhnya memerlukan pelayan (Cloud Functions).
 
 ## Kemas kini (v25)
-- Ikon berbeza setiap app (Pelanggan biru, Rider oren, Vendor hijau, Admin ungu) dan nama app berbeza (Rider KB, KB Rider, KB Vendor, KB Admin). Admin kini ada manifest sendiri.
+- Ikon berbeza setiap app (Pelanggan biru, Rider oren, Vendor hijau, Admin ungu) dan nama app berbeza (MYRIDERKU, KB Rider, KB Vendor, KB Admin). Admin kini ada manifest sendiri.
 - **Pasang semula app di telefon:** buang ikon lama dari skrin utama, buka semula pautan masing-masing di Chrome, kemudian "Pasang app". Android menyimpan ikon lama untuk app yang sudah dipasang.
 - Akaun admin yang tersangkut di /rider.html atau /vendor.html kini nampak mesej jelas (bukan skrin kosong).
 - **PENTING (PERMISSION_DENIED):** tampal semula `database.rules.json` ke Realtime Database > Rules > Publish.
@@ -135,5 +136,27 @@ Keselamatan vendor:
 
 ## Kemas kini (v28)
 - Setiap app kini ada `scope` sendiri (index.html, rider.html, vendor.html, admin.html). Sebelum ini semua berkongsi `./`, jadi Chrome anggap satu app sudah meliputi yang lain dan hanya benarkan satu dipasang.
-- Pautan pelanggan: gunakan `.../RIDERKB/index.html`.
+- Pautan pelanggan: gunakan `.../MYRIDERKU/index.html`.
 - Buang semua app lama dari skrin utama sebelum pasang semula.
+
+## Kemas kini (v29)
+- Banner pasang kini tunjuk cara manual (⋮ > Pasang app) jika Chrome tak hantar tawaran automatik selepas 4 saat.
+
+## Push sebenar (v30)
+Notifikasi order sampai walaupun app ditutup (rider, vendor dan admin). Perlu pelan Blaze.
+1. Firebase Console > Project settings > Cloud Messaging > Web Push certificates > **Generate key pair**. Salin kunci ke `vapidKey` dalam `firebase-config.js`.
+2. **PENTING:** tampal semula `database.rules.json` ke Rules > Publish (ada nod `fcmTokens` baru).
+3. Deploy fungsi dari Cloud Shell:
+   `git clone https://github.com/hishampuncakjaya-web/MYRIDERKU.git && cd MYRIDERKU`
+   `npx -y firebase-tools login --no-localhost`
+   `npx -y firebase-tools deploy --only functions`
+4. Rider/vendor/admin log masuk sekali dan tekan **Benarkan** notifikasi.
+
+
+## MYRIDERKU V31 — nota naik taraf visual
+- Tema responsif baharu untuk Customer, Rider dan Vendor; Admin menggunakan tema operasi gelap.
+- Nama aplikasi dan manifest PWA diselaraskan kepada MYRIDERKU.
+- Aliran Firebase, struktur data dan formula sedia ada dikekalkan dalam naik taraf visual ini.
+
+## Sebelum pelancaran awam
+**Jangan anggap sistem sudah production-ready hanya kerana halaman berjaya dibuka.** Semak Firebase Realtime Database Rules dengan ujian emulator dan akaun bagi setiap peranan. Dalam rules semasa, beberapa nod seperti `orders/$id`, `proofs/$id`, `vshops`, `vmenu` dan `vorders/$uid/$id` mempunyai bacaan awam; ini boleh mendedahkan maklumat pelanggan/pesanan. Jangan gunakan QR peribadi yang dipaparkan dalam bahan reka bentuk sebagai aset awam. Gunakan QR pembayaran rasmi yang telah disahkan pemilik akaun dan ujian transaksi kecil.

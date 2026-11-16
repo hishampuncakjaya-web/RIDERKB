@@ -1,21 +1,23 @@
 <!doctype html>
 <html lang="ms"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Jejak Order | Rider KB</title><meta name="theme-color" content="#166534">
+<title>MYRIDERKU | Jejak Pesanan</title><meta name="theme-color" content="#168447">
 <script src="theme.js"></script>
 <link rel="icon" type="image/png" href="icon-customer-192.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
 <style>#toast{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:7000;background:#0d6b4d;border:1px solid #10b981;border-radius:14px;padding:12px 14px;font-weight:700;display:none}.star{background:none;border:0;font-size:34px;padding:2px 4px;filter:grayscale(1);opacity:.5}.star.on{filter:none;opacity:1}@keyframes pop{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}.modal{position:fixed;inset:0;z-index:6000;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px}.mbox{width:100%;max-width:520px;background:var(--card);border:2px solid var(--grn);border-radius:24px;padding:20px 16px calc(16px + env(safe-area-inset-bottom));animation:pop .35s ease-out;text-align:center}</style>
 <link rel="stylesheet" href="theme.css">
-</head><body>
+<link rel="stylesheet" href="myriderku-brand.css">
+</head><body class="role-customer">
 <div class="wrap">
-<header class="hd"><div><span class="tag">JEJAK ORDER</span><h1 id="ref">Rider KB</h1><div class="sm" id="when"></div></div><a class="hbtn" href="index.html">＋ Tempah</a></header>
+<header class="hd"><div><span class="tag">JEJAK ORDER</span><h1 id="ref">MYRIDERKU</h1><div class="sm" id="when"></div></div><a class="hbtn" href="index.html">＋ Tempah</a></header>
 <div class="pad">
   <div class="card" id="msg">Memuatkan order…</div>
   <div id="main" class="hide">
     <div class="card"><div class="stp" id="stp"></div></div>
     <div class="card"><div class="big" id="headline"></div><div class="mut" id="sub" style="margin-top:6px"></div><div id="rinfo" style="margin-top:8px;font-size:13px;line-height:1.6"></div><div class="acts" id="contact"></div><div class="acts" style="margin-top:8px"><button class="btn gry sm hide" id="notif" type="button">🔔 Aktifkan notifikasi</button><button class="btn gry sm" id="rep" type="button">⚠️ Lapor masalah</button></div></div>
+    <div class="acts hide" id="cxl" style="margin:8px 0"><button class="btn gry full" id="cxlB" type="button" style="border:1px solid #ef4444">🚫 Batalkan order (rider belum terima)</button></div>
     <div class="card hide" id="conf"></div>
     <div class="card hide" id="rate"></div>
     <div class="card hide" id="proof"></div>
@@ -44,9 +46,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js"></script>
+<script src="common.js?v=32"></script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,ST}=RKB;
 const id=new URLSearchParams(location.search).get('id');
@@ -78,6 +81,7 @@ else{
     if(!over&&o.riderPhone) c.push(`<a class="btn blu sm" href="tel:+${wa}">📞 Call ${rn}</a>`);
     if(!over&&wa) c.push(`<a class="btn grn sm" href="https://wa.me/${wa}?text=${encodeURIComponent('Salam, order #'+o.ref)}">💬 WhatsApp</a>`);
     $('#contact').innerHTML=c.join('');
+    $('#cxl').classList.toggle('hide',o.status!=='baru');
     $('#map').classList.toggle('hide',over);
     if(over){ if(nav) nav.clear(); if(riderMk&&map){ map.removeLayer(riderMk); riderMk=null } if(map){ const c=map.getContainer(); c.classList.remove('fs'); document.body.style.overflow='' } }
     else{ const first=!map; initMap(); setTimeout(()=>{ map.invalidateSize(); if(first||prevSt==null||(prevSt==='selesai'||prevSt==='batal')) map.fitBounds(L.latLngBounds([pm.getLatLng(),dm.getLatLng()]),{padding:[40,40]}) },60); }
@@ -91,14 +95,21 @@ else{
       else RKB.glide(riderMk,ll,1500);
     } else if(riderMk){ map.removeLayer(riderMk); riderMk=null; }
     $('#rinfo').innerHTML=(!over&&o.riderName)?'✅ <b>Rider disahkan</b> · '+esc(o.riderName)+(o.riderPlate?' · 🛵 '+esc(o.riderPlate):'')+(o.arrivedAt&&o.status==='diterima'?'<br>📍 <b>Rider dah sampai di lokasi ambil</b>':'')+(o.arrivedDropAt&&o.status==='diambil'?'<br>📍 <b>Rider dah sampai di lokasi anda</b>':''):'';
-    if(chg){ const msg={diterima:RKB.say('Rider dah terima order anda 🛵','Rider doh terima order demo 🛵'),diambil:RKB.say('Barang dah diambil, rider menuju ke lokasi anda 📦','Barang doh ambik, rider tengah mari 📦'),selesai:RKB.say('Order anda dah sampai! 🎉','Doh sampai! 🎉'),batal:'Order dibatalkan'}[o.status]; if(msg) notify('Rider KB · #'+o.ref,msg) }
-    if(o.arrivedAt&&!prevArr&&wasSt!==null&&o.status==='diterima') notify('Rider KB · #'+o.ref,'Rider dah sampai di lokasi ambil 📍');
+    if(chg){ const msg={diterima:RKB.say('Rider dah terima order anda 🛵','Rider doh terima order demo 🛵'),diambil:RKB.say('Barang dah diambil, rider menuju ke lokasi anda 📦','Barang doh ambik, rider tengah mari 📦'),selesai:RKB.say('Order anda dah sampai! 🎉','Doh sampai! 🎉'),batal:'Order dibatalkan'}[o.status]; if(msg) notify('MYRIDERKU · #'+o.ref,msg) }
+    if(o.arrivedAt&&!prevArr&&wasSt!==null&&o.status==='diterima') notify('MYRIDERKU · #'+o.ref,'Rider dah sampai di lokasi ambil 📍');
     prevArr=o.arrivedAt||null;
     $('#again2').classList.toggle('hide',!over); drawConf(); drawRate(); loadProof(); drawPayC();
     const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],['Anggaran upah',rm(o.price)]];
     $('#sum').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
   }
   $('#dX').onclick=()=>$('#done').classList.add('hide');
+  $('#cxlB').onclick=async()=>{
+    if(!o||o.status!=='baru'||!confirm('Batalkan order ini?')) return; const b=$('#cxlB'); b.disabled=true;
+    try{ await RKB.db.ref('orders/'+id).update({status:'batal','t/batal':firebase.database.ServerValue.TIMESTAMP}); notify('MYRIDERKU','Order dibatalkan') }
+    catch(e){ notify('MYRIDERKU','Tak dapat batal: rider mungkin baru terima. Guna "Lapor masalah" atau hubungi rider.') }
+    b.disabled=false };
+  const myPhone=()=>{ try{ return String((JSON.parse(localStorage.getItem('rkb')||'{}')||{}).p||'').slice(0,20) }catch(_){ return '' } };
+  if(RKB.pushCustomer) RKB.pushCustomer(id);
   /* butiran bayaran (transfer / QR): tunjuk bila barang dah diambil atau selesai */
   let payData=null, payLoaded=false;
   try{ payData=(JSON.parse(localStorage.getItem('rkb-settings')||'null')||{}).pay||null }catch(_){}
@@ -111,7 +122,7 @@ else{
     b.innerHTML='<div class="big">📲 Bayar upah: '+rm(o.price)+'</div>'+((d.acc||d.qr)?'<div style="margin-top:8px;line-height:1.7">'+(d.bank?esc(d.bank)+'<br>':'')+(d.acc?'No. akaun: <b>'+esc(d.acc)+'</b><br>':'')+(d.name?'Nama: '+esc(d.name)+'<br>':'')+'</div>'+(d.acc?'<button class="btn gry sm" id="cpA" type="button" style="margin-top:6px">📋 Salin no. akaun</button>':'')+(d.qr?'<img alt="QR bayaran" src="'+d.qr+'" style="display:block;max-width:240px;width:100%;margin:10px auto 0;border-radius:12px;background:#fff">':''):'<div class="mut" style="margin-top:6px">Rider akan beri butiran bayaran. Sila bayar selepas barang sampai.</div>');
     const c=$('#cpA'); if(c) c.onclick=()=>{ try{ navigator.clipboard.writeText(d.acc); c.textContent='✓ Disalin' }catch(_){} };
   }
-  $('#shr').onclick=async()=>{ const u=location.href, t='Jejak order Rider KB #'+(o?o.ref:''); try{ if(navigator.share) await navigator.share({title:t,url:u}); else { await navigator.clipboard.writeText(u); notify('Rider KB','Pautan disalin ✓') } }catch(_){} };
+  $('#shr').onclick=async()=>{ const u=location.href, t='Jejak order MYRIDERKU #'+(o?o.ref:''); try{ if(navigator.share) await navigator.share({title:t,url:u}); else { await navigator.clipboard.writeText(u); notify('MYRIDERKU','Pautan disalin ✓') } }catch(_){} };
   /* notifikasi (berfungsi semasa halaman ini dibuka) */
   const canN='Notification' in window;
   function syncN(){ $('#notif').classList.toggle('hide',!(canN&&Notification.permission==='default')) } syncN();
@@ -139,8 +150,8 @@ else{
   /* lapor masalah */
   $('#rep').onclick=async()=>{
     const m=await askReason('Apa masalahnya?',['Rider lambat','Barang salah / tak lengkap','Nak batal order','Nak tukar alamat']); if(!m) return;
-    try{ await RKB.report({type:'customer',orderId:id,ref:o?o.ref:'',from:'customer',name:o?o.name:'',phone:o?o.phone:'',msg:m.slice(0,300)}); notify('Rider KB','Laporan dihantar. Kami akan hubungi anda 💛') }
-    catch(e){ notify('Rider KB','Tak dapat hantar laporan. Sila WhatsApp admin.') }
+    try{ await RKB.report({type:'customer',orderId:id,ref:o?o.ref:'',from:'customer',name:o?o.name:'',phone:myPhone(),msg:m.slice(0,300)}); notify('MYRIDERKU','Laporan dihantar. Kami akan hubungi anda 💛') }
+    catch(e){ notify('MYRIDERKU','Tak dapat hantar laporan. Sila WhatsApp admin.') }
   };
   /* ajak ulasan Google (jujur, tanpa menetapkan bintang) */
   function reviewBlock(){
@@ -162,7 +173,7 @@ else{
     $('#cNo').onclick=async()=>{
       const m=await askReason('Apa yang berlaku?',['Barang tak sampai','Barang tak lengkap / rosak','Salah alamat / bukan saya terima']);
       if(!m) return; $('#cOk').disabled=$('#cNo').disabled=true;
-      try{ await RKB.report({type:'customer',orderId:id,ref:o.ref||'',from:'customer',name:o.name||'',phone:o.phone||'',msg:('⚠️ BELUM TERIMA: '+m).slice(0,300)}) }
+      try{ await RKB.report({type:'customer',orderId:id,ref:o.ref||'',from:'customer',name:o.name||'',phone:myPhone(),msg:('⚠️ BELUM TERIMA: '+m).slice(0,300)}) }
       catch(e){ $('#cOk').disabled=$('#cNo').disabled=false; err('Laporan gagal dihantar. Sila WhatsApp admin terus.'); return }
       try{ await RKB.db.ref('orders/'+id+'/conf').set({v:'issue',t:TS,m}) }catch(e){ err('Laporan dah dihantar kepada admin, tetapi status belum dikemas kini.') }
     };

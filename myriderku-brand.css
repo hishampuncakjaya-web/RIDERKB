@@ -1,0 +1,39 @@
+/* MYRIDERKU V31 — visual system; presentation-only overrides, existing Firebase workflows retained */
+:root{--mr-green:#168447;--mr-deep:#075b35;--mr-lime:#b8e66a;--mr-cream:#f5f8f4;--mr-ink:#173126;--mr-muted:#718278;--mr-border:#e2ebe3;--mr-card:#fff;--mr-shadow:0 10px 28px rgba(19,66,39,.08)}
+html{scroll-behavior:smooth} body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em} button,a,input,select,textarea{touch-action:manipulation} button{cursor:pointer} :focus-visible{outline:3px solid #b8e66a!important;outline-offset:2px!important}
+/* Customer + rider + vendor: bright, clean, green marketplace */
+body:not(.role-admin){--bg:#f3f7f3;--card:#fff;--card2:#f0f6f1;--line:#e1ebe2;--txt:#173126;--mut:#718278;--red:#168447;--org:#d39a24;--grn:#168447;color:var(--txt);background:var(--bg)}
+body:not(.role-admin) .hd,body:not(.role-admin)> .wrap>header,body:not(.role-admin) header.hd{background:linear-gradient(125deg,#075b35 0%,#168447 65%,#54ad62 100%);color:#fff;border:0;border-radius:0 0 26px 26px;box-shadow:0 8px 22px rgba(7,91,53,.15)}
+body:not(.role-admin) .card,body:not(.role-admin) .stat,body:not(.role-admin) .sum{background:#fff;border:1px solid var(--mr-border);box-shadow:var(--mr-shadow);border-radius:20px}
+body:not(.role-admin) .btn,body:not(.role-admin) .btn:not(.gry):not(.blu):not(.back){background:linear-gradient(135deg,#1b9852,#08713e);box-shadow:0 7px 16px rgba(14,125,65,.18);border-radius:15px}
+body:not(.role-admin) .btn.grn,body:not(.role-admin) .btn.wa{background:linear-gradient(135deg,#168447,#35a85f)}
+body:not(.role-admin) .btn.gry,body:not(.role-admin) .hbtn{background:#edf5ee;color:#17633a;border:1px solid #dce9dd;box-shadow:none}
+body:not(.role-admin) input,body:not(.role-admin) textarea,body:not(.role-admin) select{background:#f8fbf8;color:#173126;border:1px solid #dce8dd;border-radius:14px}
+body:not(.role-admin) input::placeholder,body:not(.role-admin) textarea::placeholder{color:#91a198}
+body:not(.role-admin) .tab{background:#fff;color:#52665a;border-color:#e0e9e1}
+body:not(.role-admin) .tab.on{background:#168447;color:#fff;border-color:#168447}
+body:not(.role-admin) .nav{background:rgba(255,255,255,.96);border-top:1px solid #e1ebe2;box-shadow:0 -8px 24px rgba(20,60,35,.06);backdrop-filter:blur(16px)}
+body:not(.role-admin) .nav button{color:#7b8c80;border-radius:14px} body:not(.role-admin) .nav button.on{background:#e9f5eb;color:#08713e}
+body:not(.role-admin) .svc{background:#fff;border:1px solid #e2ebe3;color:#173126;box-shadow:0 5px 15px rgba(19,66,39,.04)}
+body:not(.role-admin) .svc.on{background:#eaf6ec;border:2px solid #168447;color:#075b35}
+body:not(.role-admin) .pin,body:not(.role-admin) .opt,body:not(.role-admin) .popt{background:#fff;color:#294536;border-color:#dce8dd}
+body:not(.role-admin) .pin.on.p,body:not(.role-admin) .opt.on,body:not(.role-admin) .popt.on{background:#eaf6ec;color:#08713e;border-color:#168447}
+body:not(.role-admin) .price{background:#e9f5eb;border-color:#d4e9d7;color:#075b35}
+body:not(.role-admin) .bar{background:linear-gradient(#f3f7f3cc,#f3f7f3 30%)}
+body:not(.role-admin) .map{border:1px solid #dce8dd;box-shadow:var(--mr-shadow)}
+body:not(.role-admin) .badge{background:#eff6ef;border-color:#dce9dd;color:#42634d}
+body:not(.role-admin) .b-selesai{background:#e5f6e9;color:#08713e;border-color:#a9dcb6}
+body:not(.role-admin) .b-baru{background:#fff6df;color:#98640a;border-color:#f1d48b}
+body:not(.role-admin) .b-batal{background:#fff0f0;color:#b42335;border-color:#f2c2c7}
+body:not(.role-admin) .rider{background:rgba(0,0,0,.2);color:#fff}
+/* Admin: dark operations console, high-contrast map and metrics */
+body.role-admin{--bg:#0b1510;--card:#122219;--card2:#192d20;--line:#294333;--txt:#f1f8f2;--mut:#9ab3a1;--red:#b7e66a;--grn:#36b66c;background:#0b1510;color:#f1f8f2}
+body.role-admin .hd{background:linear-gradient(120deg,#071c12,#104b2b 65%,#17683c);border-bottom:1px solid #3c774b}
+body.role-admin .card,body.role-admin .stat{background:linear-gradient(145deg,#14271b,#102017);border:1px solid #294333;border-radius:18px;box-shadow:0 12px 30px #0003}
+body.role-admin .btn{background:linear-gradient(135deg,#a8dc58,#4b9c4f);color:#0c2414}
+body.role-admin .tab.on{background:#a8dc58;color:#102315;border-color:#a8dc58}
+body.role-admin input,body.role-admin textarea,body.role-admin select{background:#0d1c13;border-color:#31513a;color:#f1f8f2}
+/* All roles */
+.card h3{letter-spacing:-.02em} .hd h1,header h1{letter-spacing:-.035em} .tag{font-weight:800;letter-spacing:.12em} .mut,.sm{line-height:1.5}
+@media(min-width:700px){.wrap{padding-left:10px;padding-right:10px}.wrap.wide{max-width:1180px}.card{padding:18px 20px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

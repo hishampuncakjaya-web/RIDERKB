@@ -11,8 +11,9 @@ window.RKB_CFG = {
     messagingSenderId: "412815286373",
     appId: "1:412815286373:web:1ae9b01be1de978d72668c"
   },
+  vapidKey: "",                  // kunci Web Push (Firebase Console > Project settings > Cloud Messaging > Web Push certificates). Kosong = push dimatikan
   appCheckKey: "",                // reCAPTCHA v3 site key untuk Firebase App Check (lihat FIREBASE-SETUP.md). Kosong = tak aktif
-  admins: ["admin@riderkb.com"],   // e-mel akaun admin (huruf kecil). Mesti sama dengan dalam rules
+  admins: ["admin@riderkb.com"],   // e-mel akaun admin (huruf kecil). Mesti sama dengan dalam rules, dan e-mel mesti DISAHKAN (V32)
   riderMustInstall: true,         // rider wajib pasang app (set false untuk ujian dalam pelayar)
   dropRadiusM: 300,              // rider mesti dalam lingkungan ini (meter) dari lokasi hantar untuk tekan "Dah sampai" / "Hantar selesai"
   confAutoMin: 30,                // minit sebelum order dianggap auto-sah jika customer tak tekan apa-apa

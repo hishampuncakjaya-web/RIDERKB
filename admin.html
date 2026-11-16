@@ -1,18 +1,19 @@
 <!doctype html>
 <html lang="ms"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Admin | Rider KB</title><meta name="theme-color" content="#166534">
+<title>MYRIDERKU Admin</title><meta name="theme-color" content="#168447">
 <script src="theme.js"></script>
 <link rel="manifest" href="manifest-admin.webmanifest">
 <link rel="icon" type="image/png" href="icon-admin-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon-admin.png">
-<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="KB Admin">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MYRIDERKU Admin">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="theme.css">
-</head><body>
+<link rel="stylesheet" href="myriderku-brand.css">
+</head><body class="role-admin">
 <div class="wrap wide">
-<header class="hd"><div><span class="tag">ADMIN</span><h1>Rider KB Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
+<header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
 
 <div id="login" class="pad hide" style="max-width:520px;margin:0 auto">
   <div class="card"><form id="lf" onsubmit="return false"><h3>Log masuk admin</h3>
@@ -77,6 +78,7 @@
           <div class="mut" style="margin-bottom:6px">Rider hanya nampak amaun bahagian mereka. Vendor terima harga asal mereka; pelanggan bayar harga + markup, beza itu untung platform.</div>
           <div class="acts" style="margin-top:0"><div style="flex:1 1 45%"><label style="margin-top:0">Bahagian rider (% upah)</label><input id="sRider" type="number" step="1" min="50" max="100" inputmode="numeric"></div>
           <div style="flex:1 1 45%"><label style="margin-top:0">Markup harga vendor (%)</label><input id="sMark" type="number" step="1" min="0" max="50" inputmode="numeric"></div></div>
+          <label style="display:flex;gap:10px;align-items:flex-start;margin-top:10px"><input id="sAuto" type="checkbox" style="width:22px;height:22px;flex:0 0 auto"><span>Wallet automatik selepas order selesai <span class="mut">(perlu Cloud Functions). Tunai: tolak komisyen platform. Online: kredit upah rider.</span></span></label>
           <div class="mut" style="margin-top:6px">Ubah nilai ini pada waktu sunyi. Pelanggan yang skrinnya dibuka sebelum perubahan perlu muat semula.</div></div>
         <div class="acts"><button class="btn full" id="sSave" type="button">💾 Simpan tetapan</button></div>
         <div class="mut" id="sInfo" style="margin-top:8px;text-align:center"></div>
@@ -96,9 +98,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js"></script>
+<script src="common.js?v=32"></script>
 <script>RKB.installBanner('KB Admin')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm}=RKB;
@@ -106,6 +109,7 @@ function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide')
 if(!RKB.ok){ $('#login').classList.remove('hide'); $('#login').innerHTML='<div class="card">Firebase belum disetup. Lihat FIREBASE-SETUP.md.</div>'; }
 else{
 const db=RKB.db, auth=RKB.auth, admins=(RKB.cfg.admins||[]).map(x=>x.toLowerCase());
+let contacts={}; const PH=o=>RKB.phoneOf(o,contacts[o.k]);
 let vendors={}, vshops={}, vcalc=null, reps={}, orders={}, riders={}, filter='semua', q='', map=null, rm_={}, om={}, first=true, started=false;
 $('#go').onclick=async()=>{ $('#lerr').textContent=''; try{ await auth.signInWithEmailAndPassword($('#em').value.trim(),$('#pw').value) }catch(e){ $('#lerr').textContent='E-mel atau kata laluan salah.' } };
 $('#out').onclick=()=>auth.signOut();
@@ -113,6 +117,15 @@ auth.onAuthStateChanged(u=>{
   if(!u){ $('#login').classList.remove('hide'); $('#app').classList.add('hide'); $('#out').classList.add('hide'); return }
   if(!admins.includes((u.email||'').toLowerCase())){ $('#lerr').textContent='Akaun ini bukan admin.'; auth.signOut(); return }
   $('#login').classList.add('hide'); $('#app').classList.remove('hide'); $('#out').classList.remove('hide'); $('#who').textContent=u.email;
+  const vb=$('#verBar'); if(vb) vb.remove();
+  if(!u.emailVerified){
+    const d=document.createElement('div'); d.id='verBar'; d.className='card'; d.style.cssText='border:2px solid #f59e0b;margin:0 0 12px';
+    d.innerHTML='⚠️ <b>E-mel admin belum disahkan.</b> Peraturan keselamatan V32 hanya terima admin yang e-melnya sudah disahkan.<div class="acts"><button class="btn sm" id="verSend" type="button">📧 Hantar e-mel pengesahan</button><button class="btn gry sm" id="verDone" type="button">✅ Dah sahkan, muat semula</button></div>';
+    $('#app').prepend(d);
+    $('#verSend').onclick=async()=>{ try{ await u.sendEmailVerification(); toast('E-mel pengesahan dihantar. Semak peti masuk/spam.') }catch(e){ toast('Gagal: '+(e.code||e.message)) } };
+    $('#verDone').onclick=async()=>{ try{ await u.reload(); await auth.currentUser.getIdToken(true) }catch(e){} location.reload() };
+  }
+  RKB.pushInit('admin',u);
   if(!started){ started=true; listen(); initMap(); goTab(curTab); }
 });
 /* ---- Vendor ---- */
@@ -151,6 +164,7 @@ $('#vCalc').onclick=loadVcalc;
 function listen(){
   db.ref('vendors').on('value',s=>{ const nw=s.val()||{}, n=Object.values(nw).filter(v=>v.approved===undefined).length, o=Object.values(vendors).filter(v=>v.approved===undefined).length; if(started&&n>o&&Object.keys(vendors).length+1>0&&listen._v){RKB.beep();toast('🆕 Vendor baru menunggu kelulusan')} listen._v=true; vendors=nw; renderV(); try{ if(typeof render==='function') render() }catch(_){} },e=>toast('Ralat vendor: '+e.code));
   db.ref('vshops').on('value',s=>{ vshops=s.val()||{}; renderV() },()=>{});
+  db.ref('orderContacts').on('value',s=>{ contacts=s.val()||{}; render() },e=>toast('Ralat nombor pelanggan: '+e.code));
   db.ref('orders').orderByChild('createdAt').limitToLast(300).on('value',s=>{
     const prev=Object.keys(orders).length; orders=s.val()||{};
     if(!first&&Object.keys(orders).length>prev){ RKB.beep(); toast('🆕 Order baru!') } first=false; render();
@@ -182,20 +196,20 @@ function render(){
   const maxW=Math.max(0,...Object.values(riders).filter(r=>r.approved===true).map(r=>+r.wallet||0));
   $('#flt').innerHTML=[['semua','Semua'],['baru','Baru'],['aktif','Aktif'],['selesai','Selesai'],['batal','Batal']].map(f=>`<button class="tab ${filter===f[0]?'on':''}" data-f="${f[0]}">${f[1]}</button>`).join('');
   const s=q.toLowerCase();
-  const V=L.filter(o=>(filter==='semua'||(filter==='aktif'?isAct(o):o.status===filter))&&(!s||[o.ref,o.name,o.phone,o.riderName].join(' ').toLowerCase().includes(s)));
+  const V=L.filter(o=>(filter==='semua'||(filter==='aktif'?isAct(o):o.status===filter))&&(!s||[o.ref,o.name,PH(o),o.riderName].join(' ').toLowerCase().includes(s)));
   const ropts=Object.entries(riders).filter(([u,r])=>r.approved===true).map(([u,r])=>`<option value="${u}">${esc(r.name||u)}</option>`).join('');
   $('#list').innerHTML=V.length?V.map(o=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}${o.rating?' · ⭐'+o.rating.stars:''}</b><span>${(()=>{ const c=RKB.confState(o); if(!c) return ''; const far=(o.doneDist!=null&&o.doneDist>(+RKB.cfg.dropRadiusM||300))||o.doneGps===false; return '<span class="badge '+(c.k==='issue'?'b-batal':'b-'+(c.k==='ok'?'selesai':'diterima'))+'">'+esc(c.t)+'</span> '+(far?'<span class="badge b-batal">📍 '+(o.doneGps===false?'tiada GPS masa selesai':'selesai '+o.doneDist+' m dari lokasi hantar')+'</span> ':'') })()}${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
     <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b> <span class="mut">(rider ${rm(RKB.riderPay(o))} · platform ${rm(RKB.platCut(o))})</span></div>
     <div class="row"><span>Ambil</span><span>${esc(o.pick.addr)}</span></div>
     <div class="row"><span>Hantar</span><span>${esc(o.drop.addr)}</span></div>
     <div class="row"><span>Nota</span><span>${esc(o.notes||'-')}</span></div>
-    <div class="row"><span>Pelanggan</span><span>${esc(o.name)} · ${esc(o.phone)}</span></div>
+    <div class="row"><span>Pelanggan</span><span>${esc(o.name)} · ${esc(PH(o))}</span></div>
     <div class="row"><span>Rider</span><span>${esc(o.riderName||'Belum ada')}</span></div>
     <div class="acts">
       <select data-k="${o.k}" data-a="assign" style="flex:1 1 140px"><option value="">Tugaskan rider…</option>${ropts}</select>
       <select data-k="${o.k}" data-a="status" style="flex:1 1 120px">${['baru','diterima','diambil','selesai','batal'].map(x=>`<option ${x===o.status?'selected':''}>${x}</option>`).join('')}</select>
       <a class="btn gry sm" target="_blank" href="track.html?id=${o.k}">📡 Jejak</a>
-      <a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(o.phone)}">💬 WA</a>
+      <a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(PH(o))}">💬 WA</a>
       <button class="btn gry sm" data-a="del" data-k="${o.k}">🗑️</button>
     </div></div>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
   const R=Object.entries(riders).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||(a[1].name||'').localeCompare(b[1].name||''));
@@ -236,11 +250,11 @@ $('#list').onchange=async e=>{
 };
 $('#list').onclick=async e=>{
   const b=e.target.closest('button[data-a="del"]'); if(!b) return;
-  if(confirm('Padam order ini selamanya?')) try{ await db.ref('orders/'+b.dataset.k).remove() }catch(err){ toast('Gagal padam (hanya admin): '+err.code) }
+  if(confirm('Padam order ini selamanya?')) try{ { const k=b.dataset.k; await db.ref().update({['orders/'+k]:null,['orderContacts/'+k]:null,['proofs/'+k]:null,['proofs/'+k+'p']:null}) } }catch(err){ toast('Gagal padam (hanya admin): '+err.code) }
 };
 $('#csv').onclick=()=>{
   const rows=[['Ref','Masa','Status','Servis','Kenderaan','Ambil','Hantar','KM','RM','Upah rider','Untung platform','Pelanggan','Telefon','Rider']];
-  list().forEach(o=>rows.push([o.ref,new Date(o.createdAt).toLocaleString('ms-MY'),o.status,o.service,o.vehicle,o.pick.addr,o.drop.addr,o.km,o.price,RKB.riderPay(o),RKB.platCut(o),o.name,o.phone,o.riderName||'']));
+  list().forEach(o=>rows.push([o.ref,new Date(o.createdAt).toLocaleString('ms-MY'),o.status,o.service,o.vehicle,o.pick.addr,o.drop.addr,o.km,o.price,RKB.riderPay(o),RKB.platCut(o),o.name,PH(o),o.riderName||'']));
   const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'})); a.download='order-rider-kb.csv'; a.click();
 };
@@ -280,7 +294,7 @@ let SET={}, qrData='';
 const nv=(id,d)=>{ const v=$('#'+id).value.trim(); return v!==''&&isFinite(+v)&&+v>=0?+v:d };
 function fillSet(){
   const p=SET.pricing||{}, f=(id,v,d)=>{ if(document.activeElement!==$('#'+id)) $('#'+id).value=(v!=null?v:d) };
-  f('sBase',p.base,5); f('sFree',p.freeKm,5); f('sPer',p.perKm,1); f('sCar',p.car,10); f('sRain',p.rain,2); f('sAlert',SET.alertMin,5); f('sRider',SET.riderShare,RKB.cfg.riderShare||80); f('sMark',SET.vendorMarkup,RKB.cfg.vendorMarkup!=null?RKB.cfg.vendorMarkup:10); if(SET.riderShare!=null) RKB.shares().rider=+SET.riderShare; if(SET.vendorMarkup!=null) RKB.shares().mark=+SET.vendorMarkup;
+  f('sBase',p.base,5); f('sFree',p.freeKm,5); f('sPer',p.perKm,1); f('sCar',p.car,10); f('sRain',p.rain,2); f('sAlert',SET.alertMin,5); if(document.activeElement!==$('#sAuto')) $('#sAuto').checked=SET.autoWallet===true; f('sRider',SET.riderShare,RKB.cfg.riderShare||80); f('sMark',SET.vendorMarkup,RKB.cfg.vendorMarkup!=null?RKB.cfg.vendorMarkup:10); if(SET.riderShare!=null) RKB.shares().rider=+SET.riderShare; if(SET.vendorMarkup!=null) RKB.shares().mark=+SET.vendorMarkup;
   f('sWa',SET.wa,RKB.cfg.waNumber||''); const y=SET.pay||{}; f('sBank',y.bank,''); f('sAcc',y.acc,''); f('sName',y.name,'');
   qrData=y.qr||''; $('#sQrP').style.display=qrData?'block':'none'; if(qrData) $('#sQrP').src=qrData; $('#sQrX').classList.toggle('hide',!qrData);
   alertMin=+SET.alertMin>0?+SET.alertMin:5;
@@ -290,7 +304,7 @@ $('#sQrF').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f)
 $('#sQrX').onclick=()=>{ qrData=''; $('#sQrP').style.display='none'; $('#sQrX').classList.add('hide'); $('#sQrF').value='' };
 $('#sSave').onclick=async()=>{
   const wa=$('#sWa').value.replace(/\D/g,''); if(wa&&!/^60\d{8,11}$/.test(wa)) return toast('Nombor WhatsApp mesti bermula 60, cth 601139900099');
-  const o={pricing:{base:nv('sBase',5),freeKm:nv('sFree',5),perKm:nv('sPer',1),car:nv('sCar',10),rain:nv('sRain',2)},alertMin:Math.max(1,Math.round(nv('sAlert',5))),riderShare:Math.round(nv('sRider',80)),vendorMarkup:Math.round(nv('sMark',10))};
+  const o={pricing:{base:nv('sBase',5),freeKm:nv('sFree',5),perKm:nv('sPer',1),car:nv('sCar',10),rain:nv('sRain',2)},alertMin:Math.max(1,Math.round(nv('sAlert',5))),riderShare:Math.round(nv('sRider',80)),vendorMarkup:Math.round(nv('sMark',10)),autoWallet:$('#sAuto').checked};
   if(!(o.riderShare>=50&&o.riderShare<=100)) return toast('Bahagian rider mesti 50 hingga 100%');
   if(!(o.vendorMarkup>=0&&o.vendorMarkup<=50)) return toast('Markup vendor mesti 0 hingga 50%');
   if(wa) o.wa=wa;

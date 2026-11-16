@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Rider KB Express</title>
-<meta name="theme-color" content="#166534">
+<title>MYRIDERKU | Tempahan & Marketplace</title>
+<meta name="theme-color" content="#168447">
 <script src="theme.js"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="icon-customer-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon-customer.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Rider KB">
+<meta name="apple-mobile-web-app-title" content="MYRIDERKU">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
@@ -102,24 +102,26 @@ body.typing{padding-bottom:24px}
 @keyframes bob{from{margin-top:0}to{margin-top:-4px}}
 </style>
 <link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="myriderku-brand.css">
 </head>
-<body>
+<body class="role-customer">
 <div class="wrap">
 <header>
   <div>
     <span class="tag">RUNNER KAWASAN KOTA BHARU</span>
-    <h1>RIDER KB EXPRESS ⚡</h1>
+    <h1>MYRIDERKU</h1>
     <div class="sub">Pantas • Amanah • Jimat</div>
   </div>
   <div class="rider"><b><span class="dot"></span>Kota Bharu</b>Kawasan servis</div>
 </header>
 
 <div id="install">
-  <div class="t"><b>📲 Pasang Rider KB di telefon</b><span id="installTxt">Tempah lebih cepat terus dari skrin utama.</span></div>
+  <div class="t"><b>📲 Pasang MYRIDERKU di telefon</b><span id="installTxt">Tempah lebih cepat terus dari skrin utama.</span></div>
   <button id="installBtn" type="button">Pasang</button>
   <button class="x" id="installX" type="button" aria-label="Tutup">✕</button>
 </div>
 
+<a class="nb" href="shop.html" style="margin:14px 18px 0;text-decoration:none;color:inherit"><div class="i"><b>🏪 Pesan terus dari kedai</b><small>Pilih menu daripada kedai rakan MYRIDERKU</small></div><span style="font-size:20px">›</span></a>
 <div id="again"></div>
 
 <div class="steps" id="steps">
@@ -216,7 +218,7 @@ body.typing{padding-bottom:24px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js"></script>
+<script src="common.js?v=32"></script>
 <script>
 /* ===== TETAPAN (ubah di sini) ===== */
 let WA_NUMBER = (window.RKB_CFG&&RKB_CFG.waNumber)||"601139900099";  // nombor WhatsApp rider, format 60xxxxxxxxx
@@ -531,15 +533,16 @@ function send(){
   const ref='RKB-'+id.slice(0,4).toUpperCase();   // diambil daripada id rawak: tak bertembung antara order
   const item=(S.pay==='cash'&&BUY.includes(S.service))?Math.max(0,+(+$('#itemEst').value||0).toFixed(2)):0;
   const minCash=+(RKB.cfg.walletMinCash??0);
-  const pt=(ll,el)=>({lat:+ll[0].toFixed(6),lng:+ll[1].toFixed(6),addr:$(el).value});
+  const pt=(ll,el)=>({lat:+ll[0].toFixed(6),lng:+ll[1].toFixed(6),addr:$(el).value.slice(0,200)});
   const order={ref,createdAt:firebase.database.ServerValue.TIMESTAMP,status:'baru',service:S.service,vehicle:S.vehicle,pick:pt(S.pick,'#pick'),drop:pt(S.drop,'#drop'),
-    notes:$('#notes').value.trim().slice(0,600),name:$('#name').value.trim().slice(0,60),phone:$('#phone').value.trim().slice(0,20),phoneKey:RKB.phoneKey($('#phone').value),recv,km:+(S.km??0).toFixed(1),rain:$('#rain').checked,price:calc(),
+    notes:$('#notes').value.trim().slice(0,600),name:$('#name').value.trim().slice(0,60),km:+(S.km??0).toFixed(1),rain:$('#rain').checked,price:calc(),
     pay:S.pay,itemEst:item,need:S.pay==='cash'?minCash+item:0};
   if(window.__rs!=null) order.riderPay=RKB.r2(order.price*window.__rs/100);
+  const contact={phone:$('#phone').value.trim().slice(0,20),phoneKey:RKB.phoneKey($('#phone').value)}; if(recv) contact.recv=recv;   // nombor disimpan asing: hanya admin & rider yang ditugaskan boleh baca
   let trackUrl='';
   const buildMsg=()=>{
   return [
-    '🛵 *TEMPAHAN BAHARU | RIDER KB EXPRESS*',
+    '🛵 *TEMPAHAN BAHARU | MYRIDERKU*',
     `*No. Rujukan:* #${ref}`,
     line,
     `👤 *Pengirim (Customer):* ${$('#name').value} (${$('#phone').value})`,
@@ -578,7 +581,7 @@ function send(){
   openWaTab();
   sending=true; setBtn('⏳ Menghantar…',true); $('#err').textContent='';
   trackUrl=new URL('track.html?id='+id,location.href).href;
-  const up={}; up['orders/'+id]=order; up['ratelimit/'+order.phoneKey]=firebase.database.ServerValue.TIMESTAMP;
+  const up={}; up['orders/'+id]=order; up['orderContacts/'+id]=contact; up['ratelimit/'+contact.phoneKey]=firebase.database.ServerValue.TIMESTAMP;
   const timeout=new Promise((_,rej)=>setTimeout(()=>rej({code:'TIMEOUT'}),8000));
   const done=()=>{
     try{localStorage.setItem('rkb-last',id)}catch(_){}
@@ -758,6 +761,12 @@ if(RKB.ok) RKB.db.ref('settings').once('value').then(sn=>{ const v=sn.val(); if(
 $('#th').textContent=RKB_THEME.label(); $('#th').onclick=()=>{ RKB_THEME.cycle(); $('#th').textContent=RKB_THEME.label() };
 drawQN(); drawPay();
 show(0); price(); autoDetect();
+/* dari shop.html: ?pk=lat,lng&pa=alamat kedai&dk=lat,lng&da=alamat hantar&n=nota */
+(function(){ try{ const q=new URLSearchParams(location.search), ll=s=>{ const a=String(s||'').split(',').map(Number); return a.length===2&&isFinite(a[0])&&isFinite(a[1])?a:null }, pk=ll(q.get('pk')), dk=ll(q.get('dk'));
+  if(!pk) return;
+  setPoint('pick',pk,(q.get('pa')||'Kedai').slice(0,200)); if(dk) setPoint('drop',dk,(q.get('da')||'Lokasi hantar').slice(0,200));
+  if(q.get('n')) $('#notes').value=q.get('n').slice(0,600);
+  S.service='Ambil & Hantar'; $$('.svc').forEach(x=>x.classList.toggle('on',x.dataset.s===S.service)); syncItem(); drawQN(); }catch(_){} })();
 try{ const last=localStorage.getItem('rkb-last');
   if(last&&RKB.ok) RKB.db.ref('orders/'+last+'/status').once('value').then(v=>{const st=v.val(); if(st&&st!=='selesai'&&st!=='batal') $('#install').insertAdjacentHTML('beforebegin',`<a href="track.html?id=${last}" style="display:block;margin:14px 18px 0;background:#0b2a4a;border:1px solid #3b82f6;border-radius:16px;padding:12px 14px;color:#93c5fd;font-weight:800;text-decoration:none;text-align:center">📡 Order aktif anda: ${st} · tekan untuk jejak</a>`)}).catch(()=>{}) }catch(_){}
 </script>

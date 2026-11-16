@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="ms"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Vendor | Rider KB</title><meta name="theme-color" content="#166534">
+<title>MYRIDERKU Vendor</title><meta name="theme-color" content="#168447">
 <script src="theme.js"></script>
 <link rel="manifest" href="manifest-vendor.webmanifest">
 <link rel="icon" type="image/png" href="icon-vendor-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon-vendor.png">
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="KB Vendor">
+<meta name="apple-mobile-web-app-title" content="MYRIDERKU Vendor">
 <link rel="stylesheet" href="app.css">
 <link rel="stylesheet" href="theme.css">
 <style>
@@ -35,9 +35,10 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 .mbox{width:100%;max-width:520px;max-height:92vh;overflow:auto;background:var(--card);border-radius:24px;padding:18px 16px calc(16px + env(safe-area-inset-bottom))}
 .big2{font-size:26px;font-weight:900}
 </style>
-</head><body>
+<link rel="stylesheet" href="myriderku-brand.css">
+</head><body class="role-vendor">
 <div class="wrap">
-<header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">Vendor KB 🏪</h1><div class="sm" id="who"></div></div></header>
+<header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">MYRIDERKU Vendor 🏪</h1><div class="sm" id="who"></div></div></header>
 
 <div id="login" class="pad hide"><div class="card"><form id="lf" onsubmit="return false"><h3 id="ltitle">Log masuk vendor</h3>
   <div id="regf" class="hide"><label>Nama pemilik</label><input id="rn" autocomplete="name" maxlength="60"><label>No. telefon</label><input id="rp" type="tel" placeholder="0123456789" autocomplete="tel" maxlength="20"><label>Nama kedai</label><input id="rs" maxlength="60"></div>
@@ -101,9 +102,10 @@ if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWor
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js"></script>
+<script src="common.js?v=32"></script>
 <script>RKB.installBanner('KB Vendor')</script>
 <script>
 /*PURE*/
@@ -123,7 +125,7 @@ const TS=window.firebase?firebase.database.ServerValue.TIMESTAMP:0;
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3200)}
 const show=id=>['login','pend','susp','setup','app'].forEach(x=>$('#'+x).classList.toggle('hide',x!==id));
 const waLink=(m)=>'https://wa.me/'+(R.cfg.waNumber||'')+(m?'?text='+encodeURIComponent(m):'');
-$('#waAdm').href=waLink('Salam admin, saya vendor Rider KB.');$('#waSup').href=waLink('Salam admin, akaun vendor saya digantung.');
+$('#waAdm').href=waLink('Salam admin, saya vendor MYRIDERKU.');$('#waSup').href=waLink('Salam admin, akaun vendor saya digantung.');
 $('#thB').textContent=RKB_THEME.label();$('#thB').onclick=()=>{RKB_THEME.cycle();$('#thB').textContent=RKB_THEME.label()};
 const ST_L={baru:'🆕 Baru',diterima:'👨‍🍳 Disediakan',siap:'✅ Siap',selesai:'🎉 Selesai',ditolak:'❌ Ditolak',batal:'🚫 Dibatalkan'};
 
@@ -172,7 +174,7 @@ function gate(){
 let started=false;
 function stopData(){dataOffs.forEach(f=>f());dataOffs=[];started=false}
 function startData(){
-  if(started)return;started=true;
+  if(started)return;started=true;R.pushInit('vendor',user);
   const on=(ref,cb)=>{ref.on('value',cb,e=>toast('Ralat: '+e.code));dataOffs.push(()=>ref.off('value',cb))};
   on(db.ref('vmenu/'+user.uid),s=>{menu=s.val()||{};paint()});
   on(db.ref('vpayouts/'+user.uid),s=>{payouts=s.val()||{};paint()});
@@ -249,6 +251,7 @@ function card(o){
   <div style="margin:8px 0">${items}<div class="it" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><b>Anda terima</b><b>${rm(subOf(o))}</b></div></div>
   ${o.notes?`<div class="mut">📝 ${esc(o.notes)}</div>`:''}
   ${o.reason?`<div class="mut">Sebab: ${esc(o.reason)}</div>`:''}
+  ${o.addr?`<div class="mut">📍 ${esc(o.addr)}</div>`:''}
   <div class="mut" style="margin-top:6px">👤 ${esc(o.name)} · <a href="https://wa.me/${esc(ph)}" target="_blank" rel="noopener">${esc(o.phone)}</a></div>
   ${w.length?'<div class="warn">⚠️ Semak sebelum terima:<br>'+w.map(esc).join('<br>')+'</div>':''}
   ${acts?`<div class="acts">${acts}</div>`:''}</div>`;

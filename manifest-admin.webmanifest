@@ -1,15 +1,15 @@
 {
   "id": "./admin.html",
-  "name": "KB Admin (Admin)",
-  "short_name": "KB Admin",
+  "name": "MYRIDERKU Admin",
+  "short_name": "MYRIDERKU Admin",
   "description": "Panel admin: order, rider, vendor dan tetapan",
   "lang": "ms",
   "start_url": "./admin.html",
   "scope": "./admin.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b140f",
-  "theme_color": "#166534",
+  "background_color": "#0b1510",
+  "theme_color": "#168447",
   "icons": [
     {
       "src": "icon-admin-192.png",

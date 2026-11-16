@@ -1,15 +1,15 @@
 {
   "id": "./rider.html",
-  "name": "KB Rider (Rider)",
-  "short_name": "KB Rider",
+  "name": "MYRIDERKU Rider",
+  "short_name": "MYRIDERKU Rider",
   "description": "App rider: terima order, navigasi dan kongsi lokasi",
   "lang": "ms",
   "start_url": "./rider.html",
   "scope": "./rider.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0b140f",
-  "theme_color": "#166534",
+  "background_color": "#f3f7f3",
+  "theme_color": "#168447",
   "icons": [
     {
       "src": "icon-rider-192.png",

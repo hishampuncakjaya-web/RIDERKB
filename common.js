@@ -116,7 +116,7 @@
     {t:'😊 Tahniah!',m:'Senyuman pelanggan hari ni datang daripada usaha anda. Semoga sentiasa dilindungi dalam perjalanan.'}
   ]);
   const msgCust=()=>pick([
-    {t:'🎉 Order anda selamat sampai!',m:'Terima kasih sudi guna Rider KB Express. Semoga hari anda indah dan penuh rezeki. 💖'},
+    {t:'🎉 Order anda selamat sampai!',m:'Terima kasih sudi guna MYRIDERKU. Semoga hari anda indah dan penuh rezeki. 💖'},
     {t:'🤲 Alhamdulillah, selesai!',m:'Semoga rezeki anda dimurahkan dan urusan harian dipermudahkan. Aamiin.'},
     {t:'😊 Terima kasih!',m:'Sokongan anda sangat bermakna untuk rider kita. Jumpa lagi pada tempahan seterusnya!'},
     {t:'🌸 Selamat menikmati!',m:'Semoga barang anda memuaskan dan hari anda dipenuhi kegembiraan. Jaga diri ya!'},
@@ -152,6 +152,7 @@
     const mins=+(cfg.confAutoMin||30), at=(o.t&&o.t.selesai)||0;
     return (at&&Date.now()-at>mins*60000)?{k:'auto',t:'🕒 Auto-sah (tiada bantahan)'}:{k:'wait',t:'⏳ Menunggu pengesahan customer'};
   }
+  const phoneOf=(o,c)=>(c&&c.phone)||(o&&o.phone)||'';
   const phoneKey=p=>String(p||'').replace(/\D/g,'').slice(-10);
   const report=o=>db?db.ref('reports').push(Object.assign({t:firebase.database.ServerValue.TIMESTAMP},o)):Promise.reject(new Error('nodb'));   // masa pelayan: tak terjejas jam telefon salah
   function compressImg(file,max,q){ return new Promise((res,rej)=>{ const fr=new FileReader(); fr.onerror=rej; fr.onload=()=>{ const im=new Image(); im.onerror=rej; im.onload=()=>{ const k=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement('canvas'); cv.width=Math.round(im.width*k); cv.height=Math.round(im.height*k); const cx=cv.getContext('2d'); cx.fillStyle='#fff'; cx.fillRect(0,0,cv.width,cv.height); cx.drawImage(im,0,0,cv.width,cv.height); res(cv.toDataURL('image/jpeg',q)) }; im.src=fr.result }; fr.readAsDataURL(file) }) }
@@ -177,7 +178,7 @@
     ['login','pend','susp','setup','app','gate'].forEach(x=>{const e=document.getElementById(x); if(e) e.classList.add('hide')});
     return true;
   };
-  window.RKB={adminGuard,r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
+  window.RKB={adminGuard,r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,phoneOf,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
 })();
 
 /* ===== Pasang app (banner) =====
@@ -200,7 +201,45 @@
     go.onclick=function(){ if(!dip) return; dip.prompt(); (dip.userChoice||Promise.resolve()).then(function(){ dip=window.__dip=null; hide(30) }).catch(function(){}); };
     x.onclick=function(){ hide(3) };
     window.addEventListener('appinstalled',function(){ b.style.display='none' });
-    window.__ibShow=function(){ if(dip||ios) b.style.display='flex' };
+    window.__ibShow=function(){ if(dip||ios){ go.style.display=ios?'none':'block'; b.style.display='flex' } };
     window.__ibShow();
+    // Chrome tak hantar tawaran (cth app lain dalam folder sama sudah dipasang / tawaran pernah ditolak): tunjuk cara manual
+    setTimeout(function(){ if(!dip&&!ios&&b.style.display==='none'){ t.innerHTML='📲 <b>Pasang app '+appName+'</b><br><span style="opacity:.8;font-size:12px">Tekan <b>⋮</b> di Chrome, kemudian <b>Pasang app</b> atau <b>Tambah ke skrin utama</b>.</span>'; go.style.display='none'; b.style.display='flex' } },4000);
   };
+})();
+
+
+/* ===== Push sebenar (FCM): notifikasi sampai walaupun app ditutup =====
+   Perlu: vapidKey dalam firebase-config.js + Cloud Functions (folder functions/) sudah di-deploy. */
+(function(){
+  var R=window.RKB; if(!R||!R.ok) return;
+  var cur=null, wait=false;
+  function ok(){ return 'serviceWorker' in navigator&&'Notification' in window&&'PushManager' in window&&window.firebase&&firebase.messaging&&(!firebase.messaging.isSupported||firebase.messaging.isSupported()) }
+  async function reg(role,user){
+    try{
+      if(!ok()) return;
+      var sw=await navigator.serviceWorker.ready;
+      var tok=await firebase.messaging().getToken({vapidKey:R.cfg.vapidKey,serviceWorkerRegistration:sw});
+      if(!tok) return;
+      cur={role:role,uid:user.uid,token:tok};
+      await R.db.ref('fcmTokens/'+role+'/'+user.uid+'/'+tok).set(Date.now());
+    }catch(e){ console.warn('push',e) }
+  }
+  // pelanggan (tanpa log masuk): token dikaitkan dengan id order, dibuang bila order selesai/batal oleh Cloud Function
+  R.pushCustomer=function(id){
+    if(!id||!R.cfg.vapidKey||!('Notification' in window)||!ok()) return;
+    var go=async function(){ try{ var sw=await navigator.serviceWorker.ready; var tok=await firebase.messaging().getToken({vapidKey:R.cfg.vapidKey,serviceWorkerRegistration:sw}); if(tok) await R.db.ref('fcmTokens/customer/'+id+'/'+tok).set(Date.now()) }catch(e){ console.warn('push',e) } };
+    if(Notification.permission==='granted') return go();
+    if(Notification.permission==='default'){ var h=function(){ removeEventListener('click',h); Notification.requestPermission().then(function(p){ if(p==='granted') go() }) }; addEventListener('click',h) }
+  };
+  R.pushInit=function(role,user){
+    if(!user||!R.cfg.vapidKey||!('Notification' in window)) return;
+    if(cur&&cur.uid===user.uid&&cur.role===role) return;
+    if(Notification.permission==='granted') return reg(role,user);
+    if(Notification.permission==='default'&&!wait){ wait=true; var h=function(){ removeEventListener('click',h); Notification.requestPermission().then(function(p){ wait=false; if(p==='granted') reg(role,user) }) }; addEventListener('click',h) }
+  };
+  // buang token sebelum log keluar supaya telefon ini tak terima push akaun lama
+  if(!R.auth) return;   // halaman pelanggan tak muat modul auth
+  var os=R.auth.signOut.bind(R.auth);
+  R.auth.signOut=async function(){ try{ if(cur){ await R.db.ref('fcmTokens/'+cur.role+'/'+cur.uid+'/'+cur.token).remove(); try{ await firebase.messaging().deleteToken() }catch(e){} cur=null } }catch(e){} return os() };
 })();
