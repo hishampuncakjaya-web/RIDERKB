@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="myriderku-brand.css">
 <link rel="stylesheet" href="myriderku-ui.css">
 <link rel="stylesheet" href="myriderku-ceria.css">
+<link rel="stylesheet" href="myriderku-v37.css?v=38">
 </head><body class="role-admin">
 <div class="wrap wide">
 <header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -34,7 +35,7 @@
   <div>
     <div>
       <div data-tab="peta" class="hide"><div class="card" style="margin-top:0"><h3>Peta live</h3><div id="map" class="map" style="height:300px"></div>
-        <div class="mut" style="margin-top:8px">🟢 Ambil &nbsp; 🔴 Hantar &nbsp; 🛵 Rider online / ada job (pudar = isyarat lama) &nbsp; ━ Laluan job aktif</div></div>
+        <div class="mut" style="margin-top:8px">🟢 Ambil &nbsp; 🔴 Hantar &nbsp; 🛵 Rider online / ada job (pudar = isyarat lama) &nbsp; ━ Laluan job aktif</div><div id="rChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div></div>
       </div>
       <div data-tab="vendor" class="hide"><div class="card" style="margin-top:0"><h3>Vendor <button class="btn gry sm" id="vCalc" type="button" style="float:right">↻ Kira bayaran</button></h3><div class="mut" id="vInfo">Tekan "Kira bayaran" untuk muat jualan belum dibayar.</div><div id="vendors"></div></div></div>
       <div data-tab="rider" class="hide"><div class="card" style="margin-top:0"><h3>Rider</h3><div id="riders"></div></div></div>
@@ -103,7 +104,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=36"></script>
+<script src="common.js?v=38"></script>
 <script>RKB.installBanner('KB Admin')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm}=RKB;
@@ -323,6 +324,7 @@ $('#thB').textContent=RKB_THEME.label(); $('#thB').onclick=()=>{ RKB_THEME.cycle
 /* ---- Peta live ---- */
 function initMap(){
   map=RKB.baseMap('map');
+  document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-rf]'); if(!b||!map) return; const m=rm_[b.dataset.rf]; if(m){ map.setView(m.getLatLng(),16); } });
   map.on('click',e=>{
     if(shopPick){ shopLL=[+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)]; shopPick=false; if(shMk) map.removeLayer(shMk); shMk=L.marker(shopLL,{icon:RKB.mkIcon('#fbbf24')}).addTo(map); $('#shLocT').textContent='📍 Lokasi dipilih: '+shopLL.join(', '); $('#shLoc').textContent='📍 Tukar lokasi'; backTab(); return }
     if(!addMode) return;
@@ -374,11 +376,12 @@ function updMap(LST){
   });
   Object.keys(om).forEach(k=>{ if(!keep.has(k)){ map.removeLayer(om[k]); delete om[k] } });
   const rk=new Set(), actU=new Set(LST.filter(isAct).map(o=>o.riderUid).filter(Boolean));
-  Object.entries(riders).forEach(([u,r])=>{ if(r.lat==null||!(isOn(r)||actU.has(u))) return; rk.add(u);
+  Object.entries(riders).forEach(([u,r])=>{ const recent=r.online===true&&r.t&&nowS()-r.t<900000; if(r.lat==null||!(isOn(r)||recent||actU.has(u))) return; rk.add(u);
     const age=r.t?Math.round((nowS()-r.t)/1000):null, stale=!isOn(r), lbl=(r.name||'Rider')+(r.spd!=null&&!stale?' · '+r.spd+' km/j':'')+(stale&&age!=null?' · isyarat '+(age<90?age+'s':Math.round(age/60)+' min')+' lalu':'');
     if(!rm_[u]) rm_[u]=L.marker([r.lat,r.lng],{icon:RKB.riderIcon(lbl),zIndexOffset:900}).addTo(map); else { RKB.glide(rm_[u],[r.lat,r.lng],1500); rm_[u].setIcon(RKB.riderIcon(lbl)) }
     rm_[u].setOpacity(stale?.55:1); });
   Object.keys(rm_).forEach(u=>{ if(!rk.has(u)){ map.removeLayer(rm_[u]); delete rm_[u] } });
+  { const ch=document.getElementById('rChips'); if(ch){ const rows=[...rk].map(u=>{ const r=riders[u]||{}, live=isOn(r), age=r.t?Math.round((nowS()-r.t)/1000):null; return `<button type="button" class="btn gry sm" data-rf="${u}" style="${live?'':'opacity:.6'}">${live?'🟢':'🟠'} ${esc(r.name||'Rider')}${age!=null?' · '+(age<90?age+'s':Math.round(age/60)+' min'):''}</button>` }); ch.innerHTML=rows.length?rows.join(''):'<span class="mut">Tiada rider online dengan lokasi sekarang.</span>'; } }
   // garisan laluan terang untuk setiap job aktif
   const nk=new Set();
   LST.filter(isAct).forEach(o=>{ nk.add(o.k); if(!navs[o.k]) navs[o.k]=RKB.makeNav(map);

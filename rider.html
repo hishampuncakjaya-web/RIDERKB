@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="myriderku-brand.css">
 <link rel="stylesheet" href="myriderku-ui.css">
 <link rel="stylesheet" href="myriderku-ceria.css">
+<link rel="stylesheet" href="myriderku-v37.css?v=38">
 </head><body class="role-rider">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP RIDER</span><h1>MYRIDERKU Rider 🛵</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -94,7 +95,7 @@ if('serviceWorker' in navigator)addEventListener('load',function(){navigator.ser
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=36"></script>
+<script src="common.js?v=38"></script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,hav}=RKB;
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3200)}
@@ -356,9 +357,11 @@ async function startGps(){
     push(p); updSelf(); updNav(); checkHaz(); fetchOsm();
   },e=>{ gpsErr=e.code===1?'Kebenaran lokasi ditolak. Benarkan lokasi untuk app ini di tetapan telefon':e.code===2?'GPS tak tersedia. Hidupkan lokasi telefon':'GPS lambat bertindak balas'; dutyCheck() },{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
   try{ wl=await navigator.wakeLock.request('screen') }catch(e){}
+  clearInterval(window.__hb);
+  window.__hb=setInterval(()=>{ if(!online||!user||!selfPos||Date.now()-lastFix<20000) return; const b='riders/'+user.uid+'/'; db.ref().update({[b+'lat']:+selfPos[0].toFixed(6),[b+'lng']:+selfPos[1].toFixed(6),[b+'t']:firebase.database.ServerValue.TIMESTAMP,[b+'online']:true,[b+'spd']:0}).catch(()=>{}) },25000);
 }
 function stopGps(){
-  online=false; manual=false; if(watchId!=null&&navigator.geolocation) navigator.geolocation.clearWatch(watchId); watchId=null;
+  online=false; manual=false; clearInterval(window.__hb); if(watchId!=null&&navigator.geolocation) navigator.geolocation.clearWatch(watchId); watchId=null;
   try{wl&&wl.release()}catch(e){} wl=null;
   if(user) db.ref('riders/'+user.uid+'/online').set(false).catch(()=>{});
   updOn(); dutyClear();

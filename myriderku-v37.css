@@ -1,0 +1,61 @@
+/* MYRIDERKU V37 — role-based premium visual system. CSS-only: application logic unchanged. */
+:root{--v37-radius:20px;--v37-shadow:0 12px 30px rgba(12,42,25,.08);--v37-green:#168447;--v37-lime:#b9e56b;}
+html{color-scheme:light}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+.card,.stat,.sum,.svc,.nb{transition:box-shadow .18s ease,border-color .18s ease,transform .18s ease}
+.card h3{font-weight:850;letter-spacing:-.025em}
+input,select,textarea{min-height:46px}
+:focus-visible{outline:3px solid rgba(35,157,91,.35)!important;outline-offset:2px}
+/* CUSTOMER + MARKETPLACE: fresh, welcoming, easy to scan */
+body.role-customer{--bg:#f4f8f3;--card:#fff;--txt:#183326;--mut:#718278;background:linear-gradient(180deg,#f1f8f1 0,#f7f9f6 260px,#f4f7f4 100%);color:#183326}
+body.role-customer .hd{background:linear-gradient(128deg,#075b35 0%,#168447 62%,#54ad70 100%);border:0;border-radius:0 0 28px 28px;box-shadow:0 12px 28px rgba(7,91,53,.15);padding:23px 18px 27px}
+body.role-customer .hd h1{font-size:clamp(23px,6vw,29px);font-weight:900;letter-spacing:-.045em}
+body.role-customer .card,body.role-customer .sum,body.role-customer .nb{border:1px solid #e4ece4;border-radius:22px;box-shadow:0 8px 24px rgba(22,70,39,.055)}
+body.role-customer .svc{border:1px solid #e1ebe1;border-radius:20px;background:#fff;box-shadow:0 5px 16px rgba(20,65,36,.045);min-height:88px}
+body.role-customer .svc.on{border:2px solid #168447;background:#eff8ef;box-shadow:0 9px 22px rgba(22,132,71,.13)}
+body.role-customer .btn:not(.gry){background:linear-gradient(135deg,#1c9954,#08713e);border:0;border-radius:16px;box-shadow:0 7px 17px rgba(14,125,65,.16)}
+body.role-customer .btn.gry,body.role-customer .hbtn{background:#edf5ee;color:#17633a;border:1px solid #dce9dd;border-radius:14px}
+body.role-customer .price{border-radius:22px;background:linear-gradient(135deg,#eaf8ee,#d8f1df);border:1px solid #bfe3c9}
+body.role-customer .price b{color:#0d7a40}
+body.role-customer .nav{background:rgba(255,255,255,.96);border-top:1px solid #e2ebe2;box-shadow:0 -8px 24px rgba(20,60,35,.07);backdrop-filter:blur(16px)}
+body.role-customer .nav button.on{background:#e9f5eb;color:#08713e;border-radius:14px}
+body.role-customer .rkt a.on{background:#168447;border-color:#168447}
+/* RIDER: high contrast field-work dashboard */
+body.role-rider{--bg:#0d1925;--card:#142536;--txt:#f1f7fb;--mut:#a8bac8;--line:#2a4052;background:#0d1925;color:#f1f7fb}
+body.role-rider .hd{background:linear-gradient(125deg,#081522,#142c40 65%,#155b46);border:0;border-bottom:1px solid #345267;padding:22px 18px 24px}
+body.role-rider .hd h1{font-weight:900;letter-spacing:-.04em}
+body.role-rider .card,body.role-rider .stat,body.role-rider .sum{background:linear-gradient(145deg,#172d40,#122334);color:#f1f7fb;border:1px solid #2b4559;border-radius:20px;box-shadow:0 12px 28px rgba(0,0,0,.16)}
+body.role-rider .mut,body.role-rider .sm,body.role-rider small{color:#a8bac8}
+body.role-rider .btn:not(.gry){background:linear-gradient(135deg,#39d58a,#15945b);color:#062315;border:0;border-radius:15px;font-weight:850}
+body.role-rider .btn.gry,body.role-rider .hbtn{background:#20394c;color:#eaf4fa;border:1px solid #3a566a;border-radius:14px}
+body.role-rider input,body.role-rider select,body.role-rider textarea{background:#102131;color:#f1f7fb;border:1px solid #365267;border-radius:13px}
+body.role-rider .tab{background:#172d40;color:#c7d7e2;border:1px solid #365267}
+body.role-rider .tab.on{background:#b9e56b;color:#102315;border-color:#b9e56b}
+body.role-rider .ridercard{background:linear-gradient(145deg,#183c32,#142b2b)!important;border:1px solid #34765b!important;border-radius:22px}
+body.role-rider #earn{background:#173e32!important;color:#d9ffe9;border:1px solid #34765b}
+body.role-rider #wal{background:#3b3420!important;color:#fff0bf;border:1px solid #77632e}
+/* VENDOR: calm business console */
+body.role-vendor{--bg:#f5f3ed;--card:#fffdf8;--txt:#27372e;--mut:#7b837c;background:#f5f3ed;color:#27372e}
+body.role-vendor .hd{background:linear-gradient(125deg,#173d31,#087b50 72%,#26966b);border:0;border-radius:0 0 24px 24px;box-shadow:0 10px 25px rgba(23,61,49,.13);padding:22px 18px 25px}
+body.role-vendor .card,body.role-vendor .stat,body.role-vendor .sum{background:#fffdf8;border:1px solid #e9e3d7;border-radius:19px;box-shadow:0 8px 22px rgba(63,55,35,.055)}
+body.role-vendor .btn:not(.gry){background:linear-gradient(135deg,#16845a,#086444);border:0;border-radius:14px;color:#fff;font-weight:800}
+body.role-vendor .btn.gry,body.role-vendor .hbtn{background:#f1eee5;color:#46564b;border:1px solid #e2ddcf;border-radius:13px}
+body.role-vendor input,body.role-vendor select,body.role-vendor textarea{background:#fffefa;border:1px solid #e4dfd3;border-radius:12px;color:#27372e}
+body.role-vendor .tab{background:#fffdf8;color:#647268;border:1px solid #e8e3d8}
+body.role-vendor .tab.on{background:#087b50;color:#fff;border-color:#087b50}
+body.role-vendor .badge{border-radius:99px}
+/* ADMIN: executive operations centre */
+body.role-admin{--bg:#0b1510;--card:#122219;--txt:#f1f8f2;--mut:#9ab3a1;background:radial-gradient(ellipse at 85% 0%,rgba(30,100,62,.18),transparent 42%),#0b1510;color:#f1f8f2}
+body.role-admin .hd{background:linear-gradient(120deg,#071c12,#104b2b 65%,#17683c);border-bottom:1px solid #3c774b;padding:22px 18px}
+body.role-admin .card,body.role-admin .stat{background:linear-gradient(145deg,#14271b,#102017);border:1px solid #294333;border-radius:19px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+body.role-admin .stat{border-top:2px solid rgba(185,229,107,.55)}
+body.role-admin .btn:not(.gry){background:linear-gradient(135deg,#b9e56b,#69b65b);color:#102315;border:0;border-radius:13px;font-weight:850}
+body.role-admin .btn.gry,body.role-admin .hbtn{background:#1b3023;color:#e4f1e7;border:1px solid #35513d;border-radius:13px}
+body.role-admin input,body.role-admin select,body.role-admin textarea{background:#0d1c13;border:1px solid #31513a;color:#f1f8f2;border-radius:12px}
+body.role-admin .tab{background:#122219;border:1px solid #294333;color:#c4d9c9}
+body.role-admin .tab.on{background:#b9e56b;color:#102315;border-color:#b9e56b}
+/* Service/track screens use customer visual language, but keep map controls legible */
+body.role-customer .map{border-radius:20px;overflow:hidden;border:1px solid #dce8dd;box-shadow:var(--v37-shadow)}
+@media(min-width:760px){body.role-customer .wrap,body.role-rider .wrap,body.role-vendor .wrap{max-width:760px;margin-inline:auto}body.role-admin .wrap{max-width:1240px;margin-inline:auto}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

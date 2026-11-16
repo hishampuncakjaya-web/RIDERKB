@@ -34,7 +34,14 @@
     const FS=L.Control.extend({options:{position:'topright'},onAdd(){
       const b=L.DomUtil.create('button','fsb'); b.type='button'; b.textContent='⛶ Skrin penuh';
       L.DomEvent.disableClickPropagation(b);
-      b.onclick=()=>{ const c=m.getContainer(), on=c.classList.toggle('fs'); document.body.style.overflow=on?'hidden':''; b.textContent=on?'✕ Keluar':'⛶ Skrin penuh'; setTimeout(()=>m.invalidateSize(),80) };
+      let ph=null;
+      const toggle=force=>{ const c=m.getContainer(), want=(typeof force==='boolean')?force:!c.classList.contains('fs'); if(want===c.classList.contains('fs')) return;
+        if(want){ ph=document.createElement('div'); ph.style.height=c.offsetHeight+'px'; ph.style.width='100%'; c.parentNode.insertBefore(ph,c); document.body.appendChild(c); c.classList.add('fs') }
+        else { c.classList.remove('fs'); if(ph&&ph.parentNode){ ph.parentNode.insertBefore(c,ph); ph.remove() } ph=null }
+        document.body.style.overflow=want?'hidden':''; b.textContent=want?'✕ Keluar':'⛶ Skrin penuh'; [60,250,600].forEach(t=>setTimeout(()=>m.invalidateSize(),t)) };
+      b.onclick=()=>toggle();
+      addEventListener('keydown',e=>{ if(e.key==='Escape') toggle(false) });
+      m._toggleFs=toggle;
       return b }});
     m.addControl(new FS());
     return m;
@@ -192,7 +199,7 @@
     if(standalone()) return;
     try{ if(+localStorage.getItem('rkb_ib_'+appName)>Date.now()) return }catch(e){}
     var b=document.createElement('div');
-    var nv=document.querySelector('.nav'),off=nv?(nv.offsetHeight+14):10; b.style.cssText='position:fixed;left:10px;right:10px;bottom:calc('+off+'px + env(safe-area-inset-bottom));z-index:5000;background:#111827;color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:14px;line-height:1.4';
+    var nv=document.querySelector('.nav'),off=nv?(nv.offsetHeight+14):10; b.style.cssText='position:fixed;left:10px;right:10px;bottom:calc('+off+'px + env(safe-area-inset-bottom));z-index:2500;background:#111827;color:#fff;border-radius:16px;padding:12px 14px;display:none;align-items:center;gap:10px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:14px;line-height:1.4';
     var t=document.createElement('div'); t.style.flex='1'; t.innerHTML='📲 <b>Pasang app '+appName+'</b><br><span style="opacity:.8;font-size:12px">'+(ios?'Tekan ikon Kongsi, kemudian "Tambah ke Skrin Utama".':'Terus dari skrin utama, tanpa buka pelayar.')+'</span>';
     var go=document.createElement('button'); go.type='button'; go.textContent='Pasang'; go.style.cssText='background:#22c55e;color:#04210f;border:0;border-radius:12px;padding:10px 16px;font:inherit;font-weight:800;min-height:44px;display:'+(ios?'none':'block');
     var x=document.createElement('button'); x.type='button'; x.textContent='✕'; x.setAttribute('aria-label','Tutup'); x.style.cssText='background:none;border:0;color:#fff;font-size:20px;min-width:36px;min-height:44px';
