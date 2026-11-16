@@ -17,7 +17,7 @@
 - Rider hanya boleh ubah order yang ditugaskan kepadanya. Terima hanya dari `baru`; `diambil` perlu gambar barang; `selesai` perlu gambar bukti. Harga, bayaran dan `need` tak boleh diubah rider.
 - Medan seperti `riderUid`, `pickPhoto`, `riderLoc` tak boleh diisi semasa pelanggan buat order. Panjang alamat, kenderaan, jarak, koordinat disahkan. Harga order tak boleh di bawah harga asas (Tetapan admin).
 - `reports`: pelanggan hanya boleh lapor untuk order yang wujud; SOS hanya rider diluluskan; semua medan disahkan.
-- `proofs`: hanya rider yang ditugaskan boleh tulis gambar.
+- `proofs` (gambar hantar) dan `proofsP` (gambar ambil): hanya rider yang ditugaskan boleh tulis gambar.
 - `fcmTokens`: token role `admin` hanya boleh ditulis admin sah; Cloud Function juga menapis admin sebelum hantar push.
 - Medan profil rider disahkan panjang/jenis.
 

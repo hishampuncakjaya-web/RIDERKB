@@ -390,7 +390,7 @@ function dutyCheck(){
 }
 const finishing=new Set(); let proofK=null, proofT='D';
 $('#prof').onclick=async e=>{ e.preventDefault(); const p=(prompt('No. plat kenderaan anda (pelanggan akan nampak):',me.plate||'')||'').trim().toUpperCase().slice(0,12); if(!p) return; try{ await db.ref('riders/'+user.uid+'/plate').set(p); toast('Plat dikemas kini ✅') }catch(err){ toast('Gagal: '+err.code) } };
-$('#proofIn').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!proofK) return; try{ const d=await RKB.compressImg(f,720,.6), P=proofT==='P'; await db.ref('proofs/'+proofK+(P?'p':'')).set(d); await db.ref('orders/'+proofK).update(P?{pickPhoto:true}:{dropPhoto:true}); toast(P?'📷 Gambar barang disimpan. Tekan "Barang dah diambil" ✅':'📷 Bukti hantar disimpan. Tekan "Hantar selesai" ✅'); render() }catch(err){ toast('Gagal simpan gambar: '+(err.code||'cuba lagi')) } };
+$('#proofIn').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!proofK) return; try{ const d=await RKB.compressImg(f,720,.6), P=proofT==='P'; await db.ref((P?'proofsP/':'proofs/')+proofK).set(d); await db.ref('orders/'+proofK).update(P?{pickPhoto:true}:{dropPhoto:true}); toast(P?'📷 Gambar barang disimpan. Tekan "Barang dah diambil" ✅':'📷 Bukti hantar disimpan. Tekan "Hantar selesai" ✅'); render() }catch(err){ toast('Gagal simpan gambar: '+(err.code||'cuba lagi')) } };
 function push(p){
   const now=Date.now(); if(now-lastPush<4000) return; lastPush=now;
   const loc={lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),t:now,spd}, up={};

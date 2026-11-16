@@ -250,7 +250,7 @@ $('#list').onchange=async e=>{
 };
 $('#list').onclick=async e=>{
   const b=e.target.closest('button[data-a="del"]'); if(!b) return;
-  if(confirm('Padam order ini selamanya?')) try{ { const k=b.dataset.k; await db.ref().update({['orders/'+k]:null,['orderContacts/'+k]:null,['proofs/'+k]:null,['proofs/'+k+'p']:null}) } }catch(err){ toast('Gagal padam (hanya admin): '+err.code) }
+  if(confirm('Padam order ini selamanya?')) try{ { const k=b.dataset.k; await db.ref().update({['orders/'+k]:null,['orderContacts/'+k]:null,['proofs/'+k]:null,['proofs/'+k+'p']:null,['proofsP/'+k]:null}) } }catch(err){ toast('Gagal padam (hanya admin): '+err.code) }
 };
 $('#csv').onclick=()=>{
   const rows=[['Ref','Masa','Status','Servis','Kenderaan','Ambil','Hantar','KM','RM','Upah rider','Untung platform','Pelanggan','Telefon','Rider']];

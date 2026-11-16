@@ -217,7 +217,7 @@
     "proofs": {
       "$id": {
         ".read": true,
-        ".write": "auth != null && ((root.child('admins').child(auth.uid).val() === true || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified === true)) || (root.child('riders').child(auth.uid).child('approved').val() === true && (root.child('orders').child($id).child('riderUid').val() == auth.uid || ($id.length == 11 && $id.endsWith('p') && root.child('orders').child($id.substring(0,10)).child('riderUid').val() == auth.uid))))",
+        ".write": "auth != null && ((root.child('admins').child(auth.uid).val() === true || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified === true)) || (root.child('riders').child(auth.uid).child('approved').val() === true && root.child('orders').child($id).child('riderUid').val() == auth.uid))",
         ".validate": "newData.isString() && newData.val().length < 200000"
       }
     },
@@ -509,6 +509,13 @@
     "admins": {
       ".read": false,
       ".write": false
+    },
+    "proofsP": {
+      "$id": {
+        ".read": true,
+        ".write": "auth != null && ((root.child('admins').child(auth.uid).val() === true || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified === true)) || (root.child('riders').child(auth.uid).child('approved').val() === true && root.child('orders').child($id).child('riderUid').val() == auth.uid))",
+        ".validate": "newData.isString() && newData.val().length < 200000"
+      }
     }
   }
 }
