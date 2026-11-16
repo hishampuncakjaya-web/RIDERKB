@@ -5,10 +5,10 @@
   "description": "Panel admin: order, rider, vendor dan tetapan",
   "lang": "ms",
   "start_url": "./admin.html",
-  "scope": "./admin.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f1f5f2",
+  "background_color": "#06130c",
   "theme_color": "#168447",
   "icons": [
     {

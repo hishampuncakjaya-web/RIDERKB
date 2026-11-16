@@ -20,8 +20,8 @@
 <link rel="stylesheet" href="myriderku-brand.css">
 <link rel="stylesheet" href="myriderku-ui.css">
 <link rel="stylesheet" href="myriderku-ceria.css">
-<link rel="stylesheet" href="myriderku-v37.css?v=39">
-<link rel="stylesheet" href="myriderku-v39.css?v=39">
+<link rel="stylesheet" href="myriderku-v37.css?v=38">
+<link rel="stylesheet" href="myriderku-v38-design.css?v=38">
 </head><body class="role-rider">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP RIDER</span><h1>MYRIDERKU Rider 🛵</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -44,11 +44,11 @@
 <div id="pend" class="pad hide"><div class="card" style="text-align:center"><div style="font-size:42px">⏳</div><div class="big">Menunggu kelulusan admin</div><div class="mut" style="margin-top:8px">Akaun anda sudah didaftarkan. Skrin ni akan bertukar sendiri sebaik admin meluluskan.</div></div></div>
 
 <div id="app" class="hide">
-  <div id="dutybar" class="hide alertbar bad" style="position:sticky;top:0;z-index:2600;margin:10px 16px 0"></div>
+  <div id="dutybar" class="hide" style="position:sticky;top:0;z-index:2600;margin:10px 16px 0;padding:12px 14px;border-radius:14px;font-size:14px;line-height:1.5;background:#7f1d1d;border:2px solid #ef4444"></div>
   <div id="hazbar" class="hide"></div>
   <div class="pad" style="padding-bottom:0">
     <div class="card ridercard" style="margin:0">
-      <div><b id="onTxt">Offline</b><div class="mut" id="earn"></div><div class="mut" id="wal"></div><a class="mut lnk" id="prof" href="#" style="display:block;font-weight:700;text-decoration:none">🪪 Profil &amp; no. plat</a><a class="mut" id="topup" class="lnk" target="_blank" style="font-weight:700;text-decoration:none">➕ Top up wallet</a></div>
+      <div><b id="onTxt">Offline</b><div class="mut" id="earn"></div><div class="mut" id="wal"></div><a class="mut" id="prof" href="#" style="display:block;color:#93c5fd;font-weight:700;text-decoration:none">🪪 Profil &amp; no. plat</a><a class="mut" id="topup" target="_blank" style="color:#93c5fd;font-weight:700;text-decoration:none">➕ Top up wallet</a></div>
       <div class="acts"><button class="btn sm" id="onBtn">Mula kongsi lokasi</button>
       <button class="btn gry sm" id="tstSnd">🔊 Test bunyi order</button>
       <button class="btn gry sm" id="thBtn" type="button"></button></div>
@@ -96,7 +96,7 @@ if('serviceWorker' in navigator)addEventListener('load',function(){navigator.ser
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=39"></script>
+<script src="common.js?v=38"></script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,hav}=RKB;
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3200)}
