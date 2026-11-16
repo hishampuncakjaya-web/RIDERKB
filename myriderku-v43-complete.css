@@ -99,3 +99,70 @@ body.role-vendor .nav button{color:#65788B!important}
 body.role-vendor .nav button.on{background:#E8F3EA!important;color:#125B3B!important}
 body.role-vendor input,body.role-vendor select,body.role-vendor textarea{background:#FFFCF6!important;color:#182E4A!important;border-color:#BECAD5!important}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* V44 contrast hotfix — customer booking screen */
+body.role-customer .fold{
+  background:#123326!important;
+  border:1px solid #426B55!important;
+  color:#F8FFF9!important;
+  border-radius:18px!important;
+}
+body.role-customer .fold>summary,
+body.role-customer .fold>summary *{
+  color:#F8FFF9!important;
+  opacity:1!important;
+  -webkit-text-fill-color:#F8FFF9!important;
+}
+body.role-customer .fold>summary{
+  display:block!important;
+  padding:17px 18px!important;
+  font-weight:800!important;
+  line-height:1.5!important;
+  list-style:none!important;
+  cursor:pointer!important;
+}
+body.role-customer .fold>summary::-webkit-details-marker{display:none}
+body.role-customer .fold[open]>summary{border-bottom:1px solid #426B55}
+body.role-customer .fold .fb,
+body.role-customer .fold .fb *{
+  color:#F0F8F2!important;
+  opacity:1!important;
+}
+body.role-customer .fold .fb{
+  padding:14px 16px 17px!important;
+}
+body.role-customer .fold .fb button,
+body.role-customer .fold .fb .chip{
+  color:#183B2C!important;
+  background:#F8FFF9!important;
+  border:1px solid #B9D2C1!important;
+}
+body.role-customer #gPick .mut,
+body.role-customer #gDrop .mut,
+body.role-customer .mut,
+body.role-customer .foot{
+  color:#53677A!important;
+  opacity:1!important;
+}
+body.role-customer .foot button,
+body.role-customer #lg,
+body.role-customer #th{
+  color:#24445B!important;
+  background:#FFFDF7!important;
+  border:1.5px solid #385A4B!important;
+  opacity:1!important;
+  -webkit-text-fill-color:#24445B!important;
+}
+body.role-customer .foot{
+  line-height:1.55!important;
+}
+body.role-customer #rainTxt{
+  color:#F7FFF8!important;
+  opacity:1!important;
+}
+body.role-customer #rainBox b,
+body.role-customer #rainBox span{
+  color:#F7FFF8!important;
+  -webkit-text-fill-color:#F7FFF8!important;
+}

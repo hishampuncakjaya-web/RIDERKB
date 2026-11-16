@@ -185,7 +185,14 @@
     ['login','pend','susp','setup','app','gate'].forEach(x=>{const e=document.getElementById(x); if(e) e.classList.add('hide')});
     return true;
   };
-  window.RKB={adminGuard,r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,phoneOf,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
+  async function ensureGuestAuth(){
+    if(!auth) throw new Error('Firebase Authentication tidak tersedia.');
+    if(auth.currentUser) return auth.currentUser;
+    const result=await auth.signInAnonymously();
+    if(!result || !result.user) throw new Error('Sesi pelanggan tidak dapat disahkan.');
+    return result.user;
+  }
+  window.RKB={ensureGuestAuth,adminGuard,r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,phoneOf,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
 })();
 
 /* ===== Pasang app (banner) =====

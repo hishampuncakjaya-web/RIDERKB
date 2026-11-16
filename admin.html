@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="myriderku-v38-design.css?v=39">
 <link rel="stylesheet" href="myriderku-v41-fixes.css?v=41">
 <link rel="stylesheet" href="myriderku-admin-v42.css?v=42">
-<link rel="stylesheet" href="myriderku-v43-complete.css?v=43">
+<link rel="stylesheet" href="myriderku-v43-complete.css?v=44">
 </head><body class="role-admin">
 <div class="wrap wide">
 <header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -109,7 +109,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="common.js?v=38"></script>
-<script>RKB.installBanner('KB Admin')</script>
+<script>RKB.gateInstall('KB Admin')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm}=RKB;
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3000)}

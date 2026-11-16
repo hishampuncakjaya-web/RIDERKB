@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="myriderku-v37.css?v=38">
 <link rel="stylesheet" href="myriderku-v38-design.css?v=39">
 <link rel="stylesheet" href="myriderku-v41-fixes.css?v=41">
-<link rel="stylesheet" href="myriderku-v43-complete.css?v=43">
+<link rel="stylesheet" href="myriderku-v43-complete.css?v=44">
 </head><body class="role-customer">
 <div class="wrap">
 <header class="hd"><div><span class="tag">JEJAK ORDER</span><h1 id="ref">MYRIDERKU</h1><div class="sm" id="when"></div></div><a class="hbtn" href="index.html">＋ Tempah</a></header>
@@ -54,10 +54,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=38"></script>
+<script src="common.js?v=46"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('jejak')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,ST}=RKB;
@@ -65,10 +66,12 @@ const id=new URLSearchParams(location.search).get('id');
 if(!RKB.ok||!id){ $('#msg').textContent=!id?'Pautan jejak tidak sah.':'Jejak langsung belum diaktifkan (Firebase belum disetup).'; }
 else{
   let map=null, pm=null, dm=null, riderMk=null, o=null, nav=null, prevSt=null, prevArr=null, rateKey='', proofDone=false, stars=0;
-  RKB.db.ref('orders/'+id).on('value',s=>{ o=s.val();
-    if(!o){ $('#main').classList.add('hide'); $('#msg').classList.remove('hide'); $('#msg').textContent='Order tidak dijumpai.'; return }
-    $('#msg').classList.add('hide'); $('#main').classList.remove('hide'); render();
-  },()=>{ $('#msg').textContent='Tak dapat membaca order. Cuba lagi.'});
+  RKB.ensureGuestAuth().then(()=>{
+    RKB.db.ref('orders/'+id).on('value',s=>{ o=s.val();
+      if(!o){ $('#main').classList.add('hide'); $('#msg').classList.remove('hide'); $('#msg').textContent='Order tidak dijumpai.'; return }
+      $('#msg').classList.add('hide'); $('#main').classList.remove('hide'); render();
+    },()=>{ $('#msg').textContent='Tak dapat membaca order. Cuba lagi.'});
+  }).catch(()=>{ $('#msg').textContent='Sesi penjejakan tidak dapat disahkan. Sila semak internet dan cuba lagi.'; });
   function initMap(){
     if(map) return; map=RKB.baseMap('map');
     pm=L.marker([o.pick.lat,o.pick.lng],{icon:RKB.mkIcon('#10b981')}).addTo(map).bindPopup('Lokasi ambil');

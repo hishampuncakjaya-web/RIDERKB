@@ -29,3 +29,10 @@ MYRIDERKU Midnight Sapphire:
 - Steel Blue: `#7793AE`
 
 Tema ini mengubah lapisan visual, warna PWA dan cache version. Logik Firebase, harga, dispatch dan order tidak diubah oleh patch tema ini.
+
+
+## Master Build notice
+See `RELEASE-MASTER-BUILD.md` for consolidated features, deployment steps and the outstanding Firebase security release blocker. Do not treat the current compatibility rules as production-hardened.
+
+
+See `RELEASE-REWARDS-PREVIEW.md` for the Rewards/VIP preview status and limitations.
