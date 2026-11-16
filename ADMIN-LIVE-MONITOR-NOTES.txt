@@ -1,0 +1,16 @@
+MYRIDERKU — ADMIN LIVE ORDER MONITOR
+
+Pakej ini berasaskan MYRIDERKU_REWARDS_VIP_PREVIEW_NETLIFY.zip yang disimpan dalam Library.
+
+Perubahan dalam pakej ini:
+- Menambah panel Pemantauan Pesanan Vendor LIVE pada tab Order Admin.
+- Membaca nod Firebase Realtime Database vorders secara realtime (akses admin sedia ada dalam database.rules.json).
+- Memaparkan jumlah aktif, menunggu vendor, diterima/disediakan, sedia diambil, selesai dan ditolak/dibatalkan.
+- Memaparkan 30 rekod vendor terkini bersama rujukan, vendor, pelanggan, masa dan sebab jika ada.
+- Mengekalkan panel order penghantaran sedia ada dan halaman Customer/Rider/Vendor/Shop/Tracking/Rewards.
+
+PENTING — BATASAN INTEGRASI
+- Kod Vendor dalam sumber semasa menggunakan status: baru, diterima, siap, selesai, ditolak, batal. Panel Admin memaparkan status sebenar ini; ia tidak menukar aliran status secara senyap kepada status reka bentuk yang belum dilaksanakan.
+- Ini ialah pemantauan realtime, bukan pengesahan bahawa keseluruhan aplikasi sudah production-ready. Ujian Firebase sebenar memerlukan konfigurasi projek, akaun Admin/Vendor dan data ujian.
+- Tiada data Firebase dipadam atau diubah oleh panel ini.
+- Sebelum deploy, semak Firebase Rules dan konfigurasi Firebase projek sebenar.

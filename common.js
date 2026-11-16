@@ -173,7 +173,8 @@
   const loadShares=()=>db?db.ref('settings').once('value').then(s=>{const v=s.val()||{};if(v.riderShare!=null)_sh.rider=+v.riderShare;if(v.vendorMarkup!=null)_sh.mark=+v.vendorMarkup;return _sh}).catch(()=>_sh):Promise.resolve(_sh);
   const riderPay=o=>o&&o.riderPay!=null?+o.riderPay:r2((+(o&&o.price)||0)*_sh.rider/100);          // bahagian rider (apa yang rider nampak)
   const platCut=o=>r2((+(o&&o.price)||0)-riderPay(o));                                              // untung platform daripada upah (admin sahaja)
-  const vPrice=b=>r2((+b||0)*(1+_sh.mark/100));                                                     // harga pelanggan = harga vendor + markup
+  const vMarkup=b=>r2(Math.max(1,r2((+b||0)*0.10)));                                                   // markup setiap unit: minimum RM1 atau 10% harga asal
+  const vPrice=b=>r2((+b||0)+vMarkup(b));                                                               // harga pelanggan = harga vendor + markup
   // akaun admin tersangkut di halaman rider/vendor: tunjuk mesej jelas (bukan skrin kosong)
   const adminGuard=(u,role)=>{
     const old=document.getElementById('admGuard'); if(old) old.remove();
@@ -192,7 +193,7 @@
     if(!result || !result.user) throw new Error('Sesi pelanggan tidak dapat disahkan.');
     return result.user;
   }
-  window.RKB={ensureGuestAuth,adminGuard,r2,loadShares,riderPay,platCut,vPrice,shares:()=>_sh,confState,phoneOf,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
+  window.RKB={ensureGuestAuth,adminGuard,r2,loadShares,riderPay,platCut,vMarkup,vPrice,shares:()=>_sh,confState,phoneOf,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
 })();
 
 /* ===== Pasang app (banner) =====

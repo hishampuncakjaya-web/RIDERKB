@@ -62,7 +62,9 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 <div id="setup" class="pad hide"><div class="card"><h3 id="stT">Profil kedai</h3>
   <div class="mut">Maklumat ini dilihat pelanggan.</div>
   <label>Nama kedai</label><input id="sn" maxlength="60">
-  <label>Kategori</label><select id="sc"><option>Makan</option><option>Kafe</option><option>Air / Boba</option><option>Kek / Bakery</option><option>Runcit</option><option>Pasar basah</option><option>Farmasi</option><option>Lain-lain</option></select>
+  <label>Jenis perniagaan</label><select id="sbiz"><option value="kedai">Kedai fizikal</option><option value="rumah">Perniagaan dari rumah</option><option value="individu">Penyedia servis / individu</option></select>
+  <label>Kategori perniagaan</label><select id="sc"><option>Makanan & Minuman</option><option>Runcit & Mini Mart</option><option>Pasar Basah</option><option>Fesyen & Pakaian</option><option>Kecantikan & Penjagaan Diri</option><option>Kesihatan & Farmasi</option><option>Elektronik & Telefon</option><option>Hardware & Perkakasan</option><option>Automotif & Alat Ganti</option><option>Pertanian & Hasil Kampung</option><option>Hadiah & Bunga</option><option>Dobi & Cucian</option><option>Rumah & Perabot</option><option>Servis & Pembaikan</option><option>Tempahan & Katering</option><option>Lain-lain</option></select>
+  <div class="mut" style="margin-top:8px;padding:10px;border-radius:12px;background:var(--card2)">Peniaga mikro dan perniagaan dari rumah boleh memohon tanpa SSM sebagai syarat umum. Lesen atau kelulusan khusus masih diperlukan jika diwajibkan oleh undang-undang bagi aktiviti tertentu.</div>
   <label>Alamat</label><input id="sa" maxlength="200" autocomplete="street-address">
   <label>Penerangan ringkas</label><input id="sd" maxlength="160">
   <label>Promosi kedai (pilihan)</label><input id="sp" maxlength="80" placeholder="Cth: Diskaun 10% sebelum 12 tengah hari">
@@ -200,7 +202,7 @@ let geo=null;
 function openSetup(){
   show('setup');const s=shop||{};
   $('#stT').textContent=shop?'Edit profil kedai':'Siapkan profil kedai';
-  $('#sn').value=s.name||me.shop||'';$('#sc').value=s.cat||'Makan';$('#sa').value=s.addr||'';$('#sd').value=s.desc||'';$('#sp').value=s.promo||'';
+  $('#sn').value=s.name||me.shop||'';$('#sbiz').value=s.businessType||'kedai';$('#sc').value=s.cat||'Makanan & Minuman';$('#sa').value=s.addr||'';$('#sd').value=s.desc||'';$('#sp').value=s.promo||'';
   geo=(s.lat!=null&&s.lng!=null)?[s.lat,s.lng]:null;$('#sl').textContent=geo?geo[0].toFixed(5)+', '+geo[1].toFixed(5):'belum ditetapkan';
   $('#scan').classList.toggle('hide',!shop);
 }
@@ -211,7 +213,7 @@ $('#ssave').onclick=async()=>{
   const n=$('#sn').value.trim();$('#serr').textContent='';
   if(!n){$('#serr').textContent='Isi nama kedai.';return}
   if(!geo){$('#serr').textContent='Tetapkan lokasi kedai (butang 📍) supaya rider tahu tempat ambil.';return}
-  const v={name:n.slice(0,60),cat:$('#sc').value,addr:$('#sa').value.trim().slice(0,200),desc:$('#sd').value.trim().slice(0,160),promo:$('#sp').value.trim().slice(0,80),lat:geo[0],lng:geo[1],open:!!(shop&&shop.open)};
+  const v={name:n.slice(0,60),businessType:$('#sbiz').value,cat:$('#sc').value,addr:$('#sa').value.trim().slice(0,200),desc:$('#sd').value.trim().slice(0,160),promo:$('#sp').value.trim().slice(0,80),lat:geo[0],lng:geo[1],open:!!(shop&&shop.open)};
   try{await db.ref('vshops/'+user.uid).update(v);await db.ref('vendors/'+user.uid+'/shop').set(v.name);editingProfile=false;setupShown=false;toast('Profil disimpan ✅');gate()}
   catch(e){$('#serr').textContent='Gagal simpan: '+(e.code||e.message)}
 };

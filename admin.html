@@ -92,6 +92,12 @@
       </div>
     </div>
     <div data-tab="order">
+      <div id="vendorLiveMonitor" class="card" style="margin:0 0 14px;border:1px solid #42617f;background:linear-gradient(135deg,#172b43,#203b58);color:#fff">
+  <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><b style="font-size:16px">🏪 Pemantauan Pesanan Vendor — LIVE</b><div style="font-size:12px;opacity:.8;margin-top:3px">Data masa nyata daripada Firebase · paparan Admin sahaja</div></div><span id="vLiveUpdated" style="font-size:11px;opacity:.8">Menunggu data…</span></div>
+  <div id="vLiveStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin:12px 0"></div>
+  <div id="vLiveList" style="display:grid;gap:7px"><div style="font-size:13px;opacity:.8">Memuatkan pesanan vendor…</div></div>
+</div>
+
       <div class="chips" id="flt"></div>
       <input id="q" placeholder="Cari ref / nama / telefon / rider…">
       <div id="list"></div>
@@ -117,6 +123,20 @@ if(!RKB.ok){ $('#login').classList.remove('hide'); $('#login').innerHTML='<div c
 else{
 const db=RKB.db, auth=RKB.auth, admins=(RKB.cfg.admins||[]).map(x=>x.toLowerCase());
 let contacts={}; const PH=o=>RKB.phoneOf(o,contacts[o.k]);
+
+let vendorLiveOrders={};
+const VLIVE_STATUS={baru:['Menunggu Vendor','#f59e0b'],diterima:['Diterima Vendor','#3b82f6'],siap:['Sedia Diambil','#16a34a'],selesai:['Selesai','#64748b'],ditolak:['Ditolak','#dc2626'],batal:['Dibatalkan','#dc2626']};
+function renderVendorLive(){
+ const all=[];Object.entries(vendorLiveOrders||{}).forEach(([uid,os])=>Object.entries(os||{}).forEach(([id,o])=>{if(o&&typeof o==='object')all.push({uid,id,...o})}));
+ all.sort((a,b)=>(+b.createdAt||0)-(+a.createdAt||0));
+ const active=all.filter(o=>!['selesai','ditolak','batal'].includes(o.status));
+ const counts={baru:0,diterima:0,siap:0,selesai:0,masalah:0};all.forEach(o=>{if(counts[o.status]!==undefined)counts[o.status]++;if(['ditolak','batal'].includes(o.status))counts.masalah++});
+ const stat=$('#vLiveStats'),list=$('#vLiveList');if(!stat||!list)return;
+ stat.innerHTML=[['Aktif',active.length,'#0ea5e9'],['Menunggu Vendor',counts.baru,'#f59e0b'],['Sedang Disediakan',counts.diterima,'#3b82f6'],['Sedia Diambil',counts.siap,'#16a34a'],['Selesai',counts.selesai,'#94a3b8'],['Ditolak / Batal',counts.masalah,'#ef4444']].map(x=>`<div style="padding:9px;border-radius:10px;background:#ffffff12;border:1px solid #ffffff20"><div style="font-size:22px;font-weight:800;color:${x[2]}">${x[1]}</div><div style="font-size:11px;opacity:.9">${x[0]}</div></div>`).join('');
+ const shown=all.slice(0,30);list.innerHTML=shown.length?shown.map(o=>{const st=VLIVE_STATUS[o.status]||[String(o.status||'Tidak diketahui'),'#64748b'];const vendor=(vendors[o.uid]&&(vendors[o.uid].shop||vendors[o.uid].name))||o.shop||'Vendor';const when=o.createdAt?new Date(+o.createdAt).toLocaleString('ms-MY'):'Masa tidak direkod';return `<div style="display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:9px 10px;border-radius:10px;background:#ffffff0d;border:1px solid #ffffff18"><div style="min-width:0"><b>${esc(o.ref||o.id)}</b> · ${esc(vendor)}<div style="font-size:11px;opacity:.8;margin-top:3px">${esc(o.name||'Pelanggan')} · ${when}${o.reason?' · Sebab: '+esc(o.reason):''}</div></div><span style="white-space:nowrap;padding:5px 8px;border-radius:99px;background:${st[1]}22;color:${st[1]};font-size:11px;font-weight:800">${st[0]}</span></div>`}).join(''):'<div style="font-size:13px;opacity:.8">Belum ada pesanan marketplace vendor.</div>';
+ const up=$('#vLiveUpdated');if(up)up.textContent='Dikemas kini '+new Date().toLocaleTimeString('ms-MY');
+}
+
 let vendors={}, vshops={}, vcalc=null, reps={}, orders={}, riders={}, filter='semua', q='', map=null, rm_={}, om={}, first=true, started=false;
 $('#go').onclick=async()=>{ $('#lerr').textContent=''; try{ await auth.signInWithEmailAndPassword($('#em').value.trim(),$('#pw').value) }catch(e){ $('#lerr').textContent='E-mel atau kata laluan salah.' } };
 $('#out').onclick=()=>auth.signOut();
@@ -179,7 +199,8 @@ function listen(){
   let rpFirst=true; db.ref('reports').limitToLast(50).on('value',s=>{ const nw=s.val()||{}; const n=Object.keys(nw).filter(k=>!reps[k]).length; reps=nw; if(!rpFirst&&n){ RKB.beep(); const sos=Object.values(nw).some(x=>x.type==='sos'); toast((sos?'🆘 SOS rider! ':'⚠️ Laporan baru. ')+'Semak panel Laporan') } rpFirst=false; drawReps() },e=>toast('Ralat baca laporan: '+e.code));
   let pc=null; db.ref('riders').on('value',s=>{ riders=s.val()||{}; const n=Object.values(riders).filter(r=>r.approved!==true).length; if(pc!==null&&n>pc){RKB.beep();toast('🆕 Rider baru menunggu kelulusan')} pc=n; render() });
 }
-const list=()=>Object.entries(orders).filter(([k,o])=>o&&o.pick&&o.drop&&o.pick.lat!=null&&o.drop.lat!=null).map(([k,o])=>({k,...o})).sort((a,b)=>b.createdAt-a.createdAt);
+db.ref('vorders').on('value',s=>{ vendorLiveOrders=s.val()||{}; renderVendorLive(); },e=>{ const el=$('#vLiveList');if(el)el.textContent='Tidak dapat memuatkan pesanan vendor: '+e.code; });
+  const list=()=>Object.entries(orders).filter(([k,o])=>o&&o.pick&&o.drop&&o.pick.lat!=null&&o.drop.lat!=null).map(([k,o])=>({k,...o})).sort((a,b)=>b.createdAt-a.createdAt);
 const isAct=o=>o.status==='diterima'||o.status==='diambil';
 let srvOff=0; RKB.db.ref('.info/serverTimeOffset').on('value',s=>{ srvOff=s.val()||0 });
 const nowS=()=>Date.now()+srvOff;

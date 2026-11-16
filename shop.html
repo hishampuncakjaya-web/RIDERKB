@@ -65,11 +65,17 @@ async function home(){
   let last=null; try{ last=JSON.parse(localStorage.getItem(SK)||'null') }catch(_){}
   try{ shops=(await RKB.db.ref('vshops').once('value')).val()||{} }catch(e){ view('<div class="card">Tak dapat memuatkan kedai. Semak internet dan cuba lagi.<div class="acts"><button class="btn" onclick="home()">🔄 Cuba lagi</button></div></div>'); return }
   const E=Object.entries(shops).sort((a,b)=>(!!b[1].open-!!a[1].open)||String(a[1].name).localeCompare(String(b[1].name)));
-  let h='';
-  if(last) h+=`<a class="card" href="shop.html?v=${encodeURIComponent(last.v)}&o=${encodeURIComponent(last.o)}" style="display:block;text-decoration:none;border-color:#3b82f6">📡 <b>Order kedai anda</b> · tekan untuk lihat status</a>`;
-  h+=E.length?E.map(([u,s])=>`<button class="card shop ${s.open?'':'off'}" data-u="${esc(u)}" type="button"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(s.name)}</b><span class="badge">${s.open?'🟢 Buka':'🔴 Tutup'}</span></div><div class="mut">${esc(s.cat||'')}${s.addr?' · '+esc(s.addr):''}</div>${s.promo?`<div style="margin-top:4px">🏷️ ${esc(s.promo)}</div>`:''}${s.desc?`<div class="mut" style="margin-top:4px">${esc(s.desc)}</div>`:''}</button>`).join(''):'<div class="card mut" style="text-align:center">Belum ada kedai berdaftar. Datang semula tak lama lagi!</div>';
-  view(h);
-  $('#v').onclick=e=>{ const b=e.target.closest('.shop'); if(b) openShop(b.dataset.u) };
+  let activeCat='Semua', query='';
+  const cats=['Semua','Makanan & Minuman','Runcit & Mini Mart','Fesyen & Pakaian','Kecantikan & Penjagaan Diri','Kesihatan & Farmasi','Elektronik & Telefon','Hardware & Perkakasan','Automotif & Alat Ganti','Pertanian & Hasil Kampung','Hadiah & Bunga','Dobi & Cucian','Servis & Pembaikan','Lain-lain'];
+  const draw=()=>{
+    const filtered=E.filter(([u,s])=>(activeCat==='Semua'||String(s.cat||'').toLowerCase()===activeCat.toLowerCase())&&(!query||[s.name,s.cat,s.addr,s.desc].join(' ').toLowerCase().includes(query)));
+    let h=`<div class="card"><label class="l" for="bizSearch">Cari perniagaan, produk atau servis</label><input class="f" id="bizSearch" placeholder="Contoh: nasi kerabu, bengkel, dobi..." value="${esc(query)}"><div class="mut" style="margin-top:8px">${E.length} perniagaan dalam direktori MYRIDERKU</div></div><div class="card" style="display:flex;gap:7px;overflow:auto;padding:10px">${cats.map(c=>`<button type="button" class="btn ${c===activeCat?'':'gry'} sm" data-cat="${esc(c)}" style="white-space:nowrap;flex:0 0 auto">${esc(c)}</button>`).join('')}</div>`;
+    if(last) h+=`<a class="card" href="shop.html?v=${encodeURIComponent(last.v)}&o=${encodeURIComponent(last.o)}" style="display:block;text-decoration:none;border-color:#3b82f6">📡 <b>Order kedai anda</b> · tekan untuk lihat status</a>`;
+    h+=filtered.length?filtered.map(([u,s])=>`<button class="card shop ${s.open?'':'off'}" data-u="${esc(u)}" type="button"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(s.name)}</b><span class="badge">${s.open?'🟢 Buka':'🔴 Tutup'}</span></div><div class="mut">${esc(s.cat||'')}${s.addr?' · '+esc(s.addr):''}</div>${s.businessType?`<div class="mut">${s.businessType==='rumah'?'Perniagaan dari rumah':s.businessType==='individu'?'Penyedia servis':'Kedai fizikal'}</div>`:''}${s.promo?`<div style="margin-top:4px">🏷️ ${esc(s.promo)}</div>`:''}${s.desc?`<div class="mut" style="margin-top:4px">${esc(s.desc)}</div>`:''}</button>`).join(''):'<div class="card mut" style="text-align:center">Tiada perniagaan dalam carian ini. Cuba kategori atau kata kunci lain.</div>';
+    view(h);
+    const inp=$('#bizSearch'); if(inp){inp.oninput=()=>{query=inp.value.trim().toLowerCase();const y=scrollY;draw();scrollTo(0,y)}}
+    $('#v').onclick=e=>{const c=e.target.closest('[data-cat]');if(c){activeCat=c.dataset.cat;draw();return}const b=e.target.closest('.shop');if(b)openShop(b.dataset.u)};
+  }; draw();
 }
 window.home=home;
 
