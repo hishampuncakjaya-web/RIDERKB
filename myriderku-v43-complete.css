@@ -1,0 +1,101 @@
+/* MYRIDERKU V43 COMPLETE — responsive UI and contrast corrections */
+:root{--v43-navy:#182E4A;--v43-green:#167B49;--v43-gold:#E7A64B;--v43-cream:#FFFCF6;--v43-ink:#182E4A;--v43-muted:#5D7084;--v43-line:#D6DEE6}
+html{scroll-behavior:smooth}body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,input,select,textarea{touch-action:manipulation}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #2B83D6!important;outline-offset:2px!important}
+input,select,textarea{min-height:46px}.btn,.tab,.hbtn{min-height:42px}.modal{overscroll-behavior:contain}.mbox{box-sizing:border-box;max-height:min(88dvh,760px);overflow:auto}.map,.leaflet-container{max-width:100%}
+
+/* Admin dashboard */
+body.role-admin{background:#EAF0F4!important;color:#182E4A!important}
+body.role-admin .hd{background:linear-gradient(125deg,#102238,#182E4A 65%,#29496B)!important;color:#fff!important}
+body.role-admin .hd h1,body.role-admin .hd .sm{color:#fff!important;opacity:1!important}
+body.role-admin .stats{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+body.role-admin .stat{display:flex;flex-direction:column;justify-content:center;min-width:0;min-height:88px;padding:13px!important;background:#FFFCF6!important;border:1px solid #D6DEE6!important;border-radius:17px!important}
+body.role-admin .stat b{display:block!important;color:#182E4A!important;font-size:clamp(20px,5.6vw,27px)!important;font-weight:900!important;line-height:1.2!important;opacity:1!important;overflow-wrap:anywhere}
+body.role-admin .stat small{display:block!important;color:#5D7084!important;font-size:12px!important;line-height:1.35!important;margin-top:7px!important;opacity:1!important}
+body.role-admin .card{background:#FFFCF6!important;color:#182E4A!important;border:1px solid #D6DEE6!important}
+body.role-admin .card h3{color:#182E4A!important}
+body.role-admin .mut,body.role-admin small{color:#5D7084!important;opacity:1!important}
+body.role-admin #mtabs{display:flex!important;gap:8px!important;overflow-x:auto!important;overscroll-behavior-x:contain;scrollbar-width:thin;padding:8px 0 14px!important}
+body.role-admin #mtabs .tab{flex:0 0 auto!important;min-width:max-content!important;min-height:46px!important;padding:10px 15px!important;border-radius:999px!important;background:#FFFCF6!important;color:#334B63!important;border:1px solid #D5DEE7!important;white-space:nowrap!important}
+body.role-admin #mtabs .tab.on{background:#182E4A!important;color:#fff!important;border-color:#182E4A!important}
+body.role-admin #riders{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important}
+body.role-admin .admin-rider-card{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;align-items:stretch!important;min-width:0!important;padding:15px!important;border:1px solid #D6DEE6!important;border-radius:18px!important;background:#fff!important;box-shadow:0 8px 22px #182e4a12!important}
+body.role-admin .admin-rider-main{min-width:0!important}
+body.role-admin .admin-rider-name{font-size:16px!important;font-weight:850!important;line-height:1.4!important;color:#182E4A!important;overflow-wrap:anywhere}
+body.role-admin .admin-rider-meta{font-size:13px!important;line-height:1.55!important;color:#5D7084!important;margin-top:6px!important;overflow-wrap:anywhere;word-break:normal!important}
+body.role-admin .admin-rider-wallet{font-size:14px!important;color:#52677B!important;margin-top:9px!important}
+body.role-admin .admin-rider-wallet strong{color:#116B47!important;font-size:17px!important}
+body.role-admin .admin-rider-orders{font-size:13px!important;font-weight:750!important;color:#294760!important;margin-top:7px!important}
+body.role-admin .admin-rider-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:100%!important;min-width:0!important}
+body.role-admin .admin-rider-actions .btn{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;min-height:44px!important;height:auto!important;padding:9px 7px!important;white-space:normal!important;word-break:normal!important;overflow-wrap:normal!important;writing-mode:horizontal-tb!important;line-height:1.25!important;font-size:12px!important;text-align:center!important}
+body.role-admin .admin-rider-actions .btn.grn{background:#167B49!important;color:#fff!important}
+body.role-admin .admin-rider-actions .btn.gry{background:#EEF3F7!important;color:#203A54!important;border:1px solid #CCD7E1!important}
+body.role-admin .admin-rider-actions .btn.danger{background:#FFF1F0!important;color:#A52A2A!important;border:1px solid #EFC5C1!important}
+body.role-admin .row{align-items:flex-start!important;gap:10px!important}
+@media(min-width:620px){body.role-admin .stats{grid-template-columns:repeat(3,minmax(0,1fr))!important}body.role-admin .admin-rider-card{grid-template-columns:minmax(0,1fr) minmax(240px,.8fr)!important;align-items:center!important}}
+@media(max-width:360px){body.role-admin .pad{padding-left:10px!important;padding-right:10px!important}body.role-admin .admin-rider-card{padding:12px!important}body.role-admin .admin-rider-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}body.role-admin .admin-rider-actions .btn{font-size:11.5px!important;padding:8px 4px!important}}
+
+/* Customer forms and sticky fare dock */
+body.role-customer{background:#F4F0E5;color:#182E4A}
+body.role-customer h1,body.role-customer h2,body.role-customer h3{color:#182E4A}
+body.role-customer .mut,body.role-customer small{color:#65788B}
+body.role-customer .rain{background:#173A2B!important;border:1px solid #5C8A53!important;color:#F7FFF8!important}
+body.role-customer .rain b,body.role-customer .rain span,body.role-customer .rain div{color:#F7FFF8!important}
+body.role-customer .rain input{accent-color:#E7A64B}
+body.role-customer .popt{background:#FFFCF6!important;color:#29445F!important;border:1px solid #CCD7E1!important}
+body.role-customer .popt.on{background:#167B49!important;color:#fff!important;border-color:#167B49!important}
+body.role-customer .opt{background:#FFFCF6!important;color:#29445F!important}
+body.role-customer .opt.on{background:#E8F3EA!important;color:#125B3B!important;border-color:#167B49!important}
+body.role-customer .bar{z-index:1800!important;background:linear-gradient(180deg,rgba(244,240,229,.97),#F4F0E5 28%)!important;border-top:1px solid #D9DFE4!important;box-shadow:0 -8px 24px #182e4a1a;padding:12px 14px calc(12px + env(safe-area-inset-bottom))!important}
+body.role-customer .price{background:#FFF0D7!important;border:1px solid #E7A64B!important;color:#182E4A!important}
+body.role-customer .price small{color:#65788B!important}
+body.role-customer .price .km{color:#435A70!important}
+body.role-customer .price b{color:#182E4A!important}
+body.role-customer .btn{background:linear-gradient(135deg,#E7A64B,#D98C24)!important;color:#182E4A!important;border:1px solid #C98220}
+body.role-customer .btn.wa,body.role-customer .btn.grn{background:#167B49!important;color:#fff!important}
+body.role-customer .btn.back{background:#FFFCF6!important;color:#182E4A!important}
+body.role-customer .fsBtn{top:10px!important;bottom:auto!important;right:10px!important;z-index:1200!important}
+body.role-customer #mapWrap.fs .fsBtn{top:calc(10px + env(safe-area-inset-top))!important}
+body.role-customer input,body.role-customer select,body.role-customer textarea{background:#FFFCF6;color:#182E4A;border-color:#BECAD5}
+body.role-customer input::placeholder,body.role-customer textarea::placeholder{color:#78899A;opacity:1}
+@media(max-width:420px){body.role-customer{padding-bottom:calc(205px + env(safe-area-inset-bottom))!important}body.role-customer .bar .price{padding:9px 12px!important;gap:8px}body.role-customer .bar .price b{font-size:clamp(24px,7vw,30px)!important;white-space:nowrap}body.role-customer .bar .btns{gap:8px}body.role-customer .bar .btn{min-height:52px;padding:12px 10px!important;font-size:15px!important}body.role-customer .bar .btn.back{flex:0 0 86px!important}}
+
+/* Rider dashboard and order popups */
+body.role-rider{background:#EAF0F4!important;color:#182E4A!important}
+body.role-rider .hd{background:linear-gradient(125deg,#102238,#182E4A 65%,#29496B)!important;color:#fff!important}
+body.role-rider .hd h1,body.role-rider .hd .sm{color:#fff!important;opacity:1!important}
+body.role-rider .ridercard{background:#FFFCF6!important;color:#182E4A!important;border:1px solid #D6DEE6!important;border-radius:22px!important;box-shadow:0 8px 24px #182e4a14}
+body.role-rider .ridercard .mut{color:#5D7084!important}
+body.role-rider #onTxt{color:#182E4A!important;font-size:19px;font-weight:900}
+body.role-rider #earn,body.role-rider #wal{color:#334B63!important;font-weight:650}
+body.role-rider #prof,body.role-rider #topup{color:#167B49!important}
+body.role-rider .tabs{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+body.role-rider .tab{flex:0 0 auto;white-space:nowrap}
+body.role-rider .mbox{background:#10271F!important;color:#F4FFF7!important;border:1px solid #D3A13B;box-shadow:0 18px 50px #0005}
+body.role-rider .mbox .row{border-color:#345447}
+body.role-rider .mbox .row span:first-child{color:#B8D0C1!important}
+body.role-rider .mbox .row span:last-child{color:#F7FFF8!important}
+body.role-rider #jMeta,body.role-rider #jN,body.role-rider #jP,body.role-rider #jD,body.role-rider #jPay{color:#F4FFF7!important}
+body.role-rider #jPrice{color:#F4FFF7!important;font-size:clamp(30px,9vw,40px)!important}
+body.role-rider #dM{color:#E8F1EB!important}
+body.role-rider .modal .btn.gry{background:#203A30!important;color:#F5FFF8!important;border:1px solid #456455}
+body.role-rider .modal .btn.grn{background:linear-gradient(135deg,#E7A64B,#D98C24)!important;color:#182E4A!important}
+body.role-rider .modal .acts{display:flex;gap:10px}
+body.role-rider .modal .acts .btn{min-height:54px}
+body.role-rider #plateDialog .mbox{background:#FFFCF6!important;color:#182E4A!important;border:1px solid #D6DEE6!important}
+body.role-rider #plateDialog .mbox h3{color:#182E4A!important}
+body.role-rider #plateDialog .mbox .mut{color:#5D7084!important}
+
+/* Vendor portal */
+body.role-vendor{background:#EAF0F4!important;color:#182E4A!important}
+body.role-vendor .hd{background:linear-gradient(125deg,#102238,#182E4A 65%,#29496B)!important;color:#fff!important}
+body.role-vendor .hd h1,body.role-vendor .hd .sm{color:#fff!important}
+body.role-vendor .card{background:#FFFCF6!important;color:#182E4A!important;border-color:#D6DEE6!important}
+body.role-vendor .card h3{color:#182E4A!important}
+body.role-vendor .mut{color:#5D7084!important}
+body.role-vendor .nav{background:#FFFCF6!important;border-top:1px solid #D6DEE6!important;box-shadow:0 -6px 18px #182e4a14}
+body.role-vendor .nav button{color:#65788B!important}
+body.role-vendor .nav button.on{background:#E8F3EA!important;color:#125B3B!important}
+body.role-vendor input,body.role-vendor select,body.role-vendor textarea{background:#FFFCF6!important;color:#182E4A!important;border-color:#BECAD5!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

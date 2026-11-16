@@ -1,0 +1,48 @@
+/* MYRIDERKU V41 — accessibility, mobile layout and contrast fixes */
+:root{--mr-focus:#1769aa;--mr-safe-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-bottom:calc(230px + var(--mr-safe-bottom))}
+body{overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,[role=button],input,select,textarea{touch-action:manipulation}
+button:focus-visible,a:focus-visible,[role=button]:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #2f83c5!important;outline-offset:2px!important}
+button:disabled{cursor:not-allowed;filter:saturate(.55)}
+/* Rider: enforce readable contrast even on legacy inline-colour elements */
+body.role-rider .card,body.role-rider .ridercard{color:#182e4a}
+body.role-rider .card :is(p,span,div,strong,b,small,label,a):not(.badge):not(.on-dot):not(.off-dot){text-shadow:none}
+body.role-rider .modal .mbox{background:#102b22!important;color:#f2f8f3!important;border:1px solid #d9a638!important;box-shadow:0 18px 55px #0006}
+body.role-rider .modal .mbox :is(h1,h2,h3,p,span,div,strong,b,small,label){color:#f2f8f3!important}
+body.role-rider .modal .mbox .btn:not(.gry){background:linear-gradient(135deg,#f0b85d,#d9912f)!important;color:#182e4a!important}
+body.role-rider .modal .mbox .btn.gry{background:#1b4033!important;color:#f2f8f3!important;border:1px solid #527260!important}
+body.role-rider .ridercard :is(.mut,small){color:#e4f0e8!important}
+body.role-rider .ridercard .btn.gry{background:#203c54!important;color:#fff!important;border-color:#52718b!important}
+body.role-rider #onBtn,body.role-rider #onBtn.btn.gry{min-height:52px;font-weight:850}
+body.role-rider .tab,body.role-rider .tabs .tab{color:#263c52!important;background:#fffdf7!important}
+body.role-rider .tab.on,body.role-rider .tabs .tab.on{background:#182e4a!important;color:#fff!important}
+/* Customer fixed estimate bar: reserve enough scroll space and respect phone safe area */
+body.role-customer{padding-bottom:calc(245px + var(--mr-safe-bottom))!important}
+body.role-customer .bar{padding:12px 14px calc(12px + var(--mr-safe-bottom))!important;z-index:1400}
+body.role-customer .bar .price{margin-bottom:8px}
+body.role-customer .bar button,body.role-customer .bar .btn{min-height:54px}
+body.role-customer #mapWrap .fsBtn{z-index:1300;max-width:48%;white-space:nowrap}
+body.role-customer #mapWrap.fs{z-index:5000}
+body.role-customer #mapWrap.fs .fsBtn{z-index:5100;max-width:none}
+body.role-customer #mapWrap.fs .fsbar{z-index:5100;bottom:calc(14px + var(--mr-safe-bottom))}
+body.role-customer .price,body.role-customer .price *{color:#182e4a!important}
+body.role-customer .price small,body.role-customer .price .mut{color:#52677b!important}
+/* Common text, buttons and form controls */
+body.role-customer :is(.mut,small,.hint),body.role-vendor :is(.mut,small,.hint),body.role-rider :is(.mut,small,.hint),body.role-admin :is(.mut,small,.hint){opacity:1}
+body.role-customer button,body.role-vendor button,body.role-rider button,body.role-admin button{line-height:1.3}
+body.role-customer input,body.role-vendor input,body.role-rider input,body.role-admin input,
+body.role-customer select,body.role-vendor select,body.role-rider select,body.role-admin select,
+body.role-customer textarea,body.role-vendor textarea,body.role-rider textarea,body.role-admin textarea{font-size:16px;min-height:46px}
+body.role-vendor #app,body.role-admin #app,body.role-rider #app{padding-bottom:calc(100px + var(--mr-safe-bottom))}
+body.role-vendor .nav,body.role-admin .nav{padding-bottom:calc(8px + var(--mr-safe-bottom))!important}
+.toast{max-width:min(92vw,560px);line-height:1.45;bottom:calc(18px + var(--mr-safe-bottom))!important}
+@media(max-width:520px){
+ body.role-rider .hd h1{font-size:clamp(22px,6vw,30px)!important;line-height:1.15}
+ body.role-rider .ridercard{padding:16px!important}
+ body.role-customer .bar{left:0;right:0}
+ body.role-customer .bar .price{gap:8px}
+ body.role-customer .bar .price b{font-size:clamp(25px,7vw,36px)!important}
+ body.role-admin .stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

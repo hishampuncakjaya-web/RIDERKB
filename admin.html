@@ -15,6 +15,9 @@
 <link rel="stylesheet" href="myriderku-ceria.css">
 <link rel="stylesheet" href="myriderku-v37.css?v=38">
 <link rel="stylesheet" href="myriderku-v38-design.css?v=39">
+<link rel="stylesheet" href="myriderku-v41-fixes.css?v=41">
+<link rel="stylesheet" href="myriderku-admin-v42.css?v=42">
+<link rel="stylesheet" href="myriderku-v43-complete.css?v=43">
 </head><body class="role-admin">
 <div class="wrap wide">
 <header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -217,7 +220,7 @@ function render(){
       <button class="btn gry sm" data-a="del" data-k="${o.k}">🗑️</button>
     </div></div>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
   const R=Object.entries(riders).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||(a[1].name||'').localeCompare(b[1].name||''));
-  $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;return `<div class="row" style="align-items:center"><span>${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}<br><small class="mut">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?'<br>'+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</small>${ok?'<br><small>💰 '+rm(r.wallet||0)+'</small>':''}</span><span>${ok?(per[r.name]?per[r.name].n+' order · '+rm(per[r.name].s)+'<br>':'')+'<button class="btn grn sm" data-r="top" data-u="'+u+'">＋ Wallet</button> <button class="btn gry sm" data-r="ded" data-u="'+u+'">－</button><br><button class="btn gry sm" data-r="rev" data-u="'+u+'">⏸ Gantung</button>':'<button class="btn grn sm" data-r="ok" data-u="'+u+'">✅ Lulus</button>'} <button class="btn gry sm" data-r="pw" data-u="${u}">🔑 Reset</button> <button class="btn gry sm" data-r="del" data-u="${u}">🗑️</button></span></div>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
+  $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;const uid=esc(u);return `<article class="admin-rider-card"><div class="admin-rider-main"><div class="admin-rider-name">${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}</div><div class="admin-rider-meta">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?' · '+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</div>${ok?`<div class="admin-rider-wallet">💰 Baki wallet <strong>${rm(r.wallet||0)}</strong></div>`:''}${ok&&per[r.name]?`<div class="admin-rider-orders">📦 ${per[r.name].n} order · ${rm(per[r.name].s)}</div>`:''}</div><div class="admin-rider-actions">${ok?`<button class="btn grn sm" data-r="top" data-u="${uid}">＋ Wallet</button><button class="btn gry sm" data-r="ded" data-u="${uid}">－ Tolak</button><button class="btn gry sm" data-r="rev" data-u="${uid}">⏸ Gantung</button>`:`<button class="btn grn sm" data-r="ok" data-u="${uid}">✅ Lulus rider</button>`}<button class="btn gry sm" data-r="pw" data-u="${uid}">🔑 Reset kata laluan</button><button class="btn danger sm" data-r="del" data-u="${uid}">🗑️ Padam</button></div></article>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
   try{ updMap(L) }catch(err){ console.error('updMap',err) }
   const late=lateCheck(L), wait=Object.values(riders).filter(r=>r.approved!==true).length;
   lastBadges={order:L.filter(o=>o.status==='baru').length,rider:wait,vendor:Object.values(vendors).filter(v=>v.approved===undefined).length,peta:Object.keys(reps).length};

@@ -22,6 +22,8 @@
 <link rel="stylesheet" href="myriderku-ceria.css">
 <link rel="stylesheet" href="myriderku-v37.css?v=38">
 <link rel="stylesheet" href="myriderku-v38-design.css?v=39">
+<link rel="stylesheet" href="myriderku-v41-fixes.css?v=41">
+<link rel="stylesheet" href="myriderku-v43-complete.css?v=43">
 </head><body class="role-rider">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP RIDER</span><h1>MYRIDERKU Rider 🛵</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -395,7 +397,14 @@ function dutyCheck(){
   if(act&&Date.now()-lastBeep>15000){ lastBeep=Date.now(); RKB.beep() }
 }
 const finishing=new Set(); let proofK=null, proofT='D';
-$('#prof').onclick=async e=>{ e.preventDefault(); const p=(prompt('No. plat kenderaan anda (pelanggan akan nampak):',me.plate||'')||'').trim().toUpperCase().slice(0,12); if(!p) return; try{ await db.ref('riders/'+user.uid+'/plate').set(p); toast('Plat dikemas kini ✅') }catch(err){ toast('Gagal: '+err.code) } };
+$('#prof').onclick=async e=>{ e.preventDefault();
+  const old=document.getElementById('plateDialog'); if(old) old.remove();
+  const dlg=document.createElement('div'); dlg.id='plateDialog'; dlg.className='modal'; dlg.innerHTML='<div class="mbox" role="dialog" aria-modal="true" aria-labelledby="plateTitle"><h3 id="plateTitle">No. plat kenderaan</h3><p class="mut">Nombor ini akan dipaparkan kepada pelanggan.</p><label for="plateValue">No. pendaftaran</label><input id="plateValue" maxlength="12" autocapitalize="characters" autocomplete="off" placeholder="Contoh: PPK 1533"><div class="acts"><button type="button" class="btn gry" id="plateCancel">Batal</button><button type="button" class="btn" id="plateSave">Simpan</button></div></div>';
+  document.body.appendChild(dlg); const field=dlg.querySelector('#plateValue'); field.value=me.plate||''; field.focus();
+  const close=()=>dlg.remove(); dlg.querySelector('#plateCancel').onclick=close;
+  dlg.querySelector('#plateSave').onclick=async()=>{const p=field.value.trim().toUpperCase().replace(/\s+/g,' ').slice(0,12);if(!p){field.focus();return}const b=dlg.querySelector('#plateSave');b.disabled=true;try{await db.ref('riders/'+user.uid+'/plate').set(p);me.plate=p;toast('Plat dikemas kini ✅');close()}catch(err){b.disabled=false;toast('Gagal: '+(err.code||'sila cuba lagi'))}};
+  dlg.addEventListener('click',ev=>{if(ev.target===dlg)close()}); field.addEventListener('keydown',ev=>{if(ev.key==='Enter')dlg.querySelector('#plateSave').click();if(ev.key==='Escape')close()});
+};
 $('#proofIn').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!proofK) return; try{ const d=await RKB.compressImg(f,720,.6), P=proofT==='P'; await db.ref((P?'proofsP/':'proofs/')+proofK).set(d); await db.ref('orders/'+proofK).update(P?{pickPhoto:true}:{dropPhoto:true}); toast(P?'📷 Gambar barang disimpan. Tekan "Barang dah diambil" ✅':'📷 Bukti hantar disimpan. Tekan "Hantar selesai" ✅'); render() }catch(err){ toast('Gagal simpan gambar: '+(err.code||'cuba lagi')) } };
 function push(p){
   const now=Date.now(); if(now-lastPush<4000) return; lastPush=now;
