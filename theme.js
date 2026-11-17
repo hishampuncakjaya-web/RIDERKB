@@ -1,29 +1,30 @@
-/* Tema: auto / cerah / gelap. Dimuat dalam <head> supaya tiada kelip. */
+/* MYRIDERKU V73: default CERIA + LIGHT; preferences persist across app pages. */
 (function(){
-  var K='rkb-theme', d=document.documentElement;
-  function get(){ try{ return localStorage.getItem(K)||'auto' }catch(e){ return 'auto' } }
-  function eff(m){ return m==='auto' ? (matchMedia&&matchMedia('(prefers-color-scheme: light)').matches?'light':'dark') : m }
-  function apply(){ var m=get(), e=eff(m); d.setAttribute('data-theme',e); var t=document.querySelector('meta[name=theme-color]'); if(t&&!t.dataset.orig) t.dataset.orig=t.content; if(t) t.content='#182E4A' }
+  var TK='rkb-theme-v73', SK='rkb-style-v73', d=document.documentElement;
+  function mode(){try{return localStorage.getItem(TK)||'light'}catch(e){return 'light'}}
+  function style(){try{return localStorage.getItem(SK)||'ceria'}catch(e){return 'ceria'}}
+  function apply(){
+    d.setAttribute('data-theme',mode()==='dark'?'dark':'light');
+    d.setAttribute('data-style',style());
+    var m=document.querySelector('meta[name=theme-color]');
+    if(m)m.content='#15945b';
+  }
   apply();
-  try{ matchMedia('(prefers-color-scheme: light)').addEventListener('change',function(){ if(get()==='auto') apply() }) }catch(e){}
   window.RKB_THEME={
-    mode:get,
-    label:function(){ var m=get(); return m==='light'?'☀️ Tema: Cerah':m==='dark'?'🌙 Tema: Gelap':'🌓 Tema: Auto' },
-    cycle:function(){ var m=get(), n=m==='auto'?'light':m==='light'?'dark':'auto'; try{ localStorage.setItem(K,n) }catch(e){} apply(); return n }
+    mode:mode,
+    label:function(){var m=mode();return m==='dark'?'🌙 Tema: Gelap':'☀️ Tema: Cerah'},
+    cycle:function(){var n=mode()==='light'?'dark':'light';try{localStorage.setItem(TK,n)}catch(e){}apply();return n}
   };
-})();
-
-/* Gaya: ceria (lalai) / klasik. Butang 🎨 dalam header. */
-(function(){
-  var K='rkb-style', d=document.documentElement;
-  function get(){ try{ return localStorage.getItem(K)||'klasik' }catch(e){ return 'klasik' } }
-  function set(v){ d.setAttribute('data-style',v); try{ localStorage.setItem(K,v) }catch(e){} }
-  d.setAttribute('data-style',get());
-  window.RKB_STYLE={mode:get,set:set};
+  window.RKB_STYLE={
+    mode:style,
+    set:function(v){try{localStorage.setItem(SK,v)}catch(e){}apply()},
+    cycle:function(){var n=style()==='ceria'?'klasik':'ceria';try{localStorage.setItem(SK,n)}catch(e){}apply();return n}
+  };
   document.addEventListener('DOMContentLoaded',function(){
-    var h=document.querySelector('.hd'); if(!h||document.getElementById('styBtn')) return;
-    var b=document.createElement('button'); b.id='styBtn'; b.type='button'; b.textContent='🎨'; b.setAttribute('aria-label','Tukar gaya (ceria / klasik)');
-    b.onclick=function(){ var n=get()==='ceria'?'klasik':'ceria'; set(n); if(window.RKB&&RKB.toast) RKB.toast(n==='ceria'?'Gaya Ceria 🎉':'Gaya Klasik'); };
+    var h=document.querySelector('.hd');if(!h||document.getElementById('styBtn'))return;
+    var b=document.createElement('button');b.id='styBtn';b.type='button';b.textContent='🎨';
+    b.setAttribute('aria-label','Tukar gaya (ceria / klasik)');
+    b.onclick=function(){var n=window.RKB_STYLE.cycle();if(window.RKB&&RKB.toast)RKB.toast(n==='ceria'?'Gaya Ceria':'Gaya Klasik')};
     h.appendChild(b);
   });
 })();

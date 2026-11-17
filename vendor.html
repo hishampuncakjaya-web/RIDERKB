@@ -56,6 +56,7 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 <link rel="stylesheet" href="myriderku-mascot-v2.css?v=2">
 <link rel="stylesheet" href="myriderku-v66-premium-ui.css?v=66">
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
+<link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
 </head><body class="role-vendor">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">MYRIDERKU Vendor 🏪</h1><div class="sm" id="who"></div></div></header>
@@ -212,52 +213,6 @@ function alarm(){ // ulang bunyi setiap 12s selagi ada order baru belum dijawab
   alarmT=setInterval(()=>{if(L.some(o=>o.status==='baru')&&shop&&shop.open)R.beep();else clearInterval(alarmT)},12000);
 }
 
-/* ---------- Dispatch automatik vendor -> rider (idempotent) ---------- */
-async function dispatchVendorDelivery(id,o){
-  const raw=String(o.notes||'');
-  if(!/^\[HANTAR\]/.test(raw)) return {skipped:true};
-  const m=raw.match(/\[#U=([\d.]+);K=([\d.]+);S=([\d.]+)\]/);
-  if(!m || o.lat==null || o.lng==null || !shop || shop.lat==null || shop.lng==null)
-    throw new Error('Maklumat lokasi/upah penghantaran tidak lengkap.');
-  const fee=+m[1], km=+m[2], small=+m[3];
-  if(!Number.isFinite(fee)||fee<5||fee>1000) throw new Error('Upah penghantaran tidak sah.');
-  const TS=firebase.database.ServerValue.TIMESTAMP;
-  const cash=o.pay==='cash', minCash=+(R.cfg.walletMinCash??0);
-  const phone=String(o.phone||'').slice(0,20), pk=R.phoneKey(phone);
-  if(!pk) throw new Error('Nombor telefon pelanggan tiada.');
-  const order={
-    ref:'RKB-'+id.slice(0,4).toUpperCase(),
-    createdAt:o.createdAt||TS,
-    status:'baru',
-    vendorUid:user.uid,
-    service:'Tapau Makanan',
-    vehicle:'Motor',
-    pick:{lat:+shop.lat,lng:+shop.lng,addr:(String(shop.name||'Kedai')+(shop.addr?', '+shop.addr:'')).slice(0,200)},
-    drop:{lat:+o.lat,lng:+o.lng,addr:String(o.addr||'').slice(0,200)},
-    notes:('Ambil pesanan kedai '+String(shop.name||'')+' #'+String(o.ref||id)+(cash?' (KUTIP TUNAI '+R.rm((+o.total||0)+small+fee)+' daripada customer: produk '+R.rm(+o.total||0)+' + upah '+R.rm(fee)+')':' (produk dibayar online; kutip upah penghantaran jika berkenaan)')).slice(0,600),
-    name:String(o.name||'').slice(0,60),
-    km,
-    rain:false,
-    price:fee,
-    riderPay:R.riderPay({price:fee}),
-    pay:o.pay==='cash'?'cash':'online',
-    itemEst:0,
-    need:cash?R.r2(R.platCut({price:fee})+minCash):0
-  };
-  // Simpan nombor sebelum tawaran dibuka supaya rider boleh menghubungi pelanggan.
-  const contact={phone,phoneKey:pk};
-  const cRef=db.ref('orderContacts/'+id);
-  const cTx=await cRef.transaction(v=>v||contact);
-  if(!cTx.committed) throw new Error('Maklumat hubungan rider gagal disimpan.');
-  const oRef=db.ref('orders/'+id);
-  const tx=await oRef.transaction(v=>v||order);
-  if(!tx.committed){
-    const existing=tx.snapshot.val();
-    if(!existing || existing.vendorUid!==user.uid) throw new Error('ID penghantaran telah digunakan oleh rekod lain.');
-  }
-  return {created:tx.committed};
-}
-
 /* ---------- Profil kedai ---------- */
 let geo=null;
 function openSetup(){
@@ -333,14 +288,7 @@ $('#olist').onclick=async e=>{
       if(o.status!=='baru'){toast('Order dah berubah status.');return}
       const prep=prompt('Anggaran masa sedia (minit):','15');if(prep===null)return;const pm=Math.max(1,Math.min(180,Math.round(+prep||15)));
       const bad=await takeStock(o);if(bad){toast('Stok tak cukup: '+bad);return}
-      await db.ref().update({[base+'status']:'diterima',[base+'prep']:pm,[base+'stk']:true,[base+'t/diterima']:TS});
-      try{
-        const result=await dispatchVendorDelivery(id,o);
-        toast(result.skipped?'Order diterima ✅ (ambil sendiri).':'Order diterima ✅ · Rider dipanggil automatik.');
-      }catch(de){
-        console.error('vendor dispatch',de);
-        toast('Order diterima, tetapi panggilan rider belum berjaya: '+(de.message||'ralat sambungan')+'. Customer boleh cuba semula.');
-      }
+      await db.ref().update({[base+'status']:'diterima',[base+'prep']:pm,[base+'stk']:true,[base+'t/diterima']:TS});toast('Order diterima ✅');
     }else if(b.dataset.a==='rej'){
       const why=prompt('Sebab tolak (cth: stok habis):','');if(why===null)return;
       await db.ref().update({[base+'status']:'ditolak',[base+'reason']:(why||'Ditolak kedai').trim().slice(0,120),[base+'t/ditolak']:TS});toast('Order ditolak');
