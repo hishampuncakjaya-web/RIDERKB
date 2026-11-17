@@ -1,0 +1,447 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "settings": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'"
+    },
+    "publicConfig": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'"
+    },
+    "hazards": {
+      ".read": "auth != null",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'"
+    },
+    "shops": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'"
+    },
+    "reports": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$id": {
+        ".write": "auth != null && !data.exists()",
+        ".validate": "newData.hasChildren(['type','msg']) && newData.child('msg').isString() && newData.child('msg').val().length <= 600"
+      }
+    },
+    "fcmTokens": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "customer": {
+        "$oid": {
+          "$tok": {
+            ".write": "auth != null"
+          }
+        }
+      },
+      "rider": {
+        "$uid": {
+          "$tok": {
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        }
+      },
+      "vendor": {
+        "$uid": {
+          "$tok": {
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        }
+      },
+      "admin": {
+        "$uid": {
+          "$tok": {
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        }
+      }
+    },
+    "ratelimit": {
+      "$pk": {
+        ".write": "auth != null && newData.val() === now && (!data.exists() || data.val() < now - 30000)"
+      }
+    },
+    "walletLog": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
+      }
+    },
+    "riders": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "name": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "phone": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "email": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "plate": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val().length <= 12"
+        },
+        "reg": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isNumber()"
+        },
+        "online": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isBoolean()"
+        },
+        "lat": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isNumber()"
+        },
+        "lng": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isNumber()"
+        },
+        "t": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isNumber()"
+        },
+        "spd": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isNumber()"
+        },
+        "walletReserved": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= (root.child('riders/'+$uid+'/wallet').exists() ? root.child('riders/'+$uid+'/wallet').val() : 0)"
+        }
+      }
+    },
+    "vendors": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "name": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "phone": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "shop": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "email": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isString() && newData.val().length <= 120"
+        },
+        "reg": {
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.isNumber()"
+        }
+      }
+    },
+    "vshops": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid && root.child('vendors/'+$uid+'/approved').val() === true",
+        ".validate": "newData.hasChildren(['name','lat','lng']) && newData.child('lat').isNumber() && newData.child('lng').isNumber()",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "open": {
+          ".validate": "newData.isBoolean()"
+        }
+      }
+    },
+    "vmenu": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$uid": {
+        ".write": "auth != null && auth.uid === $uid && root.child('vendors/'+$uid+'/approved').val() === true",
+        "$id": {
+          ".validate": "newData.hasChildren(['n','p','st'])",
+          "n": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
+          "p": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000"
+          },
+          "pp": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000"
+          },
+          "st": {
+            ".validate": "newData.isNumber() && newData.val() >= -1 && newData.val() <= 9999"
+          },
+          "on": {
+            ".validate": "newData.isBoolean()"
+          },
+          "c": {
+            ".validate": "newData.isString() && newData.val().length <= 30"
+          },
+          "d": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "img": {
+            "$i": {
+              ".validate": "newData.isString() && newData.val().length < 400 && newData.val().beginsWith('https://')"
+            }
+          }
+        }
+      }
+    },
+    "vpayouts": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid"
+      }
+    },
+    "vorders": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$vuid": {
+        ".read": "auth != null && auth.uid === $vuid",
+        ".indexOn": [
+          "createdAt"
+        ],
+        "$id": {
+          ".read": "auth != null",
+          ".write": "auth != null && !data.exists() && root.child('vshops/'+$vuid+'/open').val() === true",
+          ".validate": "newData.hasChildren(['ref','createdAt','name','items','sub','total','status','pay'])",
+          "ref": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber()"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length <= 60"
+          },
+          "phone": {
+            ".validate": false
+          },
+          "phoneKey": {
+            ".validate": false
+          },
+          "notes": {
+            ".validate": "newData.isString() && newData.val().length <= 300"
+          },
+          "addr": {
+            ".validate": "newData.isString() && newData.val().length <= 200"
+          },
+          "lat": {
+            ".validate": "newData.isNumber()"
+          },
+          "lng": {
+            ".validate": "newData.isNumber()"
+          },
+          "pay": {
+            ".validate": "newData.val() === 'cash' || newData.val() === 'online'"
+          },
+          "sub": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000"
+          },
+          "total": {
+            ".validate": "newData.isNumber() && newData.val() >= newData.parent().child('sub').val() && newData.val() <= 10000"
+          },
+          "items": {
+            "$i": {
+              ".validate": "newData.hasChildren(['n','q','p','id']) && newData.child('q').isNumber() && newData.child('q').val() > 0 && newData.child('q').val() <= 99 && root.child('vmenu/'+$vuid+'/'+newData.child('id').val()).exists() && newData.child('p').val() === (root.child('vmenu/'+$vuid+'/'+newData.child('id').val()+'/pp').exists() && root.child('vmenu/'+$vuid+'/'+newData.child('id').val()+'/pp').val() < root.child('vmenu/'+$vuid+'/'+newData.child('id').val()+'/p').val() ? root.child('vmenu/'+$vuid+'/'+newData.child('id').val()+'/pp').val() : root.child('vmenu/'+$vuid+'/'+newData.child('id').val()+'/p').val())"
+            }
+          },
+          "status": {
+            ".write": "(auth != null && auth.uid === $vuid && root.child('vendors/'+$vuid+'/approved').val() === true) && ((data.val() === 'baru' && (newData.val() === 'diterima' || newData.val() === 'ditolak')) || (data.val() === 'diterima' && (newData.val() === 'siap' || newData.val() === 'batal')) || (data.val() === 'siap' && (newData.val() === 'selesai' || newData.val() === 'batal'))) || (auth != null && data.val() === 'baru' && newData.val() === 'batal')",
+            ".validate": "(newData.val() === 'baru' || newData.val() === 'diterima' || newData.val() === 'diambil' || newData.val() === 'siap' || newData.val() === 'selesai' || newData.val() === 'ditolak' || newData.val() === 'batal') && (data.exists() || newData.val() === 'baru')"
+          },
+          "prep": {
+            ".write": "auth != null && auth.uid === $vuid && root.child('vendors/'+$vuid+'/approved').val() === true"
+          },
+          "stk": {
+            ".write": "auth != null && auth.uid === $vuid && root.child('vendors/'+$vuid+'/approved').val() === true"
+          },
+          "reason": {
+            ".write": "auth != null && auth.uid === $vuid && root.child('vendors/'+$vuid+'/approved').val() === true",
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "t": {
+            ".write": "auth != null && auth.uid === $vuid && root.child('vendors/'+$vuid+'/approved').val() === true",
+            "batal": {
+              ".write": "auth != null && root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'baru'"
+            }
+          },
+          "rating": {
+            ".write": "auth != null && !data.exists() && root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'selesai'",
+            ".validate": "newData.child('stars').isNumber() && newData.child('stars').val() >= 1 && newData.child('stars').val() <= 5"
+          }
+        }
+      }
+    },
+    "vorderContacts": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$vuid": {
+        "$id": {
+          ".read": "auth != null && (data.child('customerUid').val() === auth.uid || (auth.uid === $vuid && root.child('vendors/'+$vuid+'/approved').val() === true && (root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'baru' || root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'diterima' || root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'diambil' || root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'siap' || (root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'selesai' && now < root.child('vorders/'+$vuid+'/'+$id+'/t/selesai').val() + 1800000) || ((root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'batal' || root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'ditolak') && now < (root.child('vorders/'+$vuid+'/'+$id+'/status').val() === 'batal' ? root.child('vorders/'+$vuid+'/'+$id+'/t/batal').val() : root.child('vorders/'+$vuid+'/'+$id+'/t/ditolak').val()) + 1800000))))",
+          ".write": "auth != null && !data.exists()",
+          ".validate": "newData.hasChildren(['phone','phoneKey'])",
+          "phone": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "phoneKey": {
+            ".validate": "newData.isString() && newData.val().length <= 20"
+          },
+          "customerUid": {
+            ".validate": "newData.val() === auth.uid || (auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com')"
+          }
+        }
+      }
+    },
+    "riderContacts": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$id": {
+        ".read": "auth != null && (root.child('orders/'+$id+'/status').val() === 'baru' || root.child('orders/'+$id+'/status').val() === 'diterima' || root.child('orders/'+$id+'/status').val() === 'diambil' || root.child('orders/'+$id+'/status').val() === 'siap' || (root.child('orders/'+$id+'/status').val() === 'selesai' && now < root.child('orders/'+$id+'/t/selesai').val() + 1800000) || ((root.child('orders/'+$id+'/status').val() === 'batal' || root.child('orders/'+$id+'/status').val() === 'ditolak') && now < (root.child('orders/'+$id+'/status').val() === 'batal' ? root.child('orders/'+$id+'/t/batal').val() : root.child('orders/'+$id+'/t/ditolak').val()) + 1800000))",
+        ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid",
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        }
+      }
+    },
+    "orders": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com' || (auth != null && root.child('riders/'+auth.uid+'/approved').val() === true)",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".indexOn": [
+        "createdAt"
+      ],
+      "$id": {
+        ".read": "auth != null",
+        ".write": "(auth != null && !data.exists()) || (auth != null && root.child('riders/'+auth.uid+'/approved').val() === true && data.child('status').val() === 'baru' && newData.child('status').val() === 'diterima' && newData.child('riderUid').val() === auth.uid && newData.child('price').val() === data.child('price').val() && newData.child('riderPay').val() === data.child('riderPay').val() && newData.child('need').val() === data.child('need').val() && newData.child('pay').val() === data.child('pay').val() && newData.child('ref').val() === data.child('ref').val() && newData.child('createdAt').val() === data.child('createdAt').val() && newData.child('customerUid').val() === data.child('customerUid').val() && newData.child('vendorUid').val() === data.child('vendorUid').val() && newData.child('pick/lat').val() === data.child('pick/lat').val() && newData.child('pick/lng').val() === data.child('pick/lng').val() && newData.child('drop/lat').val() === data.child('drop/lat').val() && newData.child('drop/lng').val() === data.child('drop/lng').val())",
+        ".validate": "newData.hasChildren(['ref','createdAt','status','pick','drop','price','pay','name','service','vehicle']) && newData.child('pick/lat').isNumber() && newData.child('pick/lng').isNumber() && newData.child('drop/lat').isNumber() && newData.child('drop/lng').isNumber()",
+        "ref": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "price": {
+          ".validate": "newData.isNumber() && newData.val() >= 5 && newData.val() <= 1000"
+        },
+        "riderPay": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= newData.parent().child('price').val()"
+        },
+        "need": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 5000"
+        },
+        "pay": {
+          ".validate": "newData.val() === 'cash' || newData.val() === 'online'"
+        },
+        "customerUid": {
+          ".validate": "data.exists() || newData.val() === auth.uid"
+        },
+        "vendorUid": {
+          ".validate": "newData.isString() && (data.exists() || root.child('vshops/'+newData.val()).exists())"
+        },
+        "prepMin": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 240"
+        },
+        "ready": {
+          ".write": "auth != null && root.child('vendors/'+auth.uid+'/approved').val() === true && root.child('orders/'+$id+'/vendorUid').val() === auth.uid",
+          ".validate": "newData.isNumber()"
+        },
+        "notes": {
+          ".validate": "newData.isString() && newData.val().length <= 600"
+        },
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 60"
+        },
+        "status": {
+          ".write": "(auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid) && ((data.val() === 'diterima' && newData.val() === 'diambil') || (data.val() === 'diambil' && newData.val() === 'selesai')) || (auth != null && data.val() === 'baru' && newData.val() === 'batal') || (auth != null && root.child('vendors/'+auth.uid+'/approved').val() === true && root.child('orders/'+$id+'/vendorUid').val() === auth.uid && (data.val() === 'baru' || data.val() === 'diterima') && newData.val() === 'batal')",
+          ".validate": "(newData.val() === 'baru' || newData.val() === 'diterima' || newData.val() === 'diambil' || newData.val() === 'siap' || newData.val() === 'selesai' || newData.val() === 'ditolak' || newData.val() === 'batal') && (data.exists() || newData.val() === 'baru')"
+        },
+        "arrivedAt": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid"
+        },
+        "arrivedDropAt": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid"
+        },
+        "pickPhoto": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid"
+        },
+        "dropPhoto": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid"
+        },
+        "doneGps": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid"
+        },
+        "doneDist": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid"
+        },
+        "riderLoc": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid"
+        },
+        "walletReservationReleased": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid"
+        },
+        "t": {
+          ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid",
+          "batal": {
+            ".write": "(auth != null && root.child('orders/'+$id+'/status').val() === 'baru') || (auth != null && root.child('vendors/'+auth.uid+'/approved').val() === true && root.child('orders/'+$id+'/vendorUid').val() === auth.uid && (root.child('orders/'+$id+'/status').val() === 'baru' || root.child('orders/'+$id+'/status').val() === 'diterima'))"
+          }
+        },
+        "conf": {
+          ".write": "auth != null && !data.exists() && root.child('orders/'+$id+'/status').val() === 'selesai'",
+          ".validate": "newData.child('v').val() === 'ok' || newData.child('v').val() === 'issue'"
+        },
+        "rating": {
+          ".write": "auth != null && !data.exists() && root.child('orders/'+$id+'/status').val() === 'selesai'",
+          ".validate": "newData.child('stars').isNumber() && newData.child('stars').val() >= 1 && newData.child('stars').val() <= 5"
+        }
+      }
+    },
+    "orderContacts": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$id": {
+        ".read": "(auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid) && (root.child('orders/'+$id+'/status').val() === 'baru' || root.child('orders/'+$id+'/status').val() === 'diterima' || root.child('orders/'+$id+'/status').val() === 'diambil' || root.child('orders/'+$id+'/status').val() === 'siap' || (root.child('orders/'+$id+'/status').val() === 'selesai' && now < root.child('orders/'+$id+'/t/selesai').val() + 1800000) || ((root.child('orders/'+$id+'/status').val() === 'batal' || root.child('orders/'+$id+'/status').val() === 'ditolak') && now < (root.child('orders/'+$id+'/status').val() === 'batal' ? root.child('orders/'+$id+'/t/batal').val() : root.child('orders/'+$id+'/t/ditolak').val()) + 1800000))",
+        ".write": "auth != null && !data.exists()",
+        ".validate": "newData.hasChildren(['phone','phoneKey'])",
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "phoneKey": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "recv": {
+          ".validate": "newData.isString() && newData.val().length <= 200"
+        }
+      }
+    },
+    "proofs": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$id": {
+        ".read": "auth != null",
+        ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid",
+        ".validate": "newData.isString() && newData.val().beginsWith('data:image/') && newData.val().length < 500000"
+      }
+    },
+    "proofsP": {
+      ".read": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      ".write": "auth != null && auth.token.email_verified === true && auth.token.email === 'mnhzuan@gmail.com'",
+      "$id": {
+        ".read": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid",
+        ".write": "auth != null && root.child('orders/'+$id+'/riderUid').val() === auth.uid",
+        ".validate": "newData.isString() && newData.val().beginsWith('data:image/') && newData.val().length < 500000"
+      }
+    }
+  }
+}
