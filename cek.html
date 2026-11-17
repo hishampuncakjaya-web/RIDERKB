@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Semakan sistem MYRIDERKU</title>
+<style>
+  body{font-family:system-ui,sans-serif;background:#0f1b2d;color:#eef2f7;margin:0;padding:16px;line-height:1.5}
+  h1{font-size:20px;margin:6px 0 4px}
+  p.mut{opacity:.75;font-size:14px;margin:0 0 12px}
+  button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 16px;margin:0 8px 12px 0;background:#ffd400;color:#1a2433}
+  button.g{background:#2a3b55;color:#fff}
+  .r{padding:9px 12px;margin:6px 0;border-radius:10px;background:#18283f;word-break:break-word;font-size:14px}
+  .r.ok{border-left:5px solid #21c55d}
+  .r.bad{border-left:5px solid #ef4444;background:#2a1a24}
+  .r.warn{border-left:5px solid #f59e0b}
+  .r.info{border-left:5px solid #60a5fa}
+  .r.h{font-weight:800;background:none;border:0;padding:14px 2px 2px;font-size:15px;color:#ffd400}
+  .hint{margin:-2px 0 8px 12px;font-size:13px;color:#fbbf24}
+</style>
+</head>
+<body>
+<h1>Semakan sistem MYRIDERKU</h1>
+<p class="mut">Log masuk dulu di rider.html dan admin.html (domain yang sama), kemudian tekan butang. Halaman ini hanya membaca data, kecuali satu kemas kini masa "t" pada profil rider sendiri (sama seperti app rider buat).</p>
+<button id="run">Jalankan semakan</button><button id="copy" class="g">Salin hasil</button>
+<div id="out"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+  var out=document.getElementById('out'), lines=[];
+  var C=window.RKB_CFG||{}, FB=C.firebase||{};
+  var ICON={ok:'✅ ',bad:'❌ ',warn:'⚠️ ',info:'ℹ️ ',h:''};
+  function log(kind,text,hint){
+    var d=document.createElement('div'); d.className='r '+kind; d.textContent=ICON[kind]+text; out.appendChild(d);
+    lines.push(ICON[kind]+text);
+    if(hint){ var h=document.createElement('div'); h.className='hint'; h.textContent='→ '+hint; out.appendChild(h); lines.push('   → '+hint); }
+  }
+  function TO(p,ms){ return Promise.race([p,new Promise(function(_,rej){ setTimeout(function(){ rej({code:'TIMEOUT'}) },ms) })]); }
+  function code(e){ return (e&&(e.code||e.message))||'ralat tak diketahui'; }
+  function why(e){
+    var c=code(e);
+    if(/PERMISSION_DENIED/i.test(c)) return 'Rules Firebase menolak. Semak rules yang sedang aktif di Firebase Console > Realtime Database > Rules.';
+    if(c==='TIMEOUT') return 'Tiada respons dalam masa munasabah. Talian lemah atau disekat.';
+    if(/unauthorized-domain/.test(c)) return 'Tambah hishampuncakjaya-web.github.io di Firebase Console > Authentication > Settings > Authorized domains.';
+    if(/operation-not-allowed|admin-restricted/.test(c)) return 'Hidupkan kaedah Anonymous di Firebase Console > Authentication > Sign-in method.';
+    return '';
+  }
+  function waitAuth(auth){ return new Promise(function(res){ var un=auth.onAuthStateChanged(function(u){ un(); res(u) }) }) }
+  function getApp(name){
+    try{ return name==='default'?firebase.app():firebase.app(name) }
+    catch(e){ return name==='default'?firebase.initializeApp(FB):firebase.initializeApp(FB,name) }
+  }
+  function ago(ms){ var s=Math.round(ms/1000); return s<90?s+' saat':Math.round(s/60)+' min' }
+
+  async function run(){
+    out.innerHTML=''; lines=[];
+    if(!FB.apiKey){ log('bad','firebase-config.js tiada atau kosong.'); return }
+    log('info','Domain: '+location.origin+location.pathname.replace(/[^\/]*$/,''));
+    log('info','Admin dalam config: '+((C.admins||[]).join(', ')||'tiada'));
+
+    /* ---- Sambungan ---- */
+    log('h','1. Sambungan Firebase');
+    var dbD=getApp('default').database(), off=0;
+    var conn=await new Promise(function(res){ var t=setTimeout(function(){ res(false) },9000); dbD.ref('.info/connected').on('value',function(s){ if(s.val()===true){ clearTimeout(t); res(true) } }) });
+    if(conn) log('ok','Sambung ke Realtime Database.'); else { log('bad','Tak dapat sambung ke Realtime Database.','Semak internet dan databaseURL dalam firebase-config.js.'); return }
+    try{ off=(await TO(dbD.ref('.info/serverTimeOffset').once('value'),4000)).val()||0; log('info','Beza jam telefon dengan pelayan: '+Math.round(off/1000)+' saat'+(Math.abs(off)>300000?' (TERLALU JAUH, order boleh ditolak)':'')) }catch(e){}
+    var nowS=function(){ return Date.now()+off };
+
+    /* ---- Pelanggan ---- */
+    log('h','2. Pelanggan (tetamu) dan tetapan awam');
+    var aD=getApp('default').auth(), uD=aD.currentUser||await waitAuth(aD);
+    if(uD) log('ok','Sesi pelanggan wujud (uid '+uD.uid.slice(0,6)+'…).');
+    else { try{ var rr=await TO(aD.signInAnonymously(),9000); uD=rr.user; log('ok','Log masuk tetamu berjaya.') }catch(e){ log('bad','Log masuk tetamu gagal: '+code(e),why(e)) } }
+    try{ var pc=(await TO(dbD.ref('publicConfig').once('value'),8000)).val(); log(pc?'ok':'warn', pc?('/publicConfig boleh dibaca ('+Object.keys(pc).length+' kunci).'):'/publicConfig kosong.', pc?'':'Buka admin.html sekali supaya tetapan awam disalin.') }catch(e){ log('bad','/publicConfig tak boleh dibaca: '+code(e),why(e)) }
+
+    /* ---- Rider ---- */
+    log('h','3. Rider (kenapa order tak masuk)');
+    var aR=getApp('rider').auth(), uR=await waitAuth(aR);
+    if(!uR) log('info','Tiada sesi rider di domain ini. Log masuk di rider.html dulu, kemudian jalankan semula.');
+    else {
+      var dbR=getApp('rider').database();
+      log('ok','Sesi rider: '+(uR.email||uR.uid));
+      try{
+        var pr=(await TO(dbR.ref('riders/'+uR.uid).once('value'),8000)).val()||{};
+        log(pr.approved===true?'ok':'bad','Status kelulusan: '+(pr.approved===true?'DILULUSKAN':'BELUM diluluskan'), pr.approved===true?'':'Rider tak boleh baca order selagi admin belum tekan Lulus.');
+        log('info','Wallet: RM '+(+pr.wallet||0).toFixed(2)+' · online: '+pr.online+' · kemas kini lokasi: '+(pr.t?ago(nowS()-pr.t)+' lalu':'tiada'));
+      }catch(e){ log('bad','Profil rider tak boleh dibaca: '+code(e),why(e)) }
+      try{
+        var os=(await TO(dbR.ref('orders').orderByChild('createdAt').limitToLast(80).once('value'),10000)).val()||{};
+        var ks=Object.keys(os), baru=ks.filter(function(k){ return os[k].status==='baru' });
+        log('ok','Order boleh dibaca: '+ks.length+' order, '+baru.length+' berstatus baru.');
+        ks.sort(function(a,b){ return os[b].createdAt-os[a].createdAt }).slice(0,3).forEach(function(k){ var o=os[k]; log('info','#'+(o.ref||k)+' · '+o.status+' · '+ago(nowS()-o.createdAt)+' lalu · RM '+(+o.price||0).toFixed(2)) });
+        if(!ks.length) log('warn','Tiada sebarang order dalam pangkalan data.','Bermakna order pelanggan tak sampai ke Firebase. Cuba hantar order dan lihat mesej ralat merah di app pelanggan.');
+      }catch(e){ log('bad','Order TAK boleh dibaca: '+code(e),why(e)) }
+      try{ await TO(dbR.ref('riders/'+uR.uid+'/t').set(firebase.database.ServerValue.TIMESTAMP),8000); log('ok','Rider boleh tulis status lokasi (admin sepatutnya nampak online).') }
+      catch(e){ log('bad','Rider TAK boleh tulis lokasi/online: '+code(e),why(e)+' Inilah sebab admin tak nampak rider online.') }
+    }
+
+    /* ---- Admin ---- */
+    log('h','4. Admin (kenapa rider online tak nampak)');
+    var aA=getApp('admin').auth(), uA=await waitAuth(aA);
+    if(!uA) log('info','Tiada sesi admin di domain ini. Log masuk di admin.html dulu, kemudian jalankan semula.');
+    else {
+      var dbA=getApp('admin').database();
+      log('ok','Sesi admin: '+(uA.email||uA.uid));
+      var inCfg=(C.admins||[]).map(function(x){ return String(x).toLowerCase() }).indexOf(String(uA.email||'').toLowerCase())>=0;
+      log(inCfg?'ok':'bad','E-mel '+(inCfg?'ada':'TIADA')+' dalam senarai admin config.', inCfg?'':'Tambah e-mel ini dalam admins di firebase-config.js DAN dalam rules.');
+      log(uA.emailVerified?'ok':'bad','E-mel '+(uA.emailVerified?'sudah':'BELUM')+' disahkan.', uA.emailVerified?'':'Rules hanya benarkan admin dengan e-mel disahkan. Tanpa itu admin tak boleh baca senarai rider.');
+      try{
+        var rs=(await TO(dbA.ref('riders').once('value'),9000)).val()||{}, ids=Object.keys(rs);
+        log('ok','Senarai rider boleh dibaca: '+ids.length+' rider.');
+        ids.forEach(function(u){ var r=rs[u]; var age=r.t?nowS()-r.t:null; var live=r.online===true&&age!=null&&age<120000;
+          log(live?'ok':'warn',(r.name||u.slice(0,6))+' · online='+r.online+' · lokasi '+(age!=null?ago(age)+' lalu':'tiada')+' · '+(r.approved===true?'diluluskan':'belum lulus')+' → '+(live?'NAMPAK ONLINE':'dikira offline'), live?'':'Admin hanya tunjuk online jika online=true dan lokasi kurang 2 minit.') });
+      }catch(e){ log('bad','Admin TAK boleh baca senarai rider: '+code(e),why(e)) }
+      try{ var ao=(await TO(dbA.ref('orders').orderByChild('createdAt').limitToLast(300).once('value'),10000)).val()||{}; log('ok','Admin boleh baca order: '+Object.keys(ao).length+' order.') }
+      catch(e){ log('bad','Admin TAK boleh baca order: '+code(e),why(e)) }
+    }
+    log('h','Selesai. Tekan "Salin hasil" dan hantar kepada saya jika masih ada masalah.');
+  }
+  document.getElementById('run').onclick=function(){ run().catch(function(e){ log('bad','Ralat semakan: '+code(e)) }) };
+  document.getElementById('copy').onclick=function(){ var t=lines.join('\n'); try{ navigator.clipboard.writeText(t); this.textContent='Disalin ✓' }catch(e){ window.prompt('Salin teks ini:',t) } };
+})();
+</script>
+</body>
+</html>
