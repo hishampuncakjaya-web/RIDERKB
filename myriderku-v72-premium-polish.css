@@ -1,0 +1,37 @@
+/* MYRIDERKU V72 — visual refinement layer; presentation only, preserves app logic */
+:root{--v72-green:#087b4b;--v72-green-deep:#07543b;--v72-lime:#dff5e8;--v72-ink:#152b3b;--v72-muted:#718096;--v72-line:#e2eae5;--v72-surface:#fff;--v72-shadow:0 12px 30px rgba(15,45,33,.075)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{ -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}button,a,input,select,textarea{ -webkit-tap-highlight-color:transparent}button{transition:transform .16s ease,box-shadow .16s ease,filter .16s ease}button:active{transform:scale(.985)}
+body.role-customer,body.role-vendor,body.role-rider{background:radial-gradient(ellipse at 50% -12%,#e5f5eb 0,transparent 48%),#f5f8f6!important;color:var(--v72-ink)}
+body.role-customer .wrap,body.role-vendor .wrap,body.role-rider .wrap{width:min(100%,790px)!important;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+body.role-customer header,body.role-vendor .hd,body.role-rider .hd{position:relative;isolation:isolate;overflow:hidden;background:linear-gradient(128deg,#063e30 0%,#087b4b 56%,#19a66a 100%)!important;border-radius:0 0 28px 28px!important;box-shadow:0 12px 30px rgba(4,75,48,.17)!important}
+body.role-customer header:after,body.role-vendor .hd:after,body.role-rider .hd:after{content:"";position:absolute;z-index:-1;width:220px;height:220px;right:-78px;top:-118px;border:1px solid #ffffff30;border-radius:50%;box-shadow:0 0 0 24px #ffffff0c,0 0 0 50px #ffffff08}
+body.role-customer header h1,body.role-vendor .hd h1,body.role-rider .hd h1{font-weight:900;letter-spacing:-.7px;text-shadow:0 1px 1px #002d1d25}
+body.role-customer .card,body.role-vendor .card,body.role-rider .card{background:var(--v72-surface)!important;border:1px solid var(--v72-line)!important;border-radius:21px!important;box-shadow:var(--v72-shadow)!important}
+body.role-customer .card h2,body.role-customer .card h3,body.role-vendor .card h2,body.role-vendor .card h3,body.role-rider .card h2,body.role-rider .card h3{letter-spacing:-.3px}
+body.role-customer button,body.role-vendor button,body.role-rider button{font-weight:750;min-height:42px;border-radius:13px}
+body.role-customer .btn,body.role-vendor .btn,body.role-rider .btn{box-shadow:0 5px 13px rgba(8,123,75,.12)}
+body.role-customer input,body.role-customer select,body.role-customer textarea,body.role-vendor input,body.role-vendor select,body.role-vendor textarea,body.role-rider input,body.role-rider select,body.role-rider textarea{border:1px solid #d8e4dd!important;background:#fff;min-height:44px;padding:10px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+body.role-customer input:focus,body.role-customer select:focus,body.role-customer textarea:focus,body.role-vendor input:focus,body.role-vendor select:focus,body.role-vendor textarea:focus,body.role-rider input:focus,body.role-rider select:focus,body.role-rider textarea:focus{border-color:#18a66a!important;box-shadow:0 0 0 3px #18a66a20!important}
+body.role-customer .pin,body.role-customer .opts button,body.role-customer .checkout-summary,body.role-customer .checkout-card{border-radius:16px!important}
+body.role-customer #mapWrap,body.role-rider #mapbox{border:1px solid #dbe8df!important;border-radius:20px!important;box-shadow:var(--v72-shadow)!important;overflow:hidden}
+body.role-customer .steps .st{border-radius:14px}
+body.role-vendor .nav,body.role-rider .nav{background:rgba(255,255,255,.94)!important;backdrop-filter:blur(18px) saturate(1.3);border-top:1px solid #dfe9e3!important;box-shadow:0 -8px 26px rgba(18,55,37,.08)!important}
+body.role-vendor .nav button,body.role-rider .nav button{border-radius:13px!important;font-size:12px;font-weight:800}
+body.role-vendor .nav button.on,body.role-rider .nav button.on{background:#e4f6eb!important;color:#087b4b!important;box-shadow:inset 0 0 0 1px #bfe7ce}
+body.role-vendor .oc,body.role-vendor .mi,body.role-rider .jobcard{border:1px solid #e1eae4;border-radius:17px!important;box-shadow:0 6px 18px rgba(20,52,37,.055)}
+body.role-vendor .pad,body.role-rider .pad{padding:16px clamp(12px,3vw,22px)}
+body.role-admin{background:radial-gradient(ellipse at 80% -10%,#123c48 0,transparent 38%),#071525!important;color:#edf5ff!important}
+body.role-admin .wrap.wide{width:min(100%,1540px)!important;padding-inline:clamp(10px,2vw,22px)}
+body.role-admin .hd{position:relative;overflow:hidden;background:linear-gradient(112deg,#071b31 0%,#0c3442 58%,#087b4b 100%)!important;border:1px solid #244a5a;border-radius:0 0 22px 22px;box-shadow:0 12px 32px #0003}
+body.role-admin .hd h1{font-weight:900;letter-spacing:-.6px}
+body.role-admin .card{background:linear-gradient(155deg,#10283d,#0c2236)!important;border:1px solid #29485d!important;border-radius:19px!important;box-shadow:0 12px 32px rgba(0,0,0,.2)!important}
+body.role-admin .stats>*,body.role-admin .stat{border-radius:16px}
+body.role-admin .tabs{gap:8px}
+body.role-admin .tabs button{border-radius:12px!important;font-weight:800}
+body.role-admin .btn,body.role-admin button{border-radius:12px;font-weight:800;transition:filter .15s,transform .15s}
+body.role-admin input,body.role-admin select,body.role-admin textarea{border:1px solid #36556a!important;background:#0b1e30!important;color:#edf5ff!important;min-height:42px}
+body.role-admin input:focus,body.role-admin select:focus,body.role-admin textarea:focus{border-color:#23b77a!important;box-shadow:0 0 0 3px #23b77a22!important}
+body.role-admin .admin-radar-card{border-radius:20px!important;box-shadow:0 14px 36px #0003!important}
+@media(min-width:900px){body.role-customer .wrap,body.role-vendor .wrap,body.role-rider .wrap{padding-inline:16px}body.role-admin .pad{padding:22px clamp(16px,2vw,30px)}}
+@media(max-width:560px){body.role-customer header,body.role-vendor .hd,body.role-rider .hd{border-radius:0 0 23px 23px!important}body.role-customer .card,body.role-vendor .card,body.role-rider .card{border-radius:18px!important}body.role-admin .pad{padding:13px 11px}body.role-admin .radar-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}body.role-admin .radar-map-wrap #map{min-height:48vh!important}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
