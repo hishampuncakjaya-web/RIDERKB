@@ -56,6 +56,35 @@ const view=h=>{ $('#v').innerHTML=h; scrollTo({top:0}) };
 const base=m=>(m.pp!=null&&+m.pp<+m.p)?+m.pp:+m.p;          // harga vendor (apa yang vendor terima)
 let shops={}, uid=null, shop=null, menu={}, cart={}, off=null, geo=null;
 const SK='rkb-vlast';
+/* ---- Upah rider: formula SAMA seperti customer.html (asas + KM lebih, genap 0.50), tetapan dari admin ---- */
+const PR={base:5,freeKm:5,perKm:1};
+(function(){ const n=(v,d)=>(v!==undefined&&v!==null&&v!==''&&isFinite(+v)&&+v>=0)?+v:d,
+  ap=pub=>{ const p=(pub&&pub.pricing)||{}; PR.base=n(p.base,PR.base); PR.freeKm=n(p.freeKm,PR.freeKm); PR.perKm=n(p.perKm,PR.perKm) };
+  try{ ap(JSON.parse(localStorage.getItem('rkb-public-config')||'null')) }catch(_){}
+  if(RKB.ok) RKB.readPublicConfig().then(pub=>{ if(pub&&Object.keys(pub).length){ ap(pub); try{ localStorage.setItem('rkb-public-config',JSON.stringify(pub)) }catch(_){} } }).catch(()=>{});
+})();
+const feeOf=km=>Math.round((PR.base+Math.max(0,Math.ceil(km-PR.freeKm))*PR.perKm)*2)/2;
+async function geocodeAddr(q){ try{ const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=my&viewbox=102.0,6.4,102.5,5.9&q='+encodeURIComponent(/kelantan/i.test(q)?q:q+', Kota Bharu, Kelantan')); const j=await r.json(); return j[0]?[+(+j[0].lat).toFixed(6),+(+j[0].lon).toFixed(6)]:null }catch(_){ return null } }
+let quote=null, QM='ambil', qSeq=0;
+async function getQuote(){
+  const my=++qSeq, ft=$('#feeT'), sc=(shop&&shop.lat!=null&&shop.lng!=null)?[+shop.lat,+shop.lng]:null;
+  quote=null; refreshFee();
+  if(!sc){ if(ft) ft.textContent='Kedai ini belum tetapkan lokasi, jadi upah rider tak dapat dikira. Sila pilih ambil sendiri.'; return }
+  const addr=$('#addr')?$('#addr').value.trim():''; let pt=geo;
+  if(!pt&&addr){ if(ft) ft.textContent='Mencari lokasi alamat…'; pt=await geocodeAddr(addr); if(my!==qSeq) return; if(pt) geo=pt }
+  if(!pt){ if(ft) ft.textContent='Lokasi belum dapat dikesan. Tekan “Guna lokasi saya” atau taip alamat lebih jelas.'; return }
+  let km, est=false; try{ const rt=await RKB.getRoute(sc,pt); if(rt) km=rt.distance/1000 }catch(_){}
+  if(km==null){ km=RKB.hav(sc,pt)*1.3; est=true }
+  if(my!==qSeq) return;
+  quote={km:+km.toFixed(1),fee:feeOf(km),est}; if(ft) ft.textContent='Upah rider dikira ikut jarak dari kedai ke lokasi anda. Satu order, satu bayaran.';
+  refreshFee();
+}
+function refreshFee(){
+  const r=$('#feeRow'), g=$('#go'); if(!r||!g||g.disabled) return; const s=sums();
+  if(QM==='hantar'&&quote){ const t=r2(s.total+quote.fee);
+    r.innerHTML=`<div class="row"><span>🛵 Upah rider <small class="mut">(${quote.km} km${quote.est?', anggaran':''})</small></span><span>${rm(quote.fee)}</span></div><div class="row"><span><b>Jumlah bayar</b></span><span><b>${rm(t)}</b></span></div>`; g.textContent='🛒 Hantar pesanan · '+rm(t) }
+  else { r.innerHTML=''; g.textContent='🛒 Hantar pesanan · '+rm(s.total) }
+}
 
 if(!RKB.ok){ view('<div class="card">Sistem belum tersedia. Sila cuba sebentar lagi.</div>') }
 else RKB.loadShares().then(()=>{ const v=Q.get('v'), o=Q.get('o'); if(v&&o) track(v,o); else home() });
@@ -110,23 +139,25 @@ function checkout(){
   let mode='ambil', pay='cash';
   const lines=Object.entries(cart).map(([k,q])=>{const unit=base(menu[k]),customer=RKB.vPrice(unit);return `<div class="row"><span>${q}× ${esc(menu[k].n)} <small class="mut">(${rm(unit)} + ${rm(customer-unit)} markup/unit)</small></span><span>${rm(customer*q)}</span></div>`}).join('');
   view(`<button class="btn gry sm" id="bk" type="button">‹ Ubah pesanan</button>
-  <div class="card"><div class="big">${esc(shop.name)}</div>${lines}<div class="row"><span>Harga asal Vendor</span><span>${rm(s.sub)}</span></div><div class="row"><span>Markup MYRIDERKU</span><span>${rm(s.markup)}</span></div><div class="row"><span><b>Jumlah produk</b></span><span><b>${rm(s.total)}</b></span></div><div class="mut">Vendor menerima 100% harga asal. Upah rider dikira berasingan.</div></div>
+  <div class="card"><div class="big">${esc(shop.name)}</div>${lines}<div class="row"><span>Harga asal Vendor</span><span>${rm(s.sub)}</span></div><div class="row"><span>Markup MYRIDERKU</span><span>${rm(s.markup)}</span></div><div class="row"><span><b>Jumlah produk</b></span><span><b>${rm(s.total)}</b></span></div><div class="mut">Vendor menerima 100% harga asal.</div><div id="feeRow"></div></div>
   <div class="card"><div class="big">Cara terima</div><div class="opts" id="mode" style="margin-top:8px"><button class="on" data-m="ambil" type="button">🚶 Ambil sendiri</button><button data-m="hantar" type="button">🛵 Hantar (rider)</button></div>
-  <div id="addrBox" class="hide"><label class="l">Alamat hantar</label><input class="f" id="addr" maxlength="200" placeholder="No rumah, taman, kawasan"><div class="acts"><button class="btn gry sm" id="gps" type="button">📍 Guna lokasi saya</button></div><div class="mut" id="gpsT"></div><div class="mut" style="margin-top:6px">Selepas kedai terima, anda boleh tekan “Panggil rider” di halaman status. Upah rider dikira berasingan.</div></div></div>
+  <div id="addrBox" class="hide"><label class="l">Alamat hantar</label><input class="f" id="addr" maxlength="200" placeholder="No rumah, taman, kawasan"><div class="acts"><button class="btn gry sm" id="gps" type="button">📍 Guna lokasi saya</button></div><div class="mut" id="gpsT"></div><div class="mut" id="feeT" style="margin-top:6px">Upah rider dikira ikut jarak dari kedai ke lokasi anda. Satu order, satu bayaran. Rider dipanggil automatik bila kedai terima.</div></div></div>
   <div class="card"><label class="l" style="margin-top:0">Nama</label><input class="f" id="nm" maxlength="60" value="${esc(nm)}" autocomplete="name"><label class="l">No. telefon</label><input class="f" id="ph" type="tel" inputmode="tel" maxlength="20" value="${esc(ph)}" placeholder="0123456789" autocomplete="tel"><label class="l">Catatan (pilihan)</label><textarea class="f" id="nt" maxlength="200" rows="2" placeholder="Cth: kurang pedas"></textarea>
   <div class="big" style="margin-top:12px">Bayaran</div><div class="opts" id="pay" style="margin-top:8px"><button class="on" data-p="cash" type="button">💵 Tunai</button><button data-p="online" type="button">📲 Transfer / QR</button></div></div>
   <div class="err" id="err" style="color:#fda4af;min-height:20px"></div><button class="btn full" id="go" type="button">🛒 Hantar pesanan · ${rm(s.total)}</button>`);
   $('#bk').onclick=drawMenu;
-  $('#mode').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.m; [...$('#mode').children].forEach(x=>x.classList.toggle('on',x===b)); $('#addrBox').classList.toggle('hide',mode!=='hantar') };
+  $('#mode').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; mode=b.dataset.m; QM=mode; [...$('#mode').children].forEach(x=>x.classList.toggle('on',x===b)); $('#addrBox').classList.toggle('hide',mode!=='hantar'); if(mode==='hantar'&&(geo||$('#addr').value.trim())&&!quote) getQuote(); else refreshFee() };
   $('#pay').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; pay=b.dataset.p; [...$('#pay').children].forEach(x=>x.classList.toggle('on',x===b)) };
-  geo=null;
-  $('#gps').onclick=()=>{ if(!navigator.geolocation){ $('#gpsT').textContent='Peranti tak sokong lokasi.'; return } $('#gpsT').textContent='Mengesan…'; navigator.geolocation.getCurrentPosition(p=>{ geo=[+p.coords.latitude.toFixed(6),+p.coords.longitude.toFixed(6)]; $('#gpsT').textContent='✅ Lokasi dikesan'; if(!$('#addr').value.trim()) $('#addr').value='Lokasi GPS saya ('+geo.join(', ')+')' },()=>{ $('#gpsT').textContent='Tak dapat akses lokasi. Taip alamat sahaja.' },{enableHighAccuracy:true,timeout:12000}) };
+  geo=null; quote=null; QM='ambil'; qSeq++;
+  $('#addr').addEventListener('change',()=>{ geo=null; getQuote() });
+  $('#gps').onclick=()=>{ if(!navigator.geolocation){ $('#gpsT').textContent='Peranti tak sokong lokasi.'; return } $('#gpsT').textContent='Mengesan…'; navigator.geolocation.getCurrentPosition(p=>{ geo=[+p.coords.latitude.toFixed(6),+p.coords.longitude.toFixed(6)]; $('#gpsT').textContent='✅ Lokasi dikesan'; if(!$('#addr').value.trim()) $('#addr').value='Lokasi GPS saya ('+geo.join(', ')+')'; getQuote() },()=>{ $('#gpsT').textContent='Tak dapat akses lokasi. Taip alamat sahaja.' },{enableHighAccuracy:true,timeout:12000}) };
   $('#go').onclick=()=>place({get mode(){return mode},get pay(){return pay}},s);
 }
 async function place(st,s){
   const err=t=>{ $('#err').textContent=t }, nm=$('#nm').value.trim(), ph=$('#ph').value.trim(), addr=($('#addr')?$('#addr').value.trim():'');
   if(!nm) return err('Isi nama anda.'); if(!phoneOk(ph)) return err('Nombor telefon nampak tak betul. Contoh: 0123456789');
   if(st.mode==='hantar'&&!addr) return err('Isi alamat hantar.');
+  if(st.mode==='hantar'){ if(!quote||!geo){ err('Mengira upah rider…'); await getQuote() } if(!quote||!geo) return err('Upah rider belum dapat dikira. Tekan “Guna lokasi saya” atau taip alamat lebih jelas.'); err('') }
   try{ const w=30000-(Date.now()-(+localStorage.getItem('rkb-lastsend')||0)); if(w>0) return err('Sila tunggu '+Math.ceil(w/1000)+' saat sebelum hantar lagi.') }catch(_){}
   const b=$('#go'); b.disabled=true; b.textContent='⏳ Menghantar…'; err('');
   // semak semula: kedai masih buka & stok mencukupi
@@ -140,7 +171,7 @@ async function place(st,s){
   Object.entries(cart).forEach(([k,q],i)=>{ const m=menu[k]; its['i'+i]={n:String(m.n).slice(0,60),q,p:r2(base(m)),id:k.slice(0,40)} });
   const note=(st.mode==='hantar'?'[HANTAR] ':'[AMBIL SENDIRI] ')+$('#nt').value.trim();
   const od={ref,createdAt:TS,name:nm.slice(0,60),phone:ph.slice(0,20),phoneKey:RKB.phoneKey(ph),items:its,sub:S2.sub,markup:S2.markup,total:S2.total,pricingPolicy:'vendor_full_price_plus_platform_markup_v1',status:'baru',pay:st.pay,notes:note.slice(0,300)};
-  if(st.mode==='hantar'){ od.addr=addr.slice(0,200); if(geo){ od.lat=geo[0]; od.lng=geo[1] } }
+  if(st.mode==='hantar'){ od.addr=addr.slice(0,200); if(geo){ od.lat=geo[0]; od.lng=geo[1] } od.fee=quote.fee; od.km=quote.km; od.grand=r2(S2.total+quote.fee) }
   const up={}; up['vorders/'+uid+'/'+id]=od; up['ratelimit/'+od.phoneKey]=TS;
   try{
     await Promise.race([RKB.db.ref().update(up),new Promise((_,r)=>setTimeout(()=>r({code:'TIMEOUT'}),9000))]);
@@ -154,6 +185,30 @@ async function place(st,s){
   }
 }
 
+/* ---------- Panggil rider automatik (pickup = kedai, drop = lokasi semasa order) ---------- */
+const DS={};
+async function dispatchRider(id,o,sh){
+  if(DS[id]==='busy'||DS[id]==='ok') return; DS[id]='busy';
+  const done=v=>{ DS[id]=v; if(window.__redraw) window.__redraw() };
+  try{
+    let ex=null; try{ ex=await RKB.db.ref('orders/'+id+'/ref').once('value') }catch(_){}
+    if(ex&&ex.exists()){ return done('ok') }
+    let g=null; try{ g=await RKB.ensureGuestAuth() }catch(_){}
+    const TS=firebase.database.ServerValue.TIMESTAMP, cash=o.pay==='cash', item=cash?r2(+o.total||0):0, minCash=+(RKB.cfg.walletMinCash??0), pk=RKB.phoneKey(o.phone||'');
+    if(!pk) return done('fail');
+    const order={ref:'RKB-'+id.slice(0,4).toUpperCase(),createdAt:TS,status:'baru',...(g?{customerUid:g.uid}:{}),service:'Tapau Makanan',vehicle:'Motor',
+      pick:{lat:+sh.lat,lng:+sh.lng,addr:(sh.name+(sh.addr?', '+sh.addr:'')).slice(0,200)},drop:{lat:+o.lat,lng:+o.lng,addr:String(o.addr).slice(0,200)},
+      notes:('Ambil pesanan kedai '+sh.name+' #'+o.ref+(cash?' (bayar kedai: '+rm(o.total)+')':' (sudah dibayar, jumlah ikut order kedai)')).slice(0,600),name:String(o.name||'').slice(0,60),km:+o.km||0,rain:false,price:+o.fee,pay:o.pay,itemEst:item,need:cash?minCash+item:0};
+    const up={}; up['orders/'+id]=order; up['orderContacts/'+id]={phone:String(o.phone).slice(0,20),phoneKey:pk}; up['ratelimit/'+pk]=TS;
+    await Promise.race([RKB.db.ref().update(up),new Promise((_,r)=>setTimeout(()=>r({code:'TIMEOUT'}),9000))]);
+    done('ok');
+  }catch(e){
+    console.error('dispatch',e);
+    try{ const ex=await RKB.db.ref('orders/'+id+'/ref').once('value'); if(ex&&ex.exists()) return done('ok') }catch(_){}
+    done('fail');
+  }
+}
+
 /* ---------- Status pesanan ---------- */
 function track(u,id){
   $('#cartbar').classList.add('hide'); $('#ttl').textContent='Status pesanan'; if(off) off();
@@ -161,20 +216,27 @@ function track(u,id){
   let sh=null, payD=null, rated=false;
   RKB.db.ref('vshops/'+u).once('value').then(s=>{ sh=s.val(); if(cur) draw(cur) }).catch(()=>{});
   RKB.readPublicPayment().then(v=>{ payD=v; if(cur) draw(cur) }).catch(()=>{});
+  window.__redraw=()=>{ if(cur) draw(cur) };
   let cur=null; const ref=RKB.db.ref('vorders/'+u+'/'+id), cb=s=>{ cur=s.val(); if(!cur){ view('<div class="card">Pesanan tak dijumpai.<div class="acts"><a class="btn" href="customer-shop.html">Ke senarai kedai</a></div></div>'); return } draw(cur) };
   ref.on('value',cb,()=>view('<div class="card">Tak dapat membaca pesanan. Cuba lagi.</div>')); off=()=>ref.off('value',cb);
   function draw(o){
     const its=Object.values(o.items||{}).map(i=>`<div class="row"><span>${esc(i.q)}× ${esc(i.n)}</span><span>${rm((+i.p||0)*(+i.q||0))}</span></div>`).join('');
     const fin=['selesai','ditolak','batal'].includes(o.status); if(fin){ try{ const l=JSON.parse(localStorage.getItem(SK)||'null'); if(l&&l.o===id) localStorage.removeItem(SK) }catch(_){} }
     let h=`<div class="card"><div class="mut">#${esc(o.ref)} · ${esc(sh?sh.name:'')}</div><div class="big">${esc(ST_L[o.status]||o.status)}</div>${o.status==='diterima'&&o.prep?`<div class="mut">Anggaran siap ≈ ${esc(o.prep)} minit</div>`:''}${o.reason?`<div class="mut">Sebab: ${esc(o.reason)}</div>`:''}</div>`;
-    h+=`<div class="card">${its}<div class="row"><span><b>Jumlah</b></span><span><b>${rm(o.total)}</b></span></div><div class="row"><span>Bayaran</span><span>${o.pay==='cash'?'Tunai':'Transfer / QR'}</span></div>${o.notes?`<div class="row"><span>Catatan</span><span>${esc(o.notes)}</span></div>`:''}${o.addr?`<div class="row"><span>Hantar ke</span><span>${esc(o.addr)}</span></div>`:''}</div>`;
-    if(o.pay==='online'&&!fin&&payD&&(payD.acc||payD.qr)) h+=`<div class="card"><div class="big">📲 Bayar ${rm(o.total)}</div><div style="margin-top:6px;line-height:1.7">${payD.bank?esc(payD.bank)+'<br>':''}${payD.acc?'No. akaun: <b>'+esc(payD.acc)+'</b><br>':''}${payD.name?'Nama: '+esc(payD.name):''}</div>${payD.qr&&/^data:image\//.test(payD.qr)?`<img alt="QR bayaran" src="${esc(payD.qr)}" style="display:block;max-width:240px;width:100%;margin:10px auto 0;border-radius:12px;background:#fff">`:''}</div>`;
-    const wantRider=o.addr&&['diterima','siap'].includes(o.status)&&sh&&sh.lat!=null;
-    if(wantRider){ const p=new URLSearchParams({pk:sh.lat+','+sh.lng,pa:(sh.name+(sh.addr?', '+sh.addr:'')).slice(0,200),da:o.addr,n:('Ambil pesanan kedai '+sh.name+' #'+o.ref+(o.pay==='online'?' (sudah dibayar kepada kedai)':' (bayar kedai: '+rm(o.total)+')')).slice(0,300)}); if(o.lat!=null) p.set('dk',o.lat+','+o.lng); h+=`<a class="btn full" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="customer.html?${p.toString().replace(/\+/g,'%20')}">🛵 Panggil rider hantar</a>`; }
+    h+=`<div class="card">${its}<div class="row"><span><b>${o.fee!=null?'Jumlah produk':'Jumlah'}</b></span><span><b>${rm(o.total)}</b></span></div>${o.fee!=null?`<div class="row"><span>🛵 Upah rider</span><span>${rm(o.fee)}</span></div><div class="row"><span><b>Jumlah bayar</b></span><span><b>${rm(r2(o.total+o.fee))}</b></span></div>`:''}<div class="row"><span>Bayaran</span><span>${o.pay==='cash'?'Tunai':'Transfer / QR'}</span></div>${o.notes?`<div class="row"><span>Catatan</span><span>${esc(o.notes)}</span></div>`:''}${o.addr?`<div class="row"><span>Hantar ke</span><span>${esc(o.addr)}</span></div>`:''}</div>`;
+    if(o.pay==='online'&&!fin&&payD&&(payD.acc||payD.qr)) h+=`<div class="card"><div class="big">📲 Bayar ${rm(o.fee!=null?r2(o.total+o.fee):o.total)}</div><div style="margin-top:6px;line-height:1.7">${payD.bank?esc(payD.bank)+'<br>':''}${payD.acc?'No. akaun: <b>'+esc(payD.acc)+'</b><br>':''}${payD.name?'Nama: '+esc(payD.name):''}</div>${payD.qr&&/^data:image\//.test(payD.qr)?`<img alt="QR bayaran" src="${esc(payD.qr)}" style="display:block;max-width:240px;width:100%;margin:10px auto 0;border-radius:12px;background:#fff">`:''}</div>`;
+    const auto=o.fee!=null&&o.lat!=null&&o.addr&&sh&&sh.lat!=null;
+    if(auto&&['diterima','siap'].includes(o.status)){
+      if(!DS[id]) dispatchRider(id,o,sh);
+      h+=DS[id]==='ok'?`<div class="card">🛵 <b>Rider sedang dicari / dalam perjalanan.</b> Tiada apa-apa lagi untuk anda buat.<div class="acts"><a class="btn gry" href="customer-track.html?id=${encodeURIComponent(id)}">📡 Jejak rider</a></div></div>`:DS[id]==='fail'?`<div class="card">⚠️ Rider belum berjaya dipanggil.<div class="acts"><button class="btn full" id="rd" type="button">🔁 Cuba panggil rider</button></div></div>`:`<div class="card mut">⏳ Memanggil rider…</div>`;
+    } else if(!auto&&o.addr&&['diterima','siap'].includes(o.status)&&sh&&sh.lat!=null){   /* order lama (tiada upah dalam order): kekal cara lama */
+      const p=new URLSearchParams({pk:sh.lat+','+sh.lng,pa:(sh.name+(sh.addr?', '+sh.addr:'')).slice(0,200),da:o.addr,n:('Ambil pesanan kedai '+sh.name+' #'+o.ref+(o.pay==='online'?' (sudah dibayar kepada kedai)':' (bayar kedai: '+rm(o.total)+')')).slice(0,300)}); if(o.lat!=null) p.set('dk',o.lat+','+o.lng);
+      h+=`<a class="btn full" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="customer.html?${p.toString().replace(/\+/g,'%20')}">🛵 Panggil rider hantar</a>`; }
     if(o.status==='baru') h+='<div class="acts"><button class="btn gry full" id="cx" type="button" style="border:1px solid #ef4444">🚫 Batalkan pesanan</button></div>';
     if(o.status==='selesai'){ h+=o.rating?`<div class="card"><div class="big">Terima kasih! ${'⭐'.repeat(+o.rating.stars||0)}</div></div>`:'<div class="card"><div class="big">Macam mana pesanan tadi?</div><div id="stars">'+[1,2,3,4,5].map(n=>`<button class="star" data-n="${n}" type="button">⭐</button>`).join('')+'</div></div>'; }
     h+='<div class="acts"><a class="btn gry" href="customer-shop.html">🏪 Semua kedai</a><a class="btn gry" href="customer.html">🛵 Hantar barang</a></div>';
     view(h);
+    const rd=$('#rd'); if(rd) rd.onclick=()=>{ DS[id]=null; dispatchRider(id,cur,sh) };
     const cx=$('#cx'); if(cx) cx.onclick=async()=>{ if(!confirm('Batalkan pesanan ini?')) return; cx.disabled=true; try{ await ref.child('status').set('batal') }catch(e){ toast('Tak dapat batal: kedai mungkin baru terima.'); cx.disabled=false } };
     const st=$('#stars'); if(st) st.onclick=async e=>{ const b=e.target.closest('.star'); if(!b||rated) return; rated=true; try{ await ref.child('rating').set({stars:+b.dataset.n,t:Date.now()}) }catch(_){ rated=false; toast('Tak dapat hantar penilaian.') } };
   }
