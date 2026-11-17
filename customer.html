@@ -133,6 +133,7 @@ body.typing{padding-bottom:24px}
 <a class="nb" href="customer-shop.html" style="margin:14px 18px 0;text-decoration:none;color:inherit"><div class="i"><b>🏪 Pesan terus dari kedai</b><small>Pilih menu daripada kedai rakan MYRIDERKU</small></div><span style="font-size:20px">›</span></a>
 
 <a class="nb" href="customer-rewards.html" style="margin:10px 18px 0;text-decoration:none;color:inherit"><div class="i"><b>🎁 MYRIDERKU Rewards & VIP</b><small>Coins, keahlian VIP, voucher dan promosi</small></div><span style="font-size:20px">›</span></a>
+<div id="shopnote"></div>
 <div id="again"></div>
 
 <div class="steps" id="steps">
@@ -236,8 +237,8 @@ body.typing{padding-bottom:24px}
 /* ===== TETAPAN (ubah di sini) ===== */
 let WA_NUMBER = (window.RKB_CFG&&RKB_CFG.waNumber)||"601139900099";  // nombor WhatsApp rider, format 60xxxxxxxxx
 let BASE = 5;                    // RM5 untuk 5 km pertama
-let FREE_KM = 5;                 // km termasuk dalam asas (lebih: RM1/km atau sebahagiannya)
-let PER_KM = 1;                  // RM1 setiap km selepas itu
+let FREE_KM = 0;                 // POLISI: tiada km percuma; RM1 setiap km
+let PER_KM = 1;                  // RM1 setiap km
 let CAR_EXTRA = 10, RAIN_EXTRA = 2;
 const CENTER = [6.1254, 102.2381]; // Kota Bharu
 /* ================================== */
@@ -432,8 +433,8 @@ async function route(){
 }
 function etaTxt(){ return S.min==null?'':' · ≈ '+(S.min+8)+' min' }
 function parts(){
-  const km=S.km??0, o={base:BASE,extra:Math.max(0,Math.ceil(km-FREE_KM))*PER_KM,car:S.vehicle==='Kereta'?CAR_EXTRA:0,rain:$('#rain').checked?RAIN_EXTRA:0};
-  o.sum=o.base+o.extra+o.car+o.rain; o.total=Math.round(o.sum*2)/2; o.round=o.total-o.sum; return o;   // genapkan 0.50
+  const km=S.km??0, o={base:BASE,extra:+(Math.max(0,km-FREE_KM)*PER_KM).toFixed(2),car:S.vehicle==='Kereta'?CAR_EXTRA:0,rain:$('#rain').checked?RAIN_EXTRA:0};
+  o.sum=o.base+o.extra+o.car+o.rain; o.total=Math.ceil(o.sum*2-1e-9)/2; o.round=o.total-o.sum; return o;   // bundar ke atas kepada gandaan 0.50
 }
 function calc(){ return parts().total }
 const rmx=n=>(+n%1?(+n).toFixed(2):String(+n));
@@ -498,8 +499,8 @@ function summary(){
   const p=parts(), rows=[['Servis',S.service],['Ambil',$('#pick').value],['Hantar',$('#drop').value],...($('#recv').value.trim()?[['Penerima',$('#recv').value.trim()]]:[]),['Jarak',(S.km??0).toFixed(1)+' KM'],
     ['Kenderaan',S.vehicle],['Bayaran',S.pay==='cash'?'Tunai'+(BUY.includes(S.service)&&+$('#itemEst').value?' · barang ≈ RM'+(+$('#itemEst').value).toFixed(2):''):'Transfer / QR'],['Catatan',$('#notes').value.trim()],['Nama',$('#name').value+' · '+$('#phone').value]];
   let h=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
-  const b=[['Upah asas (sehingga '+FREE_KM+' KM)',p.base]];
-  if(p.extra) b.push(['Jarak tambahan ('+Math.ceil((S.km??0)-FREE_KM)+' KM × RM'+rmx(PER_KM)+')',p.extra]);
+  const b=[['Upah asas',p.base]];
+  if(p.extra) b.push(['Jarak ('+(S.km??0).toFixed(1)+' KM × RM'+rmx(PER_KM)+')',p.extra]);
   if(p.car) b.push(['Kenderaan kereta',p.car]);
   if(p.rain) b.push(['Caj hujan',p.rain]);
   if(p.round) b.push(['Pembundaran',p.round]);
@@ -590,7 +591,7 @@ async function send(){
     `🌧️ *Status Cuaca:* ${$('#rain').checked?'🌧️ Hujan (+RM'+RAIN_EXTRA.toFixed(2)+')':'Cerah'}`,
     `💰 *JUMLAH TAMBANG PELANGGAN: RM ${calc().toFixed(2)}*`,
     line,
-    `_Tambang asas: RM${BASE.toFixed(2)} untuk jarak sehingga ${FREE_KM} KM. Lebih ${FREE_KM} KM, tambah RM${PER_KM.toFixed(2)} bagi setiap KM tambahan atau sebahagiannya. Bayar lepas sampai._`
+    `_Tambang: asas RM${BASE.toFixed(2)} + RM${PER_KM.toFixed(2)} setiap KM, dibundarkan ke atas kepada gandaan RM0.50. Bayar lepas sampai._`
   ].join('\n');
   };
   const nx=$('#next'), setBtn=(t,dis)=>{ nx.textContent=t; nx.disabled=!!dis };
@@ -636,7 +637,8 @@ function autoDetect(){
     setPoint('drop',ll,'Memuatkan alamat...');
     setMode('pick');   // lokasi hantar dah diisi, seterusnya pin ambil
     $('#drop').value=await reverse(ll);
-    g.textContent='✅ Lokasi anda diisi sebagai lokasi hantar. Bukan di sini? Tukar dengan taip alamat, tekan peta atau seret pin hantar.';
+    g.innerHTML='✅ Lokasi anda dah diisi sebagai tempat <b>HANTAR</b>. Sekarang pilih tempat <b>AMBIL</b> (kedai, pasar atau rumah). <button type="button" class="chip" id="swapMine" style="margin-top:6px">⇄ Nak hantar DARI lokasi saya? Tukar</button>';
+    const sw=$('#swapMine'); if(sw) sw.onclick=()=>{ const d=S.drop; if(!d) return; const v=$('#drop').value; clearPoint('drop'); $('#drop').value=''; setPoint('pick',d,v); setMode('drop'); g.textContent='✅ Lokasi anda dah diisi sebagai tempat AMBIL. Sekarang pilih tempat HANTAR.' };
   },err=>{
     g.textContent=err.code===1?'Lokasi tak dibenarkan. Tak mengapa, tekan peta atau taip alamat.':'Lokasi tak dapat dikesan. Tekan peta atau taip alamat.';
   },{enableHighAccuracy:true,timeout:12000,maximumAge:30000});
@@ -732,6 +734,11 @@ $('#saved').onclick=e=>{ const b=e.target.closest('.chip'); if(!b) return; const
     a[k]={lat:S[w][0],lng:S[w][1],addr:$('#'+w).value}; try{localStorage.setItem(ADDRK,JSON.stringify(a))}catch(_){} drawSaved(); return }
   const s=a[b.dataset.a]; if(!s){ $('#err').textContent='Belum disimpan. Letak pin, kemudian tekan 💾 Simpan lokasi semasa.'; return }
   const w=S.mode; setPoint(w,[s.lat,s.lng],s.addr) };
+/* ---- Order kedai aktif: jangan suruh customer tempah rider lagi di sini ---- */
+(function(){ if(!RKB.ok) return; let l=null; try{ l=JSON.parse(localStorage.getItem('rkb-vlast')||'null') }catch(_){} if(!l||!l.v||!l.o) return;
+  RKB.db.ref('vorders/'+l.v+'/'+l.o).once('value').then(sn=>{ const o=sn.val(); if(!o||!o.addr||!['baru','diterima','siap'].includes(o.status)) return;
+    const auto=/\[#U=/.test(String(o.notes||'')), u='customer-shop.html?v='+encodeURIComponent(l.v)+'&o='+encodeURIComponent(l.o);
+    $('#shopnote').innerHTML='<a class="nb" href="'+u+'" style="margin:14px 18px 0;text-decoration:none;color:inherit;border-color:#3b82f6"><div class="i"><b>🛵 Order kedai anda sedang diproses</b><small>'+(auto?'Rider dipanggil automatik bila kedai terima. Anda TAK perlu tempah rider di sini.':'Tekan untuk lihat status dan panggil rider.')+'</small></div><span style="font-size:20px">›</span></a>' }).catch(()=>{}) })();
 /* ---- Tempah semula ---- */
 (function(){ let p=null; try{p=JSON.parse(localStorage.getItem('rkb-prev')||'null')}catch(_){} if(!p||!p.pick||!p.drop) return;
   $('#again').innerHTML=`<div class="nb" style="margin:14px 18px 0"><div class="i"><b>🔁 Tempah semula</b><small>${esc(p.service)} · ${esc(String(p.pick.addr).slice(0,38))} ➜ ${esc(String(p.drop.addr).slice(0,38))}</small></div><button type="button" id="againBtn">Guna</button></div>`;
@@ -772,7 +779,7 @@ function drawGreet(){ $('#greet').textContent=RKB.say('Nak tapau atau hantar apa
 $('#lg').onclick=()=>{ RKB.toggleLoghat(); drawGreet() }; drawGreet();
 /* ---- Tetapan dari admin (harga, WhatsApp, bayaran): cache dulu, kemudian kemas kini ---- */
 function applySettings(st){ if(!st) return; const p=st.pricing||{}, n=(v,d)=>(v!==undefined&&v!==null&&v!==''&&isFinite(+v)&&+v>=0)?+v:d;
-  BASE=n(p.base,BASE); FREE_KM=n(p.freeKm,FREE_KM); PER_KM=n(p.perKm,PER_KM); CAR_EXTRA=n(p.car,CAR_EXTRA); RAIN_EXTRA=n(p.rain,RAIN_EXTRA);
+  BASE=n(p.base,BASE); PER_KM=n(p.perKm,PER_KM); CAR_EXTRA=n(p.car,CAR_EXTRA); RAIN_EXTRA=n(p.rain,RAIN_EXTRA);
   if(st.wa&&/^60\d{8,11}$/.test(String(st.wa))) WA_NUMBER=String(st.wa);
   if(st.pay) PAY=st.pay;
   $('#carAmt').textContent=rmx(CAR_EXTRA); $('#rainAmt').textContent=rmx(RAIN_EXTRA); drawPay(); price(); }

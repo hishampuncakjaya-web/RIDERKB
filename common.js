@@ -181,8 +181,8 @@
   const readPublicPayment=()=>readPublicConfig().then(v=>v.payment||null);
   const riderPay=o=>o&&o.riderPay!=null?+o.riderPay:r2((+(o&&o.price)||0)*_sh.rider/100);          // bahagian rider (apa yang rider nampak)
   const platCut=o=>r2((+(o&&o.price)||0)-riderPay(o));                                              // untung platform daripada upah (admin sahaja)
-  const vMarkup=b=>{const base=r2(Math.max(0,+b||0));return r2(base*0.10)};
-  const vPrice=b=>r2(Math.max(0,+b||0)+vMarkup(b)); // Polisi rasmi: markup MYRIDERKU 10% atas harga vendor; vendor kekal terima harga asal
+  const vMarkup=b=>{const base=r2(Math.max(0,+b||0));return base<10?1:Math.max(1,r2(base*0.10))};   // POLISI: <RM10 = RM1.00/unit; >=RM10 = 10%/unit, minimum RM1.00
+  const vPrice=b=>r2(Math.max(0,+b||0)+vMarkup(b)); // Polisi rasmi: markup MYRIDERKU atas harga vendor (lihat vMarkup); vendor kekal terima harga asal
   // akaun admin tersangkut di halaman rider/vendor: tunjuk mesej jelas (bukan skrin kosong)
   const adminGuard=(u,role)=>{
     const old=document.getElementById('admGuard'); if(old) old.remove();
