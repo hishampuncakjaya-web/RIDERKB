@@ -1,0 +1,52 @@
+/* MYRIDERKU Mascot Edition V2 — visual layer only; no application logic changed */
+:root{--mnh-radius:22px;--mnh-shadow:0 10px 28px rgba(19,38,58,.09);--mnh-ink:#172b45;--mnh-paper:#f7f5ee}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{overflow-x:hidden;background:var(--mnh-paper)!important;color:var(--mnh-ink)!important;padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+body.role-customer{--role:#e53946;--role2:#b91c35;--role-soft:#fff0f0;--role-ink:#762333;--role-grad:linear-gradient(135deg,#f34c54,#b91c35)}
+body.role-rider{--role:#159653;--role2:#087443;--role-soft:#eaf8ef;--role-ink:#155c3b;--role-grad:linear-gradient(135deg,#22b86b,#087443)}
+body.role-vendor{--role:#ed941f;--role2:#c66b10;--role-soft:#fff5e5;--role-ink:#75400e;--role-grad:linear-gradient(135deg,#ffbd4b,#d97706)}
+body.role-admin{--role:#c59a32;--role2:#8c681b;--role-soft:#f8f1df;--role-ink:#614713;--role-grad:linear-gradient(135deg,#242424,#090909)}
+body:not(.role-customer):not(.role-rider):not(.role-vendor):not(.role-admin){--role:#159653;--role2:#087443;--role-soft:#eaf8ef;--role-ink:#155c3b;--role-grad:linear-gradient(135deg,#22b86b,#087443)}
+body.role-customer,body.role-rider,body.role-vendor,body.role-admin{--bg:#f7f5ee;--card:#fffdf8;--card2:#f1f3f1;--line:#dce3df;--txt:#172b45;--mut:#718078;--red:var(--role);--org:#e9a33b;--grn:#159653;color-scheme:light}
+body.role-customer .hd,body.role-rider .hd,body.role-vendor .hd,body.role-admin .hd,body.role-customer>header,body.role-rider>header,body.role-vendor>header,body.role-admin>header{background:var(--role-grad)!important;color:#fff!important;border:0!important;border-radius:0 0 28px 28px;padding:22px 18px 24px;box-shadow:var(--mnh-shadow)}
+.hd h1{display:flex;align-items:center;gap:10px;font-size:clamp(20px,5vw,25px)!important;letter-spacing:-.5px;font-weight:900!important}
+body.role-customer .hd h1:before,body.role-rider .hd h1:before,body.role-vendor .hd h1:before,body.role-admin .hd h1:before{content:"";display:inline-block;flex:0 0 44px;width:44px;height:44px;border-radius:14px;background-size:cover;background-position:center;box-shadow:0 4px 12px #0003;border:2px solid #ffffff99}
+body.role-customer .hd h1:before{background-image:url('icon-customer-192.png')}
+body.role-rider .hd h1:before{background-image:url('icon-rider-192.png')}
+body.role-vendor .hd h1:before{background-image:url('icon-vendor-192.png')}
+body.role-admin .hd h1:before{background-image:url('icon-admin-192.png')}
+.tag{background:#ffffff20;border:1px solid #ffffff80!important;color:#fff!important;border-radius:99px;padding:6px 11px;font-weight:850;letter-spacing:1.2px}
+.hbtn{background:#ffffff24!important;border:1px solid #ffffff66!important;color:#fff!important;border-radius:14px!important;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.card,.stat,.fold,.mbox,.price,.panel,.box,.section,.order-card{border-radius:var(--mnh-radius)!important;box-shadow:var(--mnh-shadow);border:1px solid var(--line)!important;background:var(--card)!important;color:var(--txt)}
+.card{padding:17px!important;margin:13px 0!important}
+h2,h3{color:var(--mnh-ink);letter-spacing:-.25px}
+.btn:not(.gry):not(.blu),button.primary,.next,.cta{background:var(--role-grad)!important;color:#fff!important;border:0!important;border-radius:16px!important;box-shadow:0 6px 15px color-mix(in srgb,var(--role) 22%,transparent)}
+.btn.gry,.tab,.chip,.opt,.popt,.pin,.svc{border-radius:15px!important}
+.btn,.tab,button{font-weight:750}
+input,select,textarea{background:#fff!important;color:#172b45!important;border:1px solid #cfd9d4!important;border-radius:14px!important;min-height:46px}
+input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(--role) 24%,transparent)!important;border-color:var(--role)!important}
+.tab.on,.chip.on,.opt.on,.popt.on,.svc.on{background:var(--role-soft)!important;color:var(--role-ink)!important;border:1.5px solid var(--role)!important}
+.badge,.pill{border-radius:99px!important}
+.map{border-radius:22px!important;overflow:hidden;box-shadow:var(--mnh-shadow)}
+.nav,.nb,.foot{background:#fff!important;border:1px solid #dce3df!important;box-shadow:0 -6px 24px #172b4510!important;border-radius:24px 24px 0 0!important;padding-bottom:env(safe-area-inset-bottom)}
+.nav button,.nb button,.foot button{border-radius:16px!important;min-height:54px}
+.stats{gap:12px}.stat{padding:17px 12px!important}.stat b{color:var(--role);font-weight:900}
+/* Order details and product lines should wrap on narrow phones, never force page-wide scrolling. */
+.row,.item,.order-line,.product-row{min-width:0;max-width:100%}
+.row span:last-child,.order-line>*:last-child,.product-row>*:last-child{overflow-wrap:anywhere;word-break:normal}
+.card p,.card small,.card div{overflow-wrap:anywhere}
+body.role-customer .wrap,body.role-rider .wrap,body.role-vendor .wrap,body.role-admin .wrap{max-width:760px;width:100%;margin-inline:auto}
+body.role-admin .wrap.wide{max-width:1180px}
+body.role-admin .hd{background:linear-gradient(135deg,#222,#080808)!important;border-bottom:3px solid #d5ad48!important}
+body.role-admin .hd h1:before{border-color:#d5ad48}
+body.role-vendor .nav button.on,body.role-vendor .nb button.on{background:var(--role-soft)!important;color:var(--role-ink)!important}
+body.role-customer .pin.on,body.role-customer .popt.on{border-color:var(--role)!important}
+body.role-customer .bar,body.role-customer .fsbar{background:#fffdf8ed!important}
+body.role-customer .price{background:#fff8ed!important}
+body.role-customer .price b{color:#b66b12!important}
+body.role-rider .on-dot{background:#16a05a;box-shadow:0 0 0 4px #16a05a22}
+body.role-vendor .tg[aria-checked="true"],body.role-vendor .tg.on{background:#159653!important}
+body.role-admin .stat b{color:#a47a20}
+body.role-customer .modal .mbox,body.role-rider .modal .mbox,body.role-vendor .modal .mbox,body.role-admin .modal .mbox{background:#fffdf8!important;color:#172b45!important}
+@media(max-width:420px){.hd{padding:18px 14px 20px!important}.hd h1{font-size:19px!important}.hd h1:before{width:38px!important;height:38px!important;flex-basis:38px!important}.card{padding:14px!important}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:no-preference){.card,.stat,.btn,.tab{transition:box-shadow .18s ease,transform .18s ease}.btn:active,.tab:active{transform:scale(.98)}}

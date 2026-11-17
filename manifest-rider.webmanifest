@@ -8,8 +8,8 @@
   "scope": "./rider.html",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F5F0E5",
-  "theme_color": "#182E4A",
+  "background_color": "#F7F5EE",
+  "theme_color": "#159653",
   "icons": [
     {
       "src": "icon-rider-192.png",
