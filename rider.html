@@ -29,6 +29,8 @@
 <link rel="stylesheet" href="myriderku-v66-premium-ui.css?v=66">
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
 <link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
+<link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
+<link rel="stylesheet" href="health-check.css?v=77">
 </head><body class="role-rider">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP RIDER</span><h1>MYRIDERKU Rider 🛵</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -337,6 +339,20 @@ async function acceptOrder(k){
   }catch(err){ if(reserved) await db.ref('riders/'+user.uid+'/walletReserved').transaction(v=>Math.max(0,Math.round(((+v||0)-amount)*100)/100)).catch(()=>{}); toast('Gagal terima: '+err.code); return false }
   tab='aktif'; sel=k; startGps(); toast('Order diterima. Baki COD ditempah sementara.'); render(); return true;
 }
+// MYRIDERKU custom Aisyah voice alert (Rider)
+const riderAisyahAlert = new Audio('sounds/rider-alert-aisyah.wav');
+riderAisyahAlert.preload='auto';
+let riderAisyahLastPlay=0;
+function playRiderAisyahAlert(){
+  try{
+    const now=Date.now();
+    if(now-riderAisyahLastPlay<1200)return;
+    riderAisyahLastPlay=now;
+    riderAisyahAlert.pause(); riderAisyahAlert.currentTime=0;
+    const p=riderAisyahAlert.play();
+    if(p&&p.catch)p.catch(()=>RKB.beep());
+  }catch(e){RKB.beep()}
+}
 function showDone(k){
   const o=orders[k]||{}, m=RKB.msgRider();
   $('#dT').textContent=m.t; $('#dM').textContent=m.m; const ex=riderExtras(o); $('#dE').textContent='Pendapatan: '+rm(ex.total)+' · #'+(o.ref||'');
@@ -362,8 +378,8 @@ function nextJob(){
   const o=orders[jobCur], d=distTo(o);
   $('#jMeta').textContent=`#${o.ref} · ${o.service} · ${o.vehicle} · ${(+o.km||0).toFixed(1)} KM`+(d!=null?` · 📏 ${d.toFixed(1)} KM dari anda`:'')+(jobQ.length?` · +${jobQ.length} lagi`:'');
   $('#jP').textContent=o.pick.addr; $('#jD').textContent=o.drop.addr; $('#jN').textContent=o.notes||'-'; $('#jPay').textContent=payTxt(o); $('#jPrice').textContent=rm(RKB.riderPay(o));
-  $('#jAcc').disabled=false; $('#job').classList.remove('hide'); RKB.beep();
-  jobTimer=setInterval(()=>{ if(!orders[jobCur]||orders[jobCur].status!=='baru'){ toast('Order dah diambil rider lain'); nextJob(); return } RKB.beep() },4000);
+  $('#jAcc').disabled=false; $('#job').classList.remove('hide'); playRiderAisyahAlert();
+  jobTimer=setInterval(()=>{ if(!orders[jobCur]||orders[jobCur].status!=='baru'){ toast('Order dah diambil rider lain'); nextJob(); return } playRiderAisyahAlert() },4000);
 }
 $('#jSkip').onclick=nextJob;
 $('#tstSnd').onclick=()=>{ RKB.beep(); toast('Kalau tak dengar bunyi: naikkan volume media & lepaskan mod senyap') };
@@ -526,4 +542,5 @@ function updSelf(){
 }
 }
 </script>
+<script src="health-check.js?v=77"></script>
 </body></html>

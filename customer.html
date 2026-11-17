@@ -114,6 +114,8 @@ body.typing{padding-bottom:24px}
 <link rel="stylesheet" href="myriderku-v66-premium-ui.css?v=66">
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
 <link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
+<link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
+<link rel="stylesheet" href="health-check.css?v=77">
 </head>
 <body class="role-customer">
 <div class="wrap">
@@ -799,5 +801,6 @@ show(0); price(); autoDetect();
 try{ const last=localStorage.getItem('rkb-last');
   if(last&&RKB.ok) RKB.db.ref('orders/'+last+'/status').once('value').then(v=>{const st=v.val(); if(st&&st!=='selesai'&&st!=='batal') $('#install').insertAdjacentHTML('beforebegin',`<a href="customer-track.html?id=${last}" style="display:block;margin:14px 18px 0;background:#0b2a4a;border:1px solid #3b82f6;border-radius:16px;padding:12px 14px;color:#93c5fd;font-weight:800;text-decoration:none;text-align:center">📡 Order aktif anda: ${st} · tekan untuk jejak</a>`)}).catch(()=>{}) }catch(_){}
 </script>
+<script src="health-check.js?v=77"></script>
 </body>
 </html>

@@ -57,6 +57,8 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 <link rel="stylesheet" href="myriderku-v66-premium-ui.css?v=66">
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
 <link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
+<link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
+<link rel="stylesheet" href="health-check.css?v=77">
 </head><body class="role-vendor">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">MYRIDERKU Vendor 🏪</h1><div class="sm" id="who"></div></div></header>
@@ -197,6 +199,20 @@ function gate(){
 }
 let started=false;
 function stopData(){dataOffs.forEach(f=>f());dataOffs=[];started=false}
+// MYRIDERKU custom Aisyah voice alert (Vendor)
+const vendorAisyahAlert = new Audio('sounds/vendor-order-aisyah.wav');
+vendorAisyahAlert.preload='auto';
+let vendorAisyahLastPlay=0;
+function playVendorAisyahAlert(){
+  try{
+    const now=Date.now();
+    if(now-vendorAisyahLastPlay<1200)return;
+    vendorAisyahLastPlay=now;
+    vendorAisyahAlert.pause(); vendorAisyahAlert.currentTime=0;
+    const p=vendorAisyahAlert.play();
+    if(p&&p.catch)p.catch(()=>R.beep());
+  }catch(e){R.beep()}
+}
 function startData(){
   if(started)return;started=true;R.pushInit('vendor',user);
   const on=(ref,cb)=>{ref.on('value',cb,e=>toast('Ralat: '+e.code));dataOffs.push(()=>ref.off('value',cb))};
@@ -205,12 +221,12 @@ function startData(){
   const q=db.ref('vorders/'+user.uid).orderByChild('createdAt').limitToLast(300);
   let first=true;const seen=new Set();
   on(q,s=>{orders=s.val()||{};const nw=Object.keys(orders).filter(k=>orders[k].status==='baru'&&!seen.has(k));Object.keys(orders).forEach(k=>seen.add(k));
-    if(!first&&nw.length){R.beep();toast('🆕 Order baru!');notify()}first=false;paint();alarm()});
+    if(!first&&nw.length){playVendorAisyahAlert();toast('🆕 Order baru!');notify()}first=false;paint();alarm()});
 }
 function notify(){try{if('Notification' in window&&Notification.permission==='granted')new Notification('🆕 Order baru!',{body:'Buka app untuk terima atau tolak.',tag:'vorder'})}catch(e){}}
 function alarm(){ // ulang bunyi setiap 12s selagi ada order baru belum dijawab
   clearInterval(alarmT);if(!L.some(o=>o.status==='baru'))return;
-  alarmT=setInterval(()=>{if(L.some(o=>o.status==='baru')&&shop&&shop.open)R.beep();else clearInterval(alarmT)},12000);
+  alarmT=setInterval(()=>{if(L.some(o=>o.status==='baru')&&shop&&shop.open)playVendorAisyahAlert();else clearInterval(alarmT)},4000);
 }
 
 /* ---------- Profil kedai ---------- */
@@ -416,4 +432,5 @@ function paintMore(){
   $('#rev').innerHTML=r.length?r.map(o=>`<div class="row" style="display:block"><b>${'★'.repeat(+o.rating.stars||0)}${'☆'.repeat(5-(+o.rating.stars||0))}</b> <span class="mut">#${esc(o.ref)}</span>${o.rating.c?'<div>'+esc(o.rating.c)+'</div>':''}</div>`).join(''):'<div class="mut">Belum ada ulasan.</div>';
 }
 </script>
+<script src="health-check.js?v=77"></script>
 </body></html>

@@ -24,6 +24,8 @@
 <link rel="stylesheet" href="myriderku-v66-premium-ui.css?v=66">
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
 <link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
+<link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
+<link rel="stylesheet" href="health-check.css?v=77">
 </head><body class="role-admin">
 <div class="wrap wide">
 <header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -48,7 +50,7 @@
         <div class="radar-head"><div><span class="radar-kicker">MYRIDERKU FLEET CONTROL</span><h3 style="margin:3px 0 0">Live Rider Radar</h3><div class="mut">Pemantauan lokasi Rider melalui GPS Firebase</div></div><button class="btn sm" id="radarFull" type="button">⛶ Skrin penuh</button></div>
         <div class="radar-stats"><div><b id="radarOnline">0</b><small>Online</small></div><div><b id="radarJobs">0</b><small>Sedang bertugas</small></div><div><b id="radarWaiting">0</b><small>Menunggu order</small></div><div><b id="radarStale">0</b><small>GPS lama</small></div></div>
         <div class="radar-tools"><button class="btn gry sm" id="radarWeather" type="button">☁️ Cuaca kawasan peta</button><button class="btn gry sm" id="radarFit" type="button">◎ Semua Rider</button><span id="radarWeatherText" class="radar-weather-text">Cuaca belum dimuatkan</span></div>
-        <div class="radar-map-wrap"><div id="map" class="map" style="height:min(66vh,620px);min-height:390px"></div><div class="radar-live-pill"><i></i> LIVE GPS</div><div class="radar-map-legend"><span>🟢 Online</span><span>🟡 Bertugas</span><span>🔴 Ambil / hantar</span><span>⚪ Isyarat lama</span></div></div>
+        <div class="radar-map-wrap"><div id="map" class="map" style="height:min(66vh,620px);min-height:390px"></div><button id="radarMyLocation" class="radar-my-location" type="button" aria-label="Lokasi saya">◎ Lokasi saya</button><div class="radar-live-pill"><i></i> LIVE GPS</div><div class="radar-map-legend"><span>🟢 Online</span><span>🟡 Bertugas</span><span>🔴 Ambil / hantar</span><span>⚪ Isyarat lama</span></div></div>
         <div class="mut" style="margin-top:9px">Label Rider memaparkan nama, kelajuan GPS dan umur isyarat. Kelajuan tidak dipaparkan jika data tiada atau sudah lapuk.</div><div id="rChips" class="radar-rider-list"></div>
       </div></div>
       <div data-tab="vendor" class="hide"><div class="card" style="margin-top:0"><h3>Vendor <button class="btn gry sm" id="vCalc" type="button" style="float:right">↻ Kira bayaran</button></h3><div class="mut" id="vInfo">Tekan "Kira bayaran" untuk muat jualan belum dibayar.</div><div id="vendors"></div></div></div>
@@ -371,6 +373,7 @@ $('#thB').textContent=RKB_THEME.label(); $('#thB').onclick=()=>{ RKB_THEME.cycle
 /* ---- Peta live ---- */
 function initMap(){
   map=RKB.baseMap('map');
+  if(map.doubleClickZoom) map.doubleClickZoom.disable();
   initRadarControls();
   document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-rf]'); if(!b||!map) return; const m=rm_[b.dataset.rf]; if(m){ map.setView(m.getLatLng(),16); } });
   map.on('click',e=>{
@@ -442,8 +445,17 @@ function updMap(LST){
 function renderRadarStats(LST,rk,actU){const online=Object.entries(riders).filter(([u,r])=>isOn(r)&&r.lat!=null).length,active=actU.size,waiting=Math.max(0,online-active),stale=[...rk].filter(u=>!isOn(riders[u]||{})).length;[['radarOnline',online],['radarJobs',active],['radarWaiting',waiting],['radarStale',stale]].forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=String(v)})}
 function initRadarControls(){
  const card=document.getElementById('radarCard'),full=document.getElementById('radarFull');
- full?.addEventListener('click',async()=>{try{if(!document.fullscreenElement){await card.requestFullscreen();full.textContent='✕ Keluar skrin penuh'}else{await document.exitFullscreen();full.textContent='⛶ Skrin penuh'}setTimeout(()=>map&&map.invalidateSize(),180)}catch(e){card.classList.toggle('radar-expanded');full.textContent=card.classList.contains('radar-expanded')?'✕ Keluar skrin penuh':'⛶ Skrin penuh';setTimeout(()=>map&&map.invalidateSize(),180)}});
- document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&full){full.textContent='⛶ Skrin penuh';setTimeout(()=>map&&map.invalidateSize(),180)}});
+ const toggleRadarFull=async()=>{try{if(!document.fullscreenElement){await card.requestFullscreen()}else{await document.exitFullscreen()}}catch(e){card.classList.toggle('radar-expanded')}setTimeout(()=>map&&map.invalidateSize(),220)};
+ full?.addEventListener('click',toggleRadarFull);
+ document.addEventListener('fullscreenchange',()=>setTimeout(()=>map&&map.invalidateSize(),220));
+ let lastTap=0;
+ const mapEl=document.getElementById('map');
+ mapEl?.addEventListener('touchend',e=>{const now=Date.now();if(now-lastTap<330){e.preventDefault();toggleRadarFull();lastTap=0}else lastTap=now},{passive:false});
+ mapEl?.addEventListener('dblclick',e=>{e.preventDefault();toggleRadarFull()});
+ document.getElementById('radarMyLocation')?.addEventListener('click',()=>{
+   if(!navigator.geolocation){toast('GPS tidak disokong telefon ini');return}
+   navigator.geolocation.getCurrentPosition(pos=>{if(map){map.setView([pos.coords.latitude,pos.coords.longitude],16,{animate:true});toast('Peta dipusatkan pada lokasi anda')}},err=>toast(err.code===1?'Kebenaran lokasi belum diberikan':'Lokasi GPS belum tersedia'),{enableHighAccuracy:true,timeout:12000,maximumAge:10000});
+ });
  document.getElementById('radarFit')?.addEventListener('click',()=>{if(!map)return;const pts=Object.values(rm_).map(m=>m.getLatLng());if(pts.length)map.fitBounds(L.latLngBounds(pts),{padding:[45,45],maxZoom:15});else toast('Tiada lokasi Rider untuk dipaparkan')});
  document.getElementById('radarWeather')?.addEventListener('click',loadRadarWeather);
 }
@@ -451,4 +463,5 @@ async function loadRadarWeather(){const out=document.getElementById('radarWeathe
 }
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
+<script src="health-check.js?v=77"></script>
 </body></html>
