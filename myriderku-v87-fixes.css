@@ -16,3 +16,10 @@ html body .radar-my-location,html body #radarFull,html body .radar-full-btn{back
 /* Peta vendor mesti ada ketinggian supaya tidak kosong */
 #vendorMap{min-height:300px;height:300px;width:100%;border-radius:18px;background:#e8efe9;position:relative;z-index:0}
 .leaflet-container{font-family:inherit}
+/* V88: peta konsisten pada telefon dan desktop */
+.leaflet-container{touch-action:pan-x pan-y;max-width:100%;}
+.leaflet-container.myr-map-full{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:none!important;z-index:100000!important;border-radius:0!important;margin:0!important;background:#e8eef3;}
+body.myr-map-lock{overflow:hidden!important;overscroll-behavior:none!important;}
+.myr-map-tools{border:0!important;box-shadow:none!important;background:transparent!important}
+.myr-map-fullscreen{width:38px;height:38px;border:0;border-radius:9px;background:#fff;color:#123047;font-size:23px;font-weight:800;line-height:1;box-shadow:0 2px 9px #0003;cursor:pointer}
+.myr-map-fullscreen:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}

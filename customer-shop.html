@@ -188,7 +188,7 @@ async function place(st,s){
     // tulisan tertunda mungkin sudah sampai
     try{ const ex=await Promise.race([RKB.db.ref('vorders/'+uid+'/'+id+'/ref').once('value'),new Promise((_,r)=>setTimeout(r,4000))]); if(ex&&ex.exists()){ try{ localStorage.setItem(SK,JSON.stringify({v:uid,o:id})) }catch(_){} track(uid,id); return } }catch(_){}
     b.disabled=false; refreshFee();
-    err(e&&e.code==='TIMEOUT'?'⚠️ Talian lemah. Pesanan belum masuk, tekan sekali lagi.':e&&e.code==='PERMISSION_DENIED'?'⚠️ Pesanan ditolak: kedai mungkin baru tutup, atau terlalu kerap dalam masa singkat. Cuba lagi sebentar lagi.':'⚠️ Sambungan bermasalah. Tekan sekali lagi.');
+    err(e&&e.code==='TIMEOUT'?'⚠️ Talian lemah. Pesanan belum masuk, tekan sekali lagi.':e&&e.code==='PERMISSION_DENIED'?'⚠️ Sistem tidak membenarkan pesanan ini. Sila hubungi Admin untuk semakan.':'⚠️ Sambungan bermasalah. Tekan sekali lagi.');
   }
 }
 

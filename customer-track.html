@@ -64,6 +64,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="common.js?v=87"></script>
+<script src="map-controls.js?v=88"></script>
 <script src="v81-callables.js?v=87"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('jejak')</script>
 <script>
@@ -117,7 +118,7 @@ else{
     if(o.arrivedAt&&!prevArr&&wasSt!==null&&o.status==='diterima') notify('MYRIDERKU · #'+o.ref,'Rider dah sampai di lokasi ambil 📍');
     prevArr=o.arrivedAt||null;
     $('#again2').classList.toggle('hide',!over); drawConf(); drawRate(); loadProof(); drawPayC();
-    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],['Anggaran upah',rm(o.price)]];
+    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],[o.status==='selesai'?'Harga akhir':'Jumlah tambang',rm(o.price)]];
     $('#sum').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
   }
   $('#dX').onclick=()=>$('#done').classList.add('hide');
