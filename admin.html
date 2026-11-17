@@ -20,6 +20,8 @@
 <link rel="stylesheet" href="myriderku-v43-complete.css?v=44">
 <link rel="stylesheet" href="myriderku-v52-fixes.css?v=52">
 <link rel="stylesheet" href="myriderku-mascot-v2.css?v=2">
+<link rel="stylesheet" href="myriderku-admin-radar-v65.css?v=65">
+<link rel="stylesheet" href="myriderku-v66-premium-ui.css?v=66">
 </head><body class="role-admin">
 <div class="wrap wide">
 <header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -40,9 +42,13 @@
   <div class="tabs" id="mtabs" style="padding:0 0 10px"></div>
   <div>
     <div>
-      <div data-tab="peta" class="hide"><div class="card" style="margin-top:0"><h3>Peta live</h3><div id="map" class="map" style="height:300px"></div>
-        <div class="mut" style="margin-top:8px">🟢 Ambil &nbsp; 🔴 Hantar &nbsp; 🛵 Rider online / ada job (pudar = isyarat lama) &nbsp; ━ Laluan job aktif</div><div id="rChips" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px"></div></div>
-      </div>
+      <div data-tab="peta" class="hide"><div class="card admin-radar-card" id="radarCard" style="margin-top:0">
+        <div class="radar-head"><div><span class="radar-kicker">MYRIDERKU FLEET CONTROL</span><h3 style="margin:3px 0 0">Live Rider Radar</h3><div class="mut">Pemantauan lokasi Rider melalui GPS Firebase</div></div><button class="btn sm" id="radarFull" type="button">⛶ Skrin penuh</button></div>
+        <div class="radar-stats"><div><b id="radarOnline">0</b><small>Online</small></div><div><b id="radarJobs">0</b><small>Sedang bertugas</small></div><div><b id="radarWaiting">0</b><small>Menunggu order</small></div><div><b id="radarStale">0</b><small>GPS lama</small></div></div>
+        <div class="radar-tools"><button class="btn gry sm" id="radarWeather" type="button">☁️ Cuaca kawasan peta</button><button class="btn gry sm" id="radarFit" type="button">◎ Semua Rider</button><span id="radarWeatherText" class="radar-weather-text">Cuaca belum dimuatkan</span></div>
+        <div class="radar-map-wrap"><div id="map" class="map" style="height:min(66vh,620px);min-height:390px"></div><div class="radar-live-pill"><i></i> LIVE GPS</div><div class="radar-map-legend"><span>🟢 Online</span><span>🟡 Bertugas</span><span>🔴 Ambil / hantar</span><span>⚪ Isyarat lama</span></div></div>
+        <div class="mut" style="margin-top:9px">Label Rider memaparkan nama, kelajuan GPS dan umur isyarat. Kelajuan tidak dipaparkan jika data tiada atau sudah lapuk.</div><div id="rChips" class="radar-rider-list"></div>
+      </div></div>
       <div data-tab="vendor" class="hide"><div class="card" style="margin-top:0"><h3>Vendor <button class="btn gry sm" id="vCalc" type="button" style="float:right">↻ Kira bayaran</button></h3><div class="mut" id="vInfo">Tekan "Kira bayaran" untuk muat jualan belum dibayar.</div><div id="vendors"></div></div></div>
       <div data-tab="rider" class="hide"><div class="card" style="margin-top:0"><h3>Rider</h3><div id="riders"></div></div></div>
       <div data-tab="kedai" class="hide">
@@ -232,7 +238,7 @@ function render(){
     <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b> <span class="mut">(rider ${rm(RKB.riderPay(o))} · platform ${rm(RKB.platCut(o))})</span></div>
     <div class="row"><span>Ambil</span><span>${esc(o.pick.addr)}</span></div>
     <div class="row"><span>Hantar</span><span>${esc(o.drop.addr)}</span></div>
-    <div class="row"><span>Nota</span><span>${esc(o.notes||'-')}</span></div>
+    <div class="row"><span>Nota</span><span>${esc(String(o.notes||'-').replace(/\[#U=[\d.]+;K=[\d.]+;S=[\d.]+\]\s?/,''))}</span></div>
     <div class="row"><span>Pelanggan</span><span>${esc(o.name)} · ${esc(PH(o))}</span></div>
     <div class="row"><span>Rider</span><span>${esc(o.riderName||'Belum ada')}</span></div>
     <div class="acts">
@@ -243,7 +249,7 @@ function render(){
       <button class="btn gry sm" data-a="del" data-k="${o.k}">🗑️</button>
     </div></div>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
   const R=Object.entries(riders).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||(a[1].name||'').localeCompare(b[1].name||''));
-  $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;const uid=esc(u);return `<article class="admin-rider-card"><div class="admin-rider-main"><div class="admin-rider-name">${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}</div><div class="admin-rider-meta">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?' · '+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</div>${ok?`<div class="admin-rider-wallet">💰 Baki wallet <strong>${rm(r.wallet||0)}</strong></div>`:''}${ok&&per[r.name]?`<div class="admin-rider-orders">📦 ${per[r.name].n} order · ${rm(per[r.name].s)}</div>`:''}</div><div class="admin-rider-actions">${ok?`<button class="btn grn sm" data-r="top" data-u="${uid}">＋ Wallet</button><button class="btn gry sm" data-r="ded" data-u="${uid}">－ Tolak</button><button class="btn gry sm" data-r="rev" data-u="${uid}">⏸ Gantung</button>`:`<button class="btn grn sm" data-r="ok" data-u="${uid}">✅ Lulus rider</button>`}<button class="btn gry sm" data-r="pw" data-u="${uid}">🔑 Reset kata laluan</button><button class="btn danger sm" data-r="del" data-u="${uid}">🗑️ Padam</button></div></article>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
+  $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;const uid=esc(u);return `<article class="admin-rider-card"><div class="admin-rider-main"><div class="admin-rider-name">${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}</div><div class="admin-rider-meta">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?' · '+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</div>${ok?`<div class="admin-rider-wallet">💰 Wallet Rider <strong>${rm(r.wallet||0)}</strong>${(+r.walletReserved||0)>0?`<div class="mut">Tempahan COD: ${rm(r.walletReserved)} · Tersedia: ${rm(Math.max(0,(+r.wallet||0)-(+r.walletReserved||0)))}</div>`:''}</div>`:''}${ok&&per[r.name]?`<div class="admin-rider-orders">📦 ${per[r.name].n} order · ${rm(per[r.name].s)}</div>`:''}</div><div class="admin-rider-actions">${ok?`<button class="btn grn sm" data-r="top" data-u="${uid}">＋ Wallet</button><button class="btn gry sm" data-r="ded" data-u="${uid}">－ Tolak</button><button class="btn gry sm" data-r="rev" data-u="${uid}">⏸ Gantung</button>`:`<button class="btn grn sm" data-r="ok" data-u="${uid}">✅ Lulus rider</button>`}<button class="btn gry sm" data-r="pw" data-u="${uid}">🔑 Reset kata laluan</button><button class="btn danger sm" data-r="del" data-u="${uid}">🗑️ Padam</button></div></article>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
   try{ updMap(L) }catch(err){ console.error('updMap',err) }
   const late=lateCheck(L), wait=Object.values(riders).filter(r=>r.approved!==true).length;
   lastBadges={order:L.filter(o=>o.status==='baru').length,rider:wait,vendor:Object.values(vendors).filter(v=>v.approved===undefined).length,peta:Object.keys(reps).length};
@@ -263,7 +269,14 @@ $('#riders').onclick=async e=>{
     if(a==='top'||a==='ded'){
       const v=parseFloat(prompt((a==='top'?'Tambah':'Tolak')+' wallet (RM):',''));
       if(!v||v<=0) return; const amt=a==='top'?v:-v, note=prompt('Catatan (pilihan):','')||'';
-      await db.ref('riders/'+u+'/wallet').transaction(w=>Math.max(0,Math.round(((+w||0)+amt)*100)/100));
+      const tx=await db.ref('riders/'+u).transaction(r=>{
+        if(!r) return;
+        const bal=Math.max(0,Math.round((+r.wallet||0)*100)/100), held=Math.max(0,Math.round((+r.walletReserved||0)*100)/100);
+        const next=Math.round((bal+amt)*100)/100;
+        if(next<held||next<0) return;
+        r.wallet=next; return r;
+      });
+      if(!tx.committed){ toast('Tidak boleh tolak: baki tersedia tidak mencukupi atau dana COD sedang ditempah.'); return; }
       await db.ref('walletLog/'+u).push({amt,note,t:Date.now(),by:auth.currentUser.email});
       toast('Wallet dikemas kini 💰');
     }
@@ -355,6 +368,7 @@ $('#thB').textContent=RKB_THEME.label(); $('#thB').onclick=()=>{ RKB_THEME.cycle
 /* ---- Peta live ---- */
 function initMap(){
   map=RKB.baseMap('map');
+  initRadarControls();
   document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-rf]'); if(!b||!map) return; const m=rm_[b.dataset.rf]; if(m){ map.setView(m.getLatLng(),16); } });
   map.on('click',e=>{
     if(shopPick){ shopLL=[+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)]; shopPick=false; if(shMk) map.removeLayer(shMk); shMk=L.marker(shopLL,{icon:RKB.mkIcon('#fbbf24')}).addTo(map); $('#shLocT').textContent='📍 Lokasi dipilih: '+shopLL.join(', '); $('#shLoc').textContent='📍 Tukar lokasi'; backTab(); return }
@@ -410,7 +424,7 @@ function updMap(LST){
   Object.entries(riders).forEach(([u,r])=>{ const recent=r.online===true&&r.t&&nowS()-r.t<900000; if(r.lat==null||!(isOn(r)||recent||actU.has(u))) return; rk.add(u);
     const age=r.t?Math.round((nowS()-r.t)/1000):null, stale=!isOn(r), lbl=(r.name||'Rider')+(r.spd!=null&&!stale?' · '+r.spd+' km/j':'')+(stale&&age!=null?' · isyarat '+(age<90?age+'s':Math.round(age/60)+' min')+' lalu':'');
     if(!rm_[u]) rm_[u]=L.marker([r.lat,r.lng],{icon:RKB.riderIcon(lbl),zIndexOffset:900}).addTo(map); else { RKB.glide(rm_[u],[r.lat,r.lng],1500); rm_[u].setIcon(RKB.riderIcon(lbl)) }
-    rm_[u].setOpacity(stale?.55:1); });
+    const active=actU.has(u); rm_[u].setOpacity(stale?.55:1); rm_[u].bindPopup(`<b>${esc(r.name||'Rider')}</b><br>ID: ${esc(u)}<br>Status: ${active?'Sedang bertugas':live?'Online':'Isyarat lama'}<br>Kelajuan: ${!stale&&r.spd!=null?esc(String(r.spd))+' km/j':'—'}<br>GPS: ${age==null?'Tidak diketahui':age+' saat lalu'}`); });
   Object.keys(rm_).forEach(u=>{ if(!rk.has(u)){ map.removeLayer(rm_[u]); delete rm_[u] } });
   { const ch=document.getElementById('rChips'); if(ch){ const rows=[...rk].map(u=>{ const r=riders[u]||{}, live=isOn(r), age=r.t?Math.round((nowS()-r.t)/1000):null; return `<button type="button" class="btn gry sm" data-rf="${u}" style="${live?'':'opacity:.6'}">${live?'🟢':'🟠'} ${esc(r.name||'Rider')}${age!=null?' · '+(age<90?age+'s':Math.round(age/60)+' min'):''}</button>` }); ch.innerHTML=rows.length?rows.join(''):'<span class="mut">Tiada rider online dengan lokasi sekarang.</span>'; } }
   // garisan laluan terang untuk setiap job aktif
@@ -420,7 +434,17 @@ function updMap(LST){
     navs[o.k].update(o,loc); });
   Object.keys(navs).forEach(k=>{ if(!nk.has(k)){ navs[k].clear(); delete navs[k] } });
   if(!updMap.fit){ const pts=[...Object.values(om),...Object.values(rm_)].map(m=>m.getLatLng()); if(pts.length){ map.fitBounds(L.latLngBounds(pts),{padding:[40,40],maxZoom:15}); updMap.fit=true } }
+  renderRadarStats(LST,rk,actU);
 }
+function renderRadarStats(LST,rk,actU){const online=Object.entries(riders).filter(([u,r])=>isOn(r)&&r.lat!=null).length,active=actU.size,waiting=Math.max(0,online-active),stale=[...rk].filter(u=>!isOn(riders[u]||{})).length;[['radarOnline',online],['radarJobs',active],['radarWaiting',waiting],['radarStale',stale]].forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=String(v)})}
+function initRadarControls(){
+ const card=document.getElementById('radarCard'),full=document.getElementById('radarFull');
+ full?.addEventListener('click',async()=>{try{if(!document.fullscreenElement){await card.requestFullscreen();full.textContent='✕ Keluar skrin penuh'}else{await document.exitFullscreen();full.textContent='⛶ Skrin penuh'}setTimeout(()=>map&&map.invalidateSize(),180)}catch(e){card.classList.toggle('radar-expanded');full.textContent=card.classList.contains('radar-expanded')?'✕ Keluar skrin penuh':'⛶ Skrin penuh';setTimeout(()=>map&&map.invalidateSize(),180)}});
+ document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&full){full.textContent='⛶ Skrin penuh';setTimeout(()=>map&&map.invalidateSize(),180)}});
+ document.getElementById('radarFit')?.addEventListener('click',()=>{if(!map)return;const pts=Object.values(rm_).map(m=>m.getLatLng());if(pts.length)map.fitBounds(L.latLngBounds(pts),{padding:[45,45],maxZoom:15});else toast('Tiada lokasi Rider untuk dipaparkan')});
+ document.getElementById('radarWeather')?.addEventListener('click',loadRadarWeather);
+}
+async function loadRadarWeather(){const out=document.getElementById('radarWeatherText'),btn=document.getElementById('radarWeather');if(!map||!out)return;const c=map.getCenter();out.textContent='Memuatkan cuaca…';if(btn)btn.disabled=true;try{const url=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat.toFixed(4)}&longitude=${c.lng.toFixed(4)}&current=temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m&timezone=Asia%2FKuala_Lumpur`;const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);const j=await res.json(),w=j.current;if(!w)throw new Error('Tiada data cuaca');const desc=({0:'Cerah',1:'Cerah berawan',2:'Separa mendung',3:'Mendung',45:'Kabut',48:'Kabut tebal',51:'Renyai',53:'Renyai sederhana',55:'Renyai lebat',61:'Hujan',63:'Hujan sederhana',65:'Hujan lebat',80:'Hujan setempat',81:'Hujan setempat sederhana',82:'Hujan setempat lebat',95:'Ribut petir',96:'Ribut petir + hujan batu',99:'Ribut petir kuat'})[w.weather_code]||'Keadaan berubah-ubah';out.textContent=`${desc} · ${Math.round(w.temperature_2m)}°C · Hujan ${w.precipitation} mm · Angin ${w.wind_speed_10m} km/j · ${new Date(w.time).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}`}catch(e){out.textContent='Cuaca tidak tersedia. Cuba lagi kemudian.';console.warn('Weather:',e)}finally{if(btn)btn.disabled=false}}
 }
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>

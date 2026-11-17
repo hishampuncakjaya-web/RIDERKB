@@ -1,0 +1,37 @@
+/* MYRIDERKU V64 — responsive marketplace polish */
+:root{--v64-ink:#172b45;--v64-muted:#637487;--v64-line:#dce4e9;--v64-green:#137b49;--v64-cream:#fffdf8}
+body.role-customer{overflow-x:hidden;background:#f5f2e9!important;color:var(--v64-ink)}
+body.role-customer .wrap{width:100%;max-width:760px;margin:0 auto;overflow-x:clip}
+body.role-customer .pad{padding:14px clamp(12px,3.2vw,22px) 30px}
+body.role-customer .hd{min-height:150px;padding:22px clamp(16px,4vw,28px) 24px!important;gap:12px;align-items:center}
+body.role-customer .hd>div{min-width:0;flex:1}
+body.role-customer .hd h1{font-size:clamp(20px,5.2vw,27px)!important;line-height:1.15;overflow-wrap:anywhere}
+body.role-customer .hd .sm{font-size:14px;line-height:1.45}
+body.role-customer .hbtn{flex:0 0 auto;white-space:nowrap}
+body.role-customer .card{min-width:0;max-width:100%;padding:clamp(14px,3.5vw,20px)!important;border:1px solid #d9e1e5!important;border-radius:22px!important;background:#fffdf8!important;box-shadow:0 8px 24px rgba(24,46,74,.07)!important;overflow:hidden}
+body.role-customer .it{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:15px 0;min-width:0}
+body.role-customer .it>div:first-child{min-width:0;overflow-wrap:anywhere;line-height:1.45}
+body.role-customer .it .nm{font-size:clamp(15px,4vw,18px);line-height:1.35;font-weight:800;color:var(--v64-ink);margin-bottom:5px}
+body.role-customer .qty{gap:7px}
+body.role-customer .qty button{width:42px;height:42px;border-radius:13px;background:#142f25;color:#fff;border:0;box-shadow:0 3px 0 rgba(0,0,0,.08)}
+body.role-customer .qty b{min-width:20px;font-variant-numeric:tabular-nums}
+body.role-customer .checkout-summary .big{font-size:20px;margin-bottom:12px;overflow-wrap:anywhere}
+body.role-customer .checkout-lines{display:grid;gap:0;min-width:0}
+body.role-customer .checkout-item{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:12px;padding:12px 0!important;font-size:15px;line-height:1.45;border-bottom:1px solid var(--v64-line)!important}
+body.role-customer .checkout-item span:first-child{flex:initial!important;min-width:0;white-space:normal;overflow-wrap:anywhere;color:var(--v64-muted)!important}
+body.role-customer .checkout-item strong{font-weight:800;white-space:nowrap;text-align:right;color:var(--v64-ink)}
+body.role-customer .checkout-total{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:15px;margin-top:5px;font-size:17px;font-weight:800}
+body.role-customer .checkout-total strong{white-space:nowrap;font-size:19px;color:var(--v64-ink)}
+body.role-customer .row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;min-width:0}
+body.role-customer .row span:first-child{flex:initial!important;min-width:0;white-space:normal;overflow-wrap:anywhere}
+body.role-customer .row span:last-child{min-width:0;white-space:normal;text-align:right}
+body.role-customer input.f,body.role-customer textarea.f{width:100%;max-width:100%;min-width:0;display:block;padding:13px 14px;border-radius:15px!important;box-sizing:border-box;font-size:16px;line-height:1.4}
+body.role-customer textarea.f{resize:vertical;min-height:76px}
+body.role-customer .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+body.role-customer .opts button{min-width:0;min-height:54px;padding:11px 9px;border-radius:15px;font-size:clamp(13px,3.6vw,16px);overflow-wrap:anywhere}
+body.role-customer .err{display:block;min-width:0;max-width:100%;line-height:1.5;overflow-wrap:anywhere;margin:10px 0 8px;color:#b42336!important}
+body.role-customer #go{min-height:54px;white-space:normal;line-height:1.3;padding:14px 16px}
+body.role-customer #cartbar{padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:rgba(255,253,248,.97);backdrop-filter:blur(12px);border-top:1px solid var(--v64-line)}
+body.role-customer #cartGo{min-height:52px}
+@media(max-width:390px){body.role-customer .hd{min-height:132px}body.role-customer .hd h1{font-size:19px!important}body.role-customer .hbtn{padding:8px 10px;font-size:12px}body.role-customer .it{gap:8px}body.role-customer .qty button{width:38px;height:40px}body.role-customer .opts{gap:7px}}
+@media(prefers-reduced-motion:no-preference){body.role-customer .card{transition:box-shadow .18s ease,transform .18s ease}body.role-customer .card:focus-within{box-shadow:0 10px 28px rgba(24,46,74,.11)!important}}

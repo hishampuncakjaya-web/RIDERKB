@@ -26,6 +26,7 @@
 <link rel="stylesheet" href="myriderku-v43-complete.css?v=44">
 <link rel="stylesheet" href="myriderku-v52-fixes.css?v=52">
 <link rel="stylesheet" href="myriderku-mascot-v2.css?v=2">
+<link rel="stylesheet" href="myriderku-v66-premium-ui.css?v=66">
 </head><body class="role-rider">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP RIDER</span><h1>MYRIDERKU Rider 🛵</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -204,7 +205,10 @@ function listenHaz(){ hazRef=db.ref('hazards'); hazRef.on('value',s=>{ hazAdmin=
 const mine=o=>o.riderUid===user.uid;
 const active=o=>mine(o)&&(o.status==='diterima'||o.status==='diambil');
 const list=()=>Object.entries(orders).map(([k,o])=>({k,...o})).sort((a,b)=>b.createdAt-a.createdAt);
-const eligible=o=>!(o.pay==='cash'&&(+me.wallet||0)<(+o.need||0));
+const walletBalance=()=>Math.max(0,Math.round((+me.wallet||0)*100)/100);
+const walletReserved=()=>Math.max(0,Math.round((+me.walletReserved||0)*100)/100);
+const walletAvailable=()=>Math.max(0,Math.round((walletBalance()-walletReserved())*100)/100);
+const eligible=o=>!(o.pay==='cash'&&walletAvailable()<(+o.need||0));
 const distTo=o=>selfPos?hav(selfPos,[o.pick.lat,o.pick.lng]):null;
 const dropR=()=>+(RKB.cfg.dropRadiusM||300);
 const dropDistM=o=>selfPos?Math.round(hav(selfPos,[o.drop.lat,o.drop.lng])*1000):null;   // null = GPS tiada
@@ -215,8 +219,8 @@ function renderTabs(){
   const today=new Date().setHours(0,0,0,0), e=L.filter(o=>mine(o)&&o.status==='selesai'&&(o.t&&o.t.selesai||0)>=today);
   const dn=L.filter(o=>mine(o)&&o.status==='selesai'), sum=a=>a.reduce((s,o)=>s+RKB.riderPay(o),0), wk=dn.filter(o=>(o.t&&o.t.selesai||0)>=Date.now()-7*864e5), mo=dn.filter(o=>(o.t&&o.t.selesai||0)>=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime()), rt=dn.filter(o=>o.rating&&o.rating.stars);
   $('#earn').innerHTML=`Hari ini: ${e.length} order · ${rm(sum(e))}<br>7 hari: ${wk.length} order · ${rm(sum(wk))}<br>Bulan ini: ${mo.length} order · ${rm(sum(mo))}`+(rt.length?`<br>⭐ <b>${(rt.reduce((s,o)=>s+o.rating.stars,0)/rt.length).toFixed(1)}</b> (${rt.length} penilaian)`:'');
-  const w=+me.wallet||0, mc=+(RKB.cfg.walletMinCash??0), mx=Math.max(0,w-mc);
-  $('#wal').innerHTML='💰 Credit Wallet: <b>'+rm(w)+'</b><br>'+(mx>0?'Layak job barang sehingga <b>'+rm(mx)+'</b>':'Layak job tanpa talangan barang sahaja');
+  const w=walletBalance(), held=walletReserved(), available=walletAvailable();
+  $('#wal').innerHTML='💰 Wallet Rider: <b>'+rm(w)+'</b><br>Baki tersedia: <b>'+rm(available)+'</b>'+(held>0?'<br>Digunakan sementara: '+rm(held):'');
   $('#topup').href='https://wa.me/'+RKB.tel(RKB.cfg.waNumber)+'?text='+encodeURIComponent('Salam admin, saya rider '+(me.name||'')+'. Nak top up wallet.');
 }
 $('#tabs').onclick=e=>{ askNotif();const b=e.target.closest('.tab'); if(b){tab=b.dataset.t;render()}};
@@ -228,7 +232,7 @@ function ensureContact(k){
 }
 function card(o){
   const ok=eligible(o), C=contacts[o.k]||{}, ph=RKB.phoneOf(o,C), rv=C.recv||o.recv||'';
-  const nx=o.status==='baru'?(ok?['terima','✅ Terima order','grn']:['lock','🔒 Tak layak: wallet '+rm(me.wallet||0)+', perlu '+rm(o.need),'gry']):{diterima:(o.pickPhoto?['diambil','📦 Barang dah diambil','blu']:null),diambil:(o.dropPhoto?['selesai','🎉 Hantar selesai','grn']:null)}[o.status];
+  const nx=o.status==='baru'?(ok?['terima','✅ Terima order','grn']:['lock','🔒 Wallet tidak mencukupi · tersedia '+rm(walletAvailable())+', perlu '+rm(o.need),'gry']):{diterima:(o.pickPhoto?['diambil','📦 Barang dah diambil','blu']:null),diambil:(o.dropPhoto?['selesai','🎉 Hantar selesai','grn']:null)}[o.status];
   const p=[o.pick.lat,o.pick.lng], d=[o.drop.lat,o.drop.lng], dd=o.status==='baru'?distTo(o):null;
   return `<div class="card" ${o.status==='baru'&&!ok?'style="opacity:.55"':''}><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}</b><span class="badge b-${o.status}">${o.status}</span></div>
   <div class="mut" style="margin:4px 0 8px">${RKB.hm(o.createdAt)} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM${dd!=null?` · 📏 ${dd.toFixed(1)} KM dari anda`:''}</div>
@@ -277,19 +281,48 @@ $('#list').onclick=async e=>{
       up.riderLoc=null; finishing.add(k)                                         // customer tak nampak lokasi rider lagi
     }
     try{ await db.ref('orders/'+k).update(up); }catch(err){ toast('Gagal: '+err.code); render(); return }
-    if(a==='selesai') showDone(k);
+    if(a==='selesai') { await releaseWalletReservation(k); showDone(k); }
     else toast('Barang diambil. Menuju lokasi hantar 🛵');
   }
   render();
 };
+async function reserveWalletForOrder(k, amount){
+  if(amount<=0) return true;
+  const ref=db.ref('riders/'+user.uid);
+  const tx=await ref.transaction(r=>{
+    if(!r) return;
+    const bal=Math.max(0,Math.round((+r.wallet||0)*100)/100);
+    const held=Math.max(0,Math.round((+r.walletReserved||0)*100)/100);
+    if(Math.round((bal-held)*100)/100<amount) return;
+    r.walletReserved=Math.round((held+amount)*100)/100;
+    return r;
+  });
+  if(!tx.committed) return false;
+  me=Object.assign({},me,tx.snapshot.val()||{}); return true;
+}
+async function releaseWalletReservation(k){
+  const o=orders[k]||{}; if(o.pay!=='cash'||o.walletReservedBy!==user.uid||o.walletReservationReleased) return;
+  const amount=Math.max(0,+o.need||0); if(!amount) return;
+  const mark=await db.ref('orders/'+k).transaction(x=>{ if(!x||x.walletReservationReleased) return; x.walletReservationReleased=true; return x; });
+  if(!mark.committed) return;
+  await db.ref('riders/'+user.uid+'/walletReserved').transaction(v=>Math.max(0,Math.round(((+v||0)-amount)*100)/100));
+  const snap=await db.ref('riders/'+user.uid).once('value'); me=Object.assign({},me,snap.val()||{});
+}
 async function acceptOrder(k){
+  const current=orders[k]||{}, amount=current.pay==='cash'?Math.max(0,+current.need||0):0;
+  let reserved=false;
   try{
-    const r=await db.ref('orders/'+k).transaction(o=>{ if(!o) return o; if(o.status!=='baru') return;
-      if(o.pay==='cash'&&(+me.wallet||0)<(+o.need||0)) return;
-      o.status='diterima';o.riderUid=user.uid;o.riderName=me.name;o.riderPhone=me.phone;o.riderPlate=me.plate||'';o.t=Object.assign({},o.t,{diterima:Date.now()});return o });
-    if(!r.committed){ toast('Order tak dapat diambil (rider lain dah ambil atau wallet tak cukup).'); return false }
-  }catch(err){ toast('Gagal terima: '+err.code); return false }
-  tab='aktif'; sel=k; startGps(); toast('Order diterima ✅'); render(); return true;
+    if(amount>0){ reserved=await reserveWalletForOrder(k,amount); if(!reserved){ toast('Wallet tidak mencukupi untuk pesanan COD ini.'); return false; } }
+    const r=await db.ref('orders/'+k).transaction(o=>{ if(!o||o.status!=='baru') return;
+      if(o.pay==='cash'&&(+o.need||0)>0&&(!reserved||(+o.need||0)!==amount)) return;
+      o.status='diterima';o.riderUid=user.uid;o.riderName=me.name;o.riderPhone=me.phone;o.riderPlate=me.plate||'';o.t=Object.assign({},o.t,{diterima:Date.now()});
+      if(amount>0){o.walletReservedBy=user.uid;o.walletReservedAmount=amount;o.walletReservationReleased=false;}
+      return o;
+    });
+    if(!r.committed){ if(reserved) await db.ref('riders/'+user.uid+'/walletReserved').transaction(v=>Math.max(0,Math.round(((+v||0)-amount)*100)/100)); toast('Order telah diambil rider lain atau Wallet tidak mencukupi.'); return false; }
+    const snap=await db.ref('riders/'+user.uid).once('value'); me=Object.assign({},me,snap.val()||{});
+  }catch(err){ if(reserved) await db.ref('riders/'+user.uid+'/walletReserved').transaction(v=>Math.max(0,Math.round(((+v||0)-amount)*100)/100)).catch(()=>{}); toast('Gagal terima: '+err.code); return false }
+  tab='aktif'; sel=k; startGps(); toast('Order diterima. Baki COD ditempah sementara.'); render(); return true;
 }
 function showDone(k){
   const o=orders[k]||{}, m=RKB.msgRider();

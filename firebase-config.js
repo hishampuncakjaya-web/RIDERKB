@@ -20,7 +20,7 @@ window.RKB_CFG = {
   confAutoMin: 30,                // minit sebelum order dianggap auto-sah jika customer tak tekan apa-apa
   riderShare: 80,                // % upah yang rider terima (lalai; admin boleh tukar di Tetapan). Baki = untung platform, hanya admin nampak
   vendorMarkup: 10,              // % tambahan atas harga vendor untuk pelanggan (lalai; admin boleh tukar). Vendor terima harga asal
-  walletMinCash: 0,               // tambahan baki minimum (RM). Peraturan asas: rider layak jika wallet >= harga barang (job tunai)
+  walletMinCash: 0,               // baki minimum tambahan (RM); satu Wallet Rider, tiada baki negatif
   reviewUrl: "https://g.page/r/CW-FG4feUjmuEAI/review",   // pautan Google Review (kosongkan untuk sorok)
   waNumber: "601139900099"        // WhatsApp rider/pusat, format 60xxxxxxxxx
 };

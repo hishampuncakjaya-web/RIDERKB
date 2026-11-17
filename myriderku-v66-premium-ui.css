@@ -1,0 +1,64 @@
+/* MYRIDERKU V66 — unified role-based premium UI */
+:root{
+ --v66-green:#087b4b;--v66-green2:#12a86b;--v66-red:#e43d45;
+ --v66-ink:#172b45;--v66-muted:#64748b;--v66-cream:#f6f8f4;
+ --v66-border:#dce5e1;--v66-shadow:0 10px 28px rgba(19,48,39,.09);
+}
+html{scroll-behavior:smooth}
+body.role-customer,body.role-vendor,body.role-rider{background:var(--v66-cream)!important;color:var(--v66-ink)}
+body.role-customer .wrap,body.role-vendor .wrap,body.role-rider .wrap{max-width:760px;margin-inline:auto}
+body.role-customer header,body.role-vendor header,body.role-rider header{
+ background:linear-gradient(125deg,#073e32 0%,#087b4b 58%,#14a66a 100%)!important;
+ color:#fff!important;border-radius:0 0 26px 26px!important;
+ box-shadow:0 8px 24px rgba(7,74,49,.18);padding:22px 18px!important;
+}
+body.role-customer header h1,body.role-vendor header h1,body.role-rider header h1{color:#fff!important;font-size:clamp(22px,5vw,29px)!important;letter-spacing:-.6px;line-height:1.15}
+body.role-customer header .tag,body.role-vendor header .tag,body.role-rider header .tag{
+ background:#ffffff20;border:1px solid #ffffff65;color:#fff;border-radius:99px;
+}
+body.role-customer .card,body.role-vendor .card,body.role-rider .card{
+ border:1px solid var(--v66-border)!important;border-radius:20px!important;
+ box-shadow:var(--v66-shadow)!important;overflow:hidden;
+}
+body.role-customer button,body.role-vendor button,body.role-rider button{touch-action:manipulation}
+body.role-customer input,body.role-customer select,body.role-customer textarea,
+body.role-vendor input,body.role-vendor select,body.role-vendor textarea,
+body.role-rider input,body.role-rider select,body.role-rider textarea{
+ max-width:100%;min-width:0;box-sizing:border-box;border-radius:13px;
+}
+body.role-customer #mapWrap,body.role-rider #mapbox{border-radius:20px;overflow:hidden;box-shadow:var(--v66-shadow);border:1px solid var(--v66-border)}
+body.role-customer #map,body.role-rider #map{min-height:300px}
+body.role-customer .fsBtn,body.role-rider .fsBtn{border-radius:13px!important;box-shadow:0 4px 14px #102b4328}
+body.role-vendor .nav,body.role-rider .nav{
+ background:rgba(255,255,255,.96)!important;backdrop-filter:blur(14px);
+ border-top:1px solid #dce5e1!important;box-shadow:0 -6px 22px #163b2b0d;
+ padding-bottom:calc(8px + env(safe-area-inset-bottom))!important
+}
+body.role-vendor .nav button.on,body.role-rider .nav button.on{background:#e8f6ee!important;color:var(--v66-green)!important}
+body.role-vendor .oc,body.role-vendor .mi,body.role-rider .jobcard{border-radius:15px}
+body.role-vendor .btn,body.role-rider .btn{border-radius:13px;font-weight:800}
+body.role-customer .opts button,body.role-customer .pin{border-radius:14px}
+body.role-customer .checkout-summary,body.role-customer .checkout-card{border-radius:20px}
+body.role-admin{background:#071525!important;color:#edf5ff!important}
+body.role-admin .wrap.wide{max-width:1500px;margin:0 auto}
+body.role-admin .hd{background:linear-gradient(110deg,#071b31,#0b3c42 65%,#087b4b)!important;border-bottom:1px solid #245064}
+body.role-admin .hd h1{color:#fff!important;letter-spacing:-.7px}
+body.role-admin .hd .tag{background:#ffffff18;border:1px solid #ffffff50;color:#e7fff3}
+body.role-admin .pad{padding:16px clamp(12px,2vw,24px)}
+body.role-admin .card{border:1px solid #29465b!important;border-radius:18px!important;box-shadow:0 12px 32px #0003!important}
+body.role-admin .admin-radar-card{background:linear-gradient(145deg,#0c2238,#102d42 65%,#0a3b39)!important;border:1px solid #2c5669!important;color:#f2f8ff!important}
+body.role-admin .admin-radar-card h3,body.role-admin .admin-radar-card .radar-kicker{color:#e9f7ff!important}
+body.role-admin .radar-stats>div{background:linear-gradient(145deg,#123e50,#102b43)!important;border:1px solid #2c6570}
+body.role-admin .radar-map-wrap{border-color:#31596b!important;background:#102638}
+body.role-admin .radar-live-pill{background:#062d2a;border-color:#168b68}
+body.role-admin .radar-map-legend{background:#071b2eeF}
+body.role-admin .radar-weather-text{color:#c3d7e6!important}
+body.role-admin .radar-rider-list button{border:1px solid #31586b!important;background:#102d42!important;color:#effaff!important;border-radius:12px}
+body.role-admin .btn{border-radius:12px;font-weight:800}
+body.role-admin input,body.role-admin select,body.role-admin textarea{border-radius:12px}
+@media(max-width:560px){
+ body.role-customer .pad,body.role-vendor .pad,body.role-rider .pad{padding-left:12px!important;padding-right:12px!important}
+ body.role-customer header,body.role-vendor header,body.role-rider header{padding:18px 15px!important}
+ body.role-admin .radar-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ body.role-admin .radar-map-wrap #map{min-height:52vh!important}
+}

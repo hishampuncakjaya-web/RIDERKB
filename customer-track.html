@@ -130,6 +130,8 @@ else{
   function drawPayC(){
     const b=$('#payc'), show=o.pay==='online'&&(o.status==='diambil'||o.status==='selesai');
     if(!show){ b.classList.add('hide'); return }
+    if(/^Ambil pesanan kedai/.test(o.notes||'')){   /* job rider dari order kedai: upah sudah dibayar dalam jumlah order kedai */
+      b.classList.remove('hide'); b.innerHTML='<div class="big">✅ Upah rider sudah termasuk</div><div class="mut" style="margin-top:6px">Anda sudah bayar satu jumlah (makanan + upah) semasa pesan di kedai. Tiada bayaran kedua.</div>'; return }
     if(!payLoaded){ payLoaded=true; RKB.readPublicPayment().then(v=>{ if(v){ payData=v; drawPayC() } }).catch(()=>{}) }
     b.classList.remove('hide');
     const d=payData||{};
