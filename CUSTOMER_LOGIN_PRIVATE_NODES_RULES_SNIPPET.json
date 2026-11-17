@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "privatePhoneOtp": { "$uid": { ".read": false, ".write": false } },
+    "privatePhoneOtpPhoneIndex": { "$phone": { ".read": false, ".write": false } },
+    "customerPhoneIndex": { "$phone": { ".read": false, ".write": false } },
+    "customers": { "$uid": { ".read": false, ".write": false } }
+  }
+}

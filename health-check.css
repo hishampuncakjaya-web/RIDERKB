@@ -1,5 +1,6 @@
 /* MYRIDERKU MATRIX DIAGNOSTIC V77 */
-#myriderkuHealthLaunch{position:fixed;right:12px;bottom:calc(90px + env(safe-area-inset-bottom));z-index:1800;border:1px solid #8b5cf6;border-radius:999px;padding:12px 16px;background:linear-gradient(135deg,#10152c,#3b0764);color:#fff;font:900 12px system-ui;letter-spacing:.6px;box-shadow:0 0 18px #a855f766}
+#myriderkuHealthLaunch{position:static;flex:0 0 auto;border:1px solid #8b5cf6;border-radius:14px;padding:9px 12px;background:linear-gradient(135deg,#10152c,#3b0764);color:#fff;font:900 11px system-ui;letter-spacing:.3px;box-shadow:0 3px 12px #a855f733;min-height:40px;white-space:nowrap}
+@media(max-width:420px){#myriderkuHealthLaunch span{display:none}#myriderkuHealthLaunch{width:40px;padding:8px}}
 .hc-overlay{display:none;position:fixed;inset:0;z-index:99990;background:#050711dc;padding:10px;align-items:center;justify-content:center}
 .hc-overlay.show{display:flex}
 .hc-panel{width:min(100%,620px);max-height:94dvh;overflow:auto;background:linear-gradient(160deg,#101b31,#0b1020 65%,#170d28);color:#f4edff;border:1px solid #7545a7;border-radius:22px;box-shadow:0 0 36px #9333ea55;padding:16px;font:14px system-ui}

@@ -57,10 +57,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="v81-callables.js?v=81"></script>
 <script src="common.js?v=61"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('jejak')</script>
 <script>
@@ -185,14 +187,17 @@ else{
     const key=o.conf?o.conf.v:'-'; if(key===confKey) return; confKey=key;
     if(o.conf){ box.innerHTML=o.conf.v==='ok'?'<div class="big">✅ Terima kasih, anda dah sahkan barang diterima.</div>':'<div class="big">⚠️ Laporan anda dah sampai kepada admin.</div><div class="mut" style="margin-top:6px">Kami akan hubungi anda secepat mungkin.</div>'; return }
     box.innerHTML='<div class="big">Barang dah sampai pada anda?</div><div class="mut" style="margin:6px 0 10px">Kalau tiada masalah, anda tak perlu buat apa-apa pun. Order auto-disahkan selepas '+(+(RKB.cfg.confAutoMin||30))+' minit.</div><div class="acts"><button class="btn grn" id="cOk" type="button">✅ Dah terima</button><button class="btn gry" id="cNo" type="button" style="border:1px solid #ef4444">⚠️ Belum terima</button></div><div class="mut" id="cErr" style="margin-top:6px"></div>';
-    const TS=firebase.database.ServerValue.TIMESTAMP, err=m=>{ const e=$('#cErr'); if(e) e.textContent=m };
-    $('#cOk').onclick=async()=>{ $('#cOk').disabled=$('#cNo').disabled=true; try{ await RKB.db.ref('orders/'+id+'/conf').set({v:'ok',t:TS}) }catch(e){ $('#cOk').disabled=$('#cNo').disabled=false; err('Tak dapat hantar. Cuba lagi.') } };
+    const err=m=>{ const e=$('#cErr'); if(e) e.textContent=m };
+    const receiptCall=()=>MYRIDERKU_V81.customerReceipt;
+    const submitReceipt=async(v,m='')=>{
+      $('#cOk').disabled=$('#cNo').disabled=true; err('Menghantar pengesahan…');
+      try{ await receiptCall()(id,v,m); err(''); }
+      catch(e){ $('#cOk').disabled=$('#cNo').disabled=false; err(e&&e.message?e.message:'Tak dapat hantar. Cuba lagi.'); }
+    };
+    $('#cOk').onclick=()=>submitReceipt('ok');
     $('#cNo').onclick=async()=>{
       const m=await askReason('Apa yang berlaku?',['Barang tak sampai','Barang tak lengkap / rosak','Salah alamat / bukan saya terima']);
-      if(!m) return; $('#cOk').disabled=$('#cNo').disabled=true;
-      try{ await RKB.report({type:'customer',orderId:id,ref:o.ref||'',from:'customer',name:o.name||'',phone:myPhone(),msg:('⚠️ BELUM TERIMA: '+m).slice(0,300)}) }
-      catch(e){ $('#cOk').disabled=$('#cNo').disabled=false; err('Laporan gagal dihantar. Sila WhatsApp admin terus.'); return }
-      try{ await RKB.db.ref('orders/'+id+'/conf').set({v:'issue',t:TS,m}) }catch(e){ err('Laporan dah dihantar kepada admin, tetapi status belum dikemas kini.') }
+      if(!m) return; await submitReceipt('issue',m);
     };
   }
   /* penilaian */

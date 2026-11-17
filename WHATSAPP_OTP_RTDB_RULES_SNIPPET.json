@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "privatePhoneOtp": {
+      "$uid": {
+        ".read": false,
+        ".write": false
+      }
+    },
+    "customerPhoneVerifications": {
+      "$uid": {
+        ".read": false,
+        ".write": false
+      }
+    }
+  }
+}

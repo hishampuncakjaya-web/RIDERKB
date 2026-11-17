@@ -155,6 +155,18 @@
   },()=>{});
   }catch(e){console.warn('Maintenance status unavailable',e)}
  }
- function addEntry(){if($('#myriderkuHealthLaunch'))return;const b=document.createElement('button');b.id='myriderkuHealthLaunch';b.type='button';b.innerHTML='◈ <span>MISSION CONTROL</span>';b.addEventListener('click',openPanel);document.body.appendChild(b);watchMaintenance()}
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addEntry);else addEntry();
+ function addEntry(){
+  if(role!=='admin'||!admin())return;
+  if($('#myriderkuHealthLaunch'))return;
+  const b=document.createElement('button');b.id='myriderkuHealthLaunch';b.type='button';b.className='hc-admin-entry';b.innerHTML='◈ <span>MISSION CONTROL</span>';b.addEventListener('click',openPanel);
+  const host=$('.hd > div:last-child')||$('.hd');
+  if(host)host.appendChild(b);else return;
+  watchMaintenance();
+ }
+ function initAdminEntry(){
+  if(role!=='admin'||!R.auth)return;
+  const sync=()=>{if(admin())addEntry();else {const b=$('#myriderkuHealthLaunch');if(b)b.remove()}};
+  if(typeof R.auth.onAuthStateChanged==='function')R.auth.onAuthStateChanged(sync);else sync();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initAdminEntry);else initAdminEntry();
 })();

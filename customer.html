@@ -115,7 +115,8 @@ body.typing{padding-bottom:24px}
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
 <link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
 <link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
-<link rel="stylesheet" href="health-check.css?v=77">
+<link rel="stylesheet" href="health-check.css?v=78">
+<link rel="stylesheet" href="myriderku-standard.css?v=1">
 </head>
 <body class="role-customer">
 <div class="wrap">
@@ -174,7 +175,7 @@ body.typing{padding-bottom:24px}
   <div class="mut" style="font-size:12.5px;margin:6px 0 0">✏️ Boleh ubah: taip alamat, tekan peta atau seret pin.</div>
   <label>🎁 Penerima <span style="color:var(--mut);font-weight:400">· jika bukan anda (rider akan hubungi)</span></label>
   <input id="recv" maxlength="100" placeholder="Nama &amp; no. telefon, cth: Mak 0123456789" autocomplete="off">
-  <div class="rain" id="rainBox"><input type="checkbox" id="rain"><div>🌧️ <b>Caj hujan +RM<span id="rainAmt">2</span></b><br><span id="rainTxt" style="color:var(--mut)">Tanda jika sedang hujan</span></div></div>
+  <div class="rain" id="rainBox"><input type="checkbox" id="rain" disabled><div>🌧️ <b>Caj hujan +RM<span id="rainAmt">2</span></b><br><span id="rainTxt" style="color:var(--mut)">Tanda jika sedang hujan</span></div></div>
   </div>
   <details class="fold"><summary>📌 Tempat pantas &amp; cari kedai berdekatan</summary><div class="fb">
   <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Kawasan panas (tekan untuk isi):</div>
@@ -209,6 +210,17 @@ body.typing{padding-bottom:24px}
   <h2>Siapa rider boleh hubungi?</h2>
   <label>Nama</label><input id="name" class="fld" placeholder="Nama anda" autocomplete="name"><div class="fmsg" id="nameM"></div>
   <label>No. telefon <span style="color:var(--mut);font-weight:400">· rider hubungi bila dah sampai</span></label><input id="phone" class="fld" type="tel" inputmode="tel" placeholder="Contoh: 0123456789" autocomplete="tel"><div class="fmsg" id="phoneM"></div>
+  <label>Alamat penuh Customer</label><textarea id="customerAddress" class="fld" rows="2" placeholder="No. rumah, nama jalan, taman/kampung, poskod dan bandar"></textarea>
+  <div id="customerProfileActions" style="display:none;margin-top:8px"><button type="button" class="btn" id="saveCustomerProfile">Simpan profil Customer</button></div>
+
+  <div id="waVerifyBox" style="margin-top:10px;padding:12px;border:1px solid var(--line);border-radius:12px">
+    <div id="waVerifyStatus" style="font-size:13px;margin-bottom:8px">Nombor telefon perlu disahkan melalui WhatsApp sebelum tempahan dihantar.</div>
+    <button type="button" class="btn" id="waSendOtp">Hantar kod WhatsApp</button>
+    <div id="waOtpEntry" style="display:none;margin-top:10px">
+      <label>Kod OTP 6 digit</label><input id="waOtp" class="fld" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="Masukkan kod WhatsApp">
+      <button type="button" class="btn" id="waVerifyOtp" style="margin-top:8px">Sahkan kod</button>
+    </div>
+  </div>
   <div style="font-size:12px;color:var(--mut);margin-top:10px">Nama &amp; nombor disimpan dalam telefon anda untuk tempahan seterusnya.</div>
 </section>
 
@@ -232,9 +244,11 @@ body.typing{padding-bottom:24px}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="v81-callables.js?v=81"></script>
 <script src="common.js?v=61"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('tempah')</script>
 <script>
@@ -450,13 +464,26 @@ function price(){
   $('#fsInfo').textContent = S.km==null?'Menunggu pengiraan laluan':(S.km.toFixed(1)+' KM'+etaTxt()+'  ·  RM '+p.total.toFixed(2)+(S.est?' (anggaran)':''));
 }
 async function checkRain(){
+  const box=$('#rain'), label=$('#rainTxt');
+  if(!S.pick||!S.drop||!Number.isFinite(+S.pick[0])||!Number.isFinite(+S.drop[0])){
+    box.checked=false; label.textContent='Pilih lokasi ambil dan hantar untuk semakan cuaca automatik'; price(); return;
+  }
+  label.textContent='Sedang menyemak cuaca di lokasi ambil dan hantar…';
   try{
-    const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${S.pick[0]}&longitude=${S.pick[1]}&current=precipitation`);
-    const j=await r.json(), p=j.current.precipitation;
-    $('#rain').checked = p>0;
-    $('#rainTxt').textContent = p>0?'Hujan dikesan di lokasi ambil (dimasukkan automatik)':'Tiada hujan dikesan sekarang';
-    price();
-  }catch(e){}
+    const points=[['ambil',S.pick],['hantar',S.drop]];
+    const checks=await Promise.all(points.map(async([name,pt])=>{
+      const url=`https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(pt[0])}&longitude=${encodeURIComponent(pt[1])}&current=precipitation,rain,showers,weather_code`;
+      const r=await fetch(url,{signal:AbortSignal.timeout(8000)}); if(!r.ok) throw new Error('weather-http');
+      const j=await r.json(), c=j.current||{};
+      const wet=Number(c.precipitation||0)>0 || Number(c.rain||0)>0 || Number(c.showers||0)>0 || [51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(Number(c.weather_code));
+      return {name,wet};
+    }));
+    const wet=checks.some(x=>x.wet); box.checked=wet;
+    label.textContent=wet?'🌧️ Hujan dikesan di '+checks.filter(x=>x.wet).map(x=>x.name==='ambil'?'lokasi ambil':'lokasi hantar').join(' dan ')+' · Caj RM'+RAIN_EXTRA+' dimasukkan automatik':'☀️ Tiada hujan dikesan di kedua-dua lokasi';
+  }catch(e){
+    box.checked=false; label.textContent='⚠️ Cuaca belum dapat disahkan. Caj hujan tidak dikenakan.';
+  }
+  price();
 }
 
 /* ---- Wizard ---- */
@@ -539,8 +566,73 @@ function afterSend(track){
   $('#err').textContent=''; try{ navigator.vibrate&&navigator.vibrate(30) }catch(_){}
   scrollTo({top:0,behavior:'smooth'});
 }
+
+let waPhoneVerified = false, waVerifiedPhone = "", waProfileReady = false;
+const normalizeWaPhone = v => { let n=String(v||"").replace(/\D/g,""); if(n.startsWith("0")) n="60"+n.slice(1); return n; };
+function waStatus(t){ const e=document.querySelector("#waVerifyStatus"); if(e)e.textContent=t; }
+function customerProfileReady(v){ waProfileReady=!!v; const a=document.querySelector("#customerProfileActions"); if(a)a.style.display=waPhoneVerified&&!waProfileReady?"block":"none"; }
+document.querySelector("#waSendOtp")?.addEventListener("click", async()=>{
+  try {
+    const phone=document.querySelector("#phone").value.trim();
+    if(!phone){waStatus("Masukkan nombor telefon dahulu.");return;}
+    await RKB.ensureGuestAuth();
+    await MYRIDERKU_V81.startWhatsAppOtp(phone);
+    waVerifiedPhone=""; waPhoneVerified=false; customerProfileReady(false);
+    document.querySelector("#waOtpEntry").style.display="block";
+    waStatus("Kod 6 digit dihantar ke WhatsApp. Kod sah selama 5 minit.");
+  } catch(e){waStatus(e.message||"Tidak dapat menghantar OTP WhatsApp.");}
+});
+document.querySelector("#waVerifyOtp")?.addEventListener("click", async()=>{
+  try {
+    const phone=document.querySelector("#phone").value.trim(), otp=document.querySelector("#waOtp").value.trim();
+    const result=await MYRIDERKU_V81.verifyWhatsAppOtp(phone,otp);
+    await firebase.auth().signInWithCustomToken(result.data.customToken);
+    waPhoneVerified=true; waVerifiedPhone=normalizeWaPhone(phone);
+    document.querySelector("#waSendOtp").disabled=false;
+    document.querySelector("#waOtpEntry").style.display="none";
+    document.querySelector("#name").value=result.data.name||document.querySelector("#name").value;
+    document.querySelector("#customerAddress").value=result.data.address||"";
+    customerProfileReady(result.data.profileComplete);
+    waStatus(result.data.profileComplete?"Nombor disahkan. Akaun Customer aktif.":"Nombor disahkan. Lengkapkan nama penuh dan alamat, kemudian simpan profil.");
+  } catch(e){waPhoneVerified=false;customerProfileReady(false);waStatus(e.message||"Kod tidak sah atau akaun disekat.");}
+});
+document.querySelector("#saveCustomerProfile")?.addEventListener("click", async()=>{
+  try {
+    if(!waPhoneVerified) throw new Error("Sahkan nombor telefon dahulu.");
+    const name=document.querySelector("#name").value.trim(), address=document.querySelector("#customerAddress").value.trim();
+    await MYRIDERKU_V81.saveCustomerProfile(name,address);
+    customerProfileReady(true); waStatus("Profil Customer berjaya disimpan. Anda kini boleh membuat tempahan.");
+  } catch(e){waStatus(e.message||"Profil tidak dapat disimpan.");}
+});
+document.querySelector("#phone")?.addEventListener("input",()=>{
+  if(waPhoneVerified && normalizeWaPhone(document.querySelector("#phone").value)!==waVerifiedPhone){
+    waPhoneVerified=false;waVerifiedPhone="";customerProfileReady(false);
+    document.querySelector("#waSendOtp").disabled=false;
+    waStatus("Nombor berubah. Sahkan semula melalui WhatsApp.");
+  }
+});
+firebase.auth().onAuthStateChanged(async user=>{
+  if(!user || user.isAnonymous) return;
+  try{
+    const res=await MYRIDERKU_V81.getCustomerSession(), p=res.data;
+    if(p.verified && p.profileComplete){
+      waPhoneVerified=true;waVerifiedPhone=normalizeWaPhone(p.phone);customerProfileReady(true);
+      document.querySelector("#phone").value=p.phone;
+      document.querySelector("#name").value=p.name;
+      document.querySelector("#customerAddress").value=p.address;
+      waStatus("Anda telah login. Nombor WhatsApp disahkan.");
+    }
+  }catch(e){
+    waStatus(e.message||"Akaun tidak dapat disahkan.");
+    if(e.code==="functions/permission-denied") await firebase.auth().signOut();
+  }
+});
+
 async function send(){
   if(sending) return;
+  if(!waPhoneVerified || !waProfileReady || waVerifiedPhone!==normalizeWaPhone(document.querySelector("#phone").value)){
+    $('#err').textContent='Login WhatsApp dan lengkapkan profil Customer sebelum menghantar pesanan.'; return;
+  }
   let guestUser=null;
   if(RKB.ok){
     try{ guestUser=await RKB.ensureGuestAuth(); }
@@ -605,8 +697,8 @@ async function send(){
   openWaTab();
   sending=true; setBtn('⏳ Menghantar…',true); $('#err').textContent='';
   trackUrl=new URL('customer-track.html?id='+id,location.href).href;
-  const up={}; up['orders/'+id]=order; up['orderContacts/'+id]=contact; up['ratelimit/'+contact.phoneKey]=firebase.database.ServerValue.TIMESTAMP;
-  const timeout=new Promise((_,rej)=>setTimeout(()=>rej({code:'TIMEOUT'}),8000));
+  const payload={orderId:id,order,contact};
+  const timeout=new Promise((_,rej)=>setTimeout(()=>rej({code:'TIMEOUT'}),12000));
   const done=()=>{
     try{localStorage.setItem('rkb-last',id)}catch(_){}
     finish(); sending=false; attempt=null;
@@ -614,10 +706,10 @@ async function send(){
     afterSend(trackUrl);
     if(!opened) note('Order dah masuk ✅. Tekan <a href="'+waUrl(buildMsg())+'" target="_blank" rel="noopener" style="color:#fbbf24;font-weight:800">di sini untuk hantar salinan ke WhatsApp</a> (pilihan).','#0b2a4a');
   };
-  Promise.race([RKB.db.ref().update(up),timeout]).then(done).catch(async e=>{
+  Promise.race([MYRIDERKU_V81.createOrder(payload),timeout]).then(done).catch(async e=>{
     console.error('order',e);
     // tulisan yang tertunda mungkin sudah sampai: semak dulu sebelum lapor gagal
-    try{ const ex=await Promise.race([RKB.db.ref('orders/'+id+'/ref').once('value'),new Promise((_,r)=>setTimeout(r,4000))]); if(ex&&ex.exists()){ done(); return } }catch(_){}
+    // Callable response is the authoritative acknowledgement; no direct-write fallback.
     sending=false; trackUrl=''; closeWaTab();
     const code=e&&e.code;
     const why=code==='TIMEOUT'?'Talian lemah atau tiada internet.':code==='PERMISSION_DENIED'?'Tempahan ditolak (terlalu kerap dalam masa singkat, atau sistem sedang disemak).':'Sambungan bermasalah.';
@@ -801,6 +893,7 @@ show(0); price(); autoDetect();
 try{ const last=localStorage.getItem('rkb-last');
   if(last&&RKB.ok) RKB.db.ref('orders/'+last+'/status').once('value').then(v=>{const st=v.val(); if(st&&st!=='selesai'&&st!=='batal') $('#install').insertAdjacentHTML('beforebegin',`<a href="customer-track.html?id=${last}" style="display:block;margin:14px 18px 0;background:#0b2a4a;border:1px solid #3b82f6;border-radius:16px;padding:12px 14px;color:#93c5fd;font-weight:800;text-decoration:none;text-align:center">📡 Order aktif anda: ${st} · tekan untuk jejak</a>`)}).catch(()=>{}) }catch(_){}
 </script>
-<script src="health-check.js?v=77"></script>
+<script src="myriderku-standard.js?v=1"></script>
+<script src="health-check.js?v=78"></script>
 </body>
 </html>

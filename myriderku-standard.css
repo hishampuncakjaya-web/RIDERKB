@@ -1,0 +1,21 @@
+/* MYRIDERKU STANDARD: Minimal, Ceria & Profesional */
+.order-compact{padding:0!important;overflow:hidden;border-radius:18px}
+.order-compact>.order-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:15px 17px;cursor:pointer;list-style:none;color:var(--txt,#172b45);font-size:17px;font-weight:850}
+.order-compact>.order-summary::-webkit-details-marker{display:none}
+.order-summary-hint{display:inline-flex;align-items:center;gap:7px;color:var(--grn,#16834d);font-size:12px;font-weight:800;white-space:nowrap}
+.order-details{padding:0 16px 16px;border-top:1px solid var(--line,#dce4e9)}
+.order-compact[open]>.order-summary{background:var(--card2,#f1f8f3)}
+.order-compact[open] .order-summary-hint span{transform:rotate(180deg)}
+.order-summary-hint span{display:inline-block;transition:transform .18s ease}
+.order-compact .order-details>.row{gap:12px;overflow-wrap:anywhere}
+.order-compact .order-details .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.order-compact .order-details .acts>*{min-width:0}
+.order-compact summary:focus-visible{outline:3px solid #65b98a;outline-offset:-3px}
+.role-admin .tabs,.role-admin .chips{gap:7px;flex-wrap:wrap}
+.role-admin #q{margin:8px 0 12px}
+.role-admin #list{display:grid;gap:10px}
+.role-rider #list,.role-vendor #olist{display:grid;gap:10px}
+.role-admin .card,.role-rider .card,.role-vendor .card{box-shadow:0 5px 18px rgba(20,48,75,.06)}
+.hd{gap:10px;flex-wrap:wrap}
+.hd>div:last-child{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+@media(max-width:380px){.order-compact>.order-summary{padding:13px;font-size:15px}.order-summary-hint{font-size:11px}.order-details{padding:0 12px 13px}}

@@ -25,7 +25,8 @@
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
 <link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
 <link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
-<link rel="stylesheet" href="health-check.css?v=77">
+<link rel="stylesheet" href="health-check.css?v=78">
+<link rel="stylesheet" href="myriderku-standard.css?v=1">
 </head><body class="role-admin">
 <div class="wrap wide">
 <header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -71,6 +72,17 @@
         <div class="mut" id="shLocT" style="margin-top:6px">Lokasi belum dipilih</div>
         <div class="acts"><button class="btn sm" id="shSave" type="button">💾 Simpan kedai</button></div>
         <div id="shl" style="margin-top:12px"></div></div>
+      </div>
+      <div data-tab="customer" class="hide">
+        <div class="card" style="margin-top:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div><h3 style="margin:0">👤 Pengurusan Customer</h3><div class="mut">Senarai akaun berdaftar melalui WhatsApp OTP</div></div>
+            <button class="btn sm" id="customerReload" type="button">↻ Muat semula</button>
+          </div>
+          <div class="acts" style="margin-top:10px"><input id="customerSearch" placeholder="Cari nama / nombor telefon" style="flex:1;min-width:180px"><select id="customerFilter"><option value="all">Semua pengguna</option><option value="active">Aktif</option><option value="blocked">Disekat</option></select></div>
+          <div id="customerStats" class="mut" style="margin:10px 0">Memuatkan senarai...</div>
+          <div id="customerList"></div>
+        </div>
       </div>
       <div data-tab="tetapan" class="hide">
         <div class="card" style="margin-top:0"><h3>💰 Harga</h3>
@@ -123,9 +135,11 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="v81-callables.js?v=81"></script>
 <script src="common.js?v=61"></script>
 <script>RKB.gateInstall('KB Admin')</script>
 <script>
@@ -238,8 +252,8 @@ function render(){
   const s=q.toLowerCase();
   const V=L.filter(o=>(filter==='semua'||(filter==='aktif'?isAct(o):o.status===filter))&&(!s||[o.ref,o.name,PH(o),o.riderName].join(' ').toLowerCase().includes(s)));
   const ropts=Object.entries(riders).filter(([u,r])=>r.approved===true).map(([u,r])=>`<option value="${u}">${esc(r.name||u)}</option>`).join('');
-  $('#list').innerHTML=V.length?V.map(o=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}${o.rating?' · ⭐'+o.rating.stars:''}</b><span>${(()=>{ const c=RKB.confState(o); if(!c) return ''; const far=(o.doneDist!=null&&o.doneDist>(+RKB.cfg.dropRadiusM||300))||o.doneGps===false; return '<span class="badge '+(c.k==='issue'?'b-batal':'b-'+(c.k==='ok'?'selesai':'diterima'))+'">'+esc(c.t)+'</span> '+(far?'<span class="badge b-batal">📍 '+(o.doneGps===false?'tiada GPS masa selesai':'selesai '+o.doneDist+' m dari lokasi hantar')+'</span> ':'') })()}${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
-    <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b> <span class="mut">(Rider ${rm(RKB.riderPay(o))} · Dana Operasi ${rm(RKB.platCut(o))})</span></div>
+  $('#list').innerHTML=V.length?V.map(o=>`<details class="card order-compact"><summary class="order-summary"><b>#${esc(o.ref)}</b><span class="order-summary-hint">Lihat info <span aria-hidden="true">⌄</span></span></summary><div class="order-details"><div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;flex-wrap:wrap"><span>${(()=>{ const c=RKB.confState(o); if(!c) return ''; const far=(o.doneDist!=null&&o.doneDist>(+RKB.cfg.dropRadiusM||300))||o.doneGps===false; return '<span class="badge '+(c.k==='issue'?'b-batal':'b-'+(c.k==='ok'?'selesai':'diterima'))+'">'+esc(c.t)+'</span> '+(far?'<span class="badge b-batal">📍 '+(o.doneGps===false?'tiada GPS masa selesai':'selesai '+o.doneDist+' m dari lokasi hantar')+'</span> ':'') })()}${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
+    <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b>${rm(o.price)}</b> <span class="mut">(Rider ${rm(RKB.riderPay(o))} · Dana Operasi ${rm(RKB.platCut(o))})</span></div>
     <div class="row"><span>Ambil</span><span>${esc(o.pick.addr)}</span></div>
     <div class="row"><span>Hantar</span><span>${esc(o.drop.addr)}</span></div>
     <div class="row"><span>Nota</span><span>${esc(String(o.notes||'-').replace(/\[#U=[\d.]+;K=[\d.]+;S=[\d.]+\]\s?/,''))}</span></div>
@@ -251,7 +265,7 @@ function render(){
       <a class="btn gry sm" target="_blank" href="customer-track.html?id=${o.k}">📡 Jejak</a>
       <a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(PH(o))}">💬 WA</a>
       <button class="btn gry sm" data-a="del" data-k="${o.k}">🗑️</button>
-    </div></div>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
+    </div></div></details>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
   const R=Object.entries(riders).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||(a[1].name||'').localeCompare(b[1].name||''));
   $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;const uid=esc(u);return `<article class="admin-rider-card"><div class="admin-rider-main"><div class="admin-rider-name">${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}</div><div class="admin-rider-meta">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?' · '+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</div>${ok?`<div class="admin-rider-wallet">💰 Wallet Rider <strong>${rm(r.wallet||0)}</strong>${(+r.walletReserved||0)>0?`<div class="mut">Tempahan COD: ${rm(r.walletReserved)} · Tersedia: ${rm(Math.max(0,(+r.wallet||0)-(+r.walletReserved||0)))}</div>`:''}</div>`:''}${ok&&per[r.name]?`<div class="admin-rider-orders">📦 ${per[r.name].n} order · ${rm(per[r.name].s)}</div>`:''}</div><div class="admin-rider-actions">${ok?`<button class="btn grn sm" data-r="top" data-u="${uid}">＋ Wallet</button><button class="btn gry sm" data-r="ded" data-u="${uid}">－ Tolak</button><button class="btn gry sm" data-r="rev" data-u="${uid}">⏸ Gantung</button>`:`<button class="btn grn sm" data-r="ok" data-u="${uid}">✅ Lulus rider</button>`}<button class="btn gry sm" data-r="pw" data-u="${uid}">🔑 Reset kata laluan</button><button class="btn danger sm" data-r="del" data-u="${uid}">🗑️ Padam</button></div></article>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
   try{ updMap(L) }catch(err){ console.error('updMap',err) }
@@ -273,15 +287,7 @@ $('#riders').onclick=async e=>{
     if(a==='top'||a==='ded'){
       const v=parseFloat(prompt((a==='top'?'Tambah':'Tolak')+' wallet (RM):',''));
       if(!v||v<=0) return; const amt=a==='top'?v:-v, note=prompt('Catatan (pilihan):','')||'';
-      const tx=await db.ref('riders/'+u).transaction(r=>{
-        if(!r) return;
-        const bal=Math.max(0,Math.round((+r.wallet||0)*100)/100), held=Math.max(0,Math.round((+r.walletReserved||0)*100)/100);
-        const next=Math.round((bal+amt)*100)/100;
-        if(next<held||next<0) return;
-        r.wallet=next; return r;
-      });
-      if(!tx.committed){ toast('Tidak boleh tolak: baki tersedia tidak mencukupi atau dana COD sedang ditempah.'); return; }
-      await db.ref('walletLog/'+u).push({amt,note,t:Date.now(),by:auth.currentUser.email});
+      await MYRIDERKU_V81.adminWallet(u,amt,note);
       toast('Wallet dikemas kini 💰');
     }
   }catch(err){ toast('Gagal: '+err.code) }
@@ -305,8 +311,54 @@ $('#csv').onclick=()=>{
   const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'})); a.download='order-rider-kb.csv'; a.click();
 };
+
+/* ---- Customer account moderation ---- */
+let customerAccounts=[];
+const customerEsc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function loadCustomerAccounts(){
+  const box=document.querySelector("#customerList"),stats=document.querySelector("#customerStats");
+  if(box)box.textContent="Memuatkan...";
+  try{
+    const r=await MYRIDERKU_V81.adminListCustomers();
+    customerAccounts=Array.isArray(r.data)?r.data:[];
+    renderCustomerAccounts();
+  }catch(e){if(stats)stats.textContent=e.message||"Gagal mendapatkan senarai Customer.";if(box)box.textContent="Tidak dapat memuatkan data.";}
+}
+function renderCustomerAccounts(){
+  const box=document.querySelector("#customerList"),stats=document.querySelector("#customerStats");
+  if(!box||!stats)return;
+  const q=(document.querySelector("#customerSearch")?.value||"").toLowerCase();
+  const f=document.querySelector("#customerFilter")?.value||"all";
+  const active=customerAccounts.filter(x=>x.status!=="blocked").length, blocked=customerAccounts.length-active;
+  stats.textContent=`Jumlah ${customerAccounts.length} · Aktif ${active} · Disekat ${blocked}`;
+  const rows=customerAccounts.filter(x=>(f==="all"||x.status===f)&&[x.name,x.phone,x.uid].join(" ").toLowerCase().includes(q));
+  if(!rows.length){box.textContent="Tiada Customer sepadan.";return;}
+  box.innerHTML=rows.map(x=>`<div style="border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0;background:var(--card)">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+      <b>${customerEsc(x.name||"Profil belum lengkap")}</b>
+      <span style="font-size:12px;font-weight:700;color:${x.status==="blocked"?"#dc2626":"#16a34a"}">${x.status==="blocked"?"DISEKAT":"AKTIF"}</span>
+    </div>
+    <div style="font-size:13px;margin-top:6px">☎ ${customerEsc(x.phone)}<br>Alamat: ${customerEsc(x.address||"Belum diisi")}<br><small class="mut">UID: ${customerEsc(x.uid)}</small></div>
+    ${x.status==="blocked"?`<div style="font-size:12px;color:#dc2626;margin-top:5px">Sebab: ${customerEsc(x.blockReason||"—")}</div>`:""}
+    <div class="acts" style="margin-top:9px">${x.status==="blocked"?`<button class="btn sm" data-customer-unblock="${customerEsc(x.uid)}">Unblock</button>`:`<button class="btn gry sm" data-customer-block="${customerEsc(x.uid)}">Block Customer</button>`}</div>
+  </div>`).join("");
+}
+document.querySelector("#customerReload")?.addEventListener("click",loadCustomerAccounts);
+document.querySelector("#customerSearch")?.addEventListener("input",renderCustomerAccounts);
+document.querySelector("#customerFilter")?.addEventListener("change",renderCustomerAccounts);
+document.querySelector("#customerList")?.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-customer-block],[data-customer-unblock]");if(!b)return;
+  const uid=b.dataset.customerBlock||b.dataset.customerUnblock, blocked=!!b.dataset.customerBlock;
+  let reason="";
+  if(blocked){reason=prompt("Sebab sekatan (contoh: fake order / penyalahgunaan):","Fake order / penyalahgunaan")||"";if(!reason.trim())return;}
+  else if(!confirm("Buka sekatan akaun Customer ini?"))return;
+  b.disabled=true;
+  try{await MYRIDERKU_V81.adminSetCustomerBlocked(uid,blocked,reason);await loadCustomerAccounts();}
+  catch(err){alert(err.message||"Tindakan gagal.");b.disabled=false;}
+});
+
 /* ---- Tab ---- */
-const TABS=[['order','📋 Order'],['peta','🗺️ Peta'],['rider','🛵 Rider'],['vendor','🏪 Vendor'],['kedai','⭐ Kedai & Kamera'],['tetapan','⚙️ Tetapan']];
+const TABS=[['order','📋 Order'],['peta','🗺️ Peta'],['rider','🛵 Rider'],['vendor','🏪 Vendor'],['kedai','⭐ Kedai & Kamera'],['customer','👤 Customer'],['tetapan','⚙️ Tetapan']];
 let curTab='order', retTab=null;
 try{ const t=sessionStorage.getItem('rkb-atab'); if(TABS.some(x=>x[0]===t)) curTab=t }catch(_){}
 function drawTabs(badges){
@@ -317,6 +369,7 @@ function goTab(t){
   curTab=t; try{ sessionStorage.setItem('rkb-atab',t) }catch(_){}
   document.querySelectorAll('[data-tab]').forEach(el=>el.classList.toggle('hide',el.dataset.tab!==t));
   drawTabs(lastBadges);
+  if(t==='customer') loadCustomerAccounts();
   if(t==='peta'&&map) setTimeout(()=>{ map.invalidateSize(); if(!goTab._f){ goTab._f=1; updMap.fit=false; try{ updMap(list()) }catch(_){} } },80);
 }
 function backTab(){ if(retTab){ const t=retTab; retTab=null; goTab(t) } }
@@ -463,5 +516,6 @@ async function loadRadarWeather(){const out=document.getElementById('radarWeathe
 }
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
-<script src="health-check.js?v=77"></script>
+<script src="myriderku-standard.js?v=1"></script>
+<script src="health-check.js?v=78"></script>
 </body></html>

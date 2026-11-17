@@ -1,0 +1,2 @@
+/* MYRIDERKU STANDARD: one expanded order per list */
+(function(){'use strict';['#list','#olist'].forEach(sel=>{const root=document.querySelector(sel);if(!root)return;root.addEventListener('toggle',e=>{const d=e.target;if(!(d instanceof HTMLDetailsElement)||!d.classList.contains('order-compact')||!d.open)return;root.querySelectorAll('details.order-compact[open]').forEach(x=>{if(x!==d)x.open=false})},true)});})();

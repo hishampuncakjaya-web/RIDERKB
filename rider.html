@@ -30,7 +30,8 @@
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
 <link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
 <link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
-<link rel="stylesheet" href="health-check.css?v=77">
+<link rel="stylesheet" href="health-check.css?v=78">
+<link rel="stylesheet" href="myriderku-standard.css?v=1">
 </head><body class="role-rider">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP RIDER</span><h1>MYRIDERKU Rider 🛵</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -102,9 +103,11 @@ if('serviceWorker' in navigator)addEventListener('load',function(){navigator.ser
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="v81-callables.js?v=81"></script>
 <script src="common.js?v=61"></script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,hav}=RKB;
@@ -194,16 +197,26 @@ auth.onAuthStateChanged(u=>{
 });
 
 /* ---------- Order ---------- */
-function listen(){
-  ordersRef=db.ref('orders').orderByChild('createdAt').limitToLast(80);
-  ordersRef.on('value',s=>{
+let riderFeedTimer=null, riderFeedBusy=false;
+async function refreshRiderOrders(){
+  if(riderFeedBusy||!user||me.approved!==true) return;
+  riderFeedBusy=true;
+  try{
+    const res=await MYRIDERKU_V81.listRiderOrders();
+    const incoming=(res&&res.data&&res.data.orders)||{};
     const prev=new Set(Object.keys(orders).filter(k=>orders[k].status==='baru'));
-    orders=s.val()||{};
-    const nw=Object.keys(orders).filter(k=>orders[k].status==='baru');
-    if(first) nw.filter(k=>Date.now()-orders[k].createdAt<600000).forEach(scheduleJob);
-    else nw.filter(k=>!prev.has(k)).forEach(scheduleJob);
+    orders=incoming;
+    const nw=Object.keys(orders).filter(k=>orders[k].status==='baru'&&!prev.has(k));
+    if(first) Object.keys(orders).filter(k=>orders[k].status==='baru'&&Date.now()-orders[k].createdAt<600000).forEach(scheduleJob);
+    else nw.forEach(scheduleJob);
     first=false; render();
-  },e=>toast('Tak dapat baca order: '+e.code));
+  }catch(e){ toast('Tak dapat memuatkan tugasan: '+(e&&e.message||e.code||'Ralat')); }
+  finally{ riderFeedBusy=false; }
+}
+function listen(){
+  if(riderFeedTimer) clearInterval(riderFeedTimer);
+  refreshRiderOrders();
+  riderFeedTimer=setInterval(refreshRiderOrders,7000);
 }
 function listenHaz(){ hazRef=db.ref('hazards'); hazRef.on('value',s=>{ hazAdmin=s.val()||{}; drawHaz() },()=>{}) }
 const mine=o=>o.riderUid===user.uid;
@@ -248,7 +261,7 @@ function card(o){
   const ok=eligible(o), C=contacts[o.k]||{}, ph=RKB.phoneOf(o,C), rv=C.recv||o.recv||'';
   const nx=o.status==='baru'?(ok?['terima','✅ Terima order','grn']:['lock','🔒 Wallet tidak mencukupi · tersedia '+rm(walletAvailable())+', perlu '+rm(o.need),'gry']):{diterima:(o.pickPhoto?['diambil','📦 Barang dah diambil','blu']:null),diambil:(o.dropPhoto?['selesai','🎉 Hantar selesai','grn']:null)}[o.status];
   const p=[o.pick.lat,o.pick.lng], d=[o.drop.lat,o.drop.lng], dd=o.status==='baru'?distTo(o):null;
-  return `<div class="card" ${o.status==='baru'&&!ok?'style="opacity:.55"':''}><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}</b><span class="badge b-${o.status}">${o.status}</span></div>
+  return `<details class="card order-compact" ${o.status==='baru'&&!ok?'style="opacity:.7"':''}><summary class="order-summary"><b>#${esc(o.ref)}</b><span class="order-summary-hint">Lihat info <span aria-hidden="true">⌄</span></span></summary><div class="order-details"><div style="display:flex;justify-content:flex-end"><span class="badge b-${o.status}">${o.status}</span></div>
   <div class="mut" style="margin:4px 0 8px">${RKB.hm(o.createdAt)} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM${dd!=null?` · 📏 ${dd.toFixed(1)} KM dari anda`:''}</div>
   <div class="row"><span>📍 Ambil</span><span>${esc(o.pick.addr)}</span></div>
   <div class="row"><span>🏁 Hantar</span><span>${esc(o.drop.addr)}</span></div>
@@ -261,7 +274,7 @@ function card(o){
   <div class="acts">${nx?`<button class="btn ${nx[2]} full" data-a="${nx[0]}" data-k="${o.k}" ${nx[0]==='lock'?'disabled':''}>${nx[1]}</button>`:''}
   ${mine(o)&&o.status==='diterima'&&!o.arrivedAt?`<button class="btn blu full" data-a="arrive" data-k="${o.k}">📍 Dah sampai di lokasi ambil</button>`:''}${mine(o)&&o.status==='diterima'&&o.arrivedAt&&!o.pickPhoto?`<button class="btn blu full" data-a="proofP" data-k="${o.k}">📷 Ambil gambar barang</button>`:''}${mine(o)&&o.status==='diambil'&&!o.arrivedDropAt?`<button class="btn blu full" data-a="arriveD" data-k="${o.k}">📍 Dah sampai di lokasi hantar</button>`:''}${mine(o)&&o.status==='diambil'&&o.arrivedDropAt&&!o.dropPhoto?`<button class="btn blu full" data-a="proofD" data-k="${o.k}">📷 Ambil gambar bukti hantar</button>`:''}</div>
   ${active(o)?`<div class="acts" style="margin-top:8px"><a class="btn gry sm" href="tel:+${RKB.tel(ph)}">📞 Call</a><a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(ph)}">💬 WhatsApp</a><a class="btn blu sm" target="_blank" href="${RKB.gmNav(o.status==='diterima'?p:d)}">🧭 ${o.status==='diterima'?'Ke Ambil':'Ke Hantar'}</a><a class="btn gry sm" target="_blank" rel="noopener" href="https://waze.com/ul?ll=${RKB.f6(o.status==='diterima'?p:d)}&navigate=yes">🚙 Waze</a>${(()=>{ const m=String(rv).match(/\+?\d[\d\s-]{7,14}\d/), rp=m?RKB.tel(m[0]):''; return rp?`<a class="btn gry sm" href="tel:+${rp}">📞 Penerima</a><a class="btn gry sm" target="_blank" href="https://wa.me/${rp}">💬 Penerima</a>`:'' })()}</div>
-  <div class="acts"><details class="more" style="flex:1 1 auto"><summary class="btn gry sm" style="display:block">⋯ Lagi</summary><div class="acts"><button class="btn gry sm" data-a="show" data-k="${o.k}">🗺️ Peta</button><a class="btn gry sm" target="_blank" href="${RKB.gmNav(p)}">🧭 Ke Ambil</a><a class="btn gry sm" target="_blank" href="${RKB.gmNav(d)}">🧭 Ke Hantar</a><a class="btn gry sm" target="_blank" href="${RKB.gmFull(p,d,o.vehicle)}">🗺️ Laluan penuh</a></div></details><button class="btn gry sm" data-a="sos" data-k="${o.k}" style="flex:0 0 auto;border:1px solid #ef4444">🆘 SOS</button></div>`:''}</div>`;
+  <div class="acts"><details class="more" style="flex:1 1 auto"><summary class="btn gry sm" style="display:block">⋯ Lagi</summary><div class="acts"><button class="btn gry sm" data-a="show" data-k="${o.k}">🗺️ Peta</button><a class="btn gry sm" target="_blank" href="${RKB.gmNav(p)}">🧭 Ke Ambil</a><a class="btn gry sm" target="_blank" href="${RKB.gmNav(d)}">🧭 Ke Hantar</a><a class="btn gry sm" target="_blank" href="${RKB.gmFull(p,d,o.vehicle)}">🗺️ Laluan penuh</a></div></details><button class="btn gry sm" data-a="sos" data-k="${o.k}" style="flex:0 0 auto;border:1px solid #ef4444">🆘 SOS</button></div>`:''}</div></details>`;
 }
 function render(){
   if(!user||me.approved!==true) return; renderTabs();
@@ -282,61 +295,36 @@ $('#list').onclick=async e=>{
     if(a==='arriveD'){ const fd=tooFar(orders[k]||{pick:{},drop:{lat:0,lng:0}}); if(fd!=null){ toast('Anda masih '+fd+' m dari lokasi hantar (had '+dropR()+' m). Dekati lokasi dulu 📍'); return } }
     const drop=(a==='arriveD'||a==='proofD'); proofK=k; proofT=drop?'D':'P'; $('#proofIn').value=''; $('#proofIn').click();   // kamera terus dibuka
     if(a==='arrive'||a==='arriveD'){ const up=drop?{arrivedDropAt:Date.now(),'t/arrivedDrop':Date.now()}:{arrivedAt:Date.now(),'t/arrived':Date.now()};
-      try{ await db.ref('orders/'+k).update(up); toast(drop?'Dah sampai di lokasi hantar 📍. Ambil gambar':'Customer dimaklumkan rider dah sampai 📍. Ambil gambar barang') }catch(err){ toast('Gagal: '+err.code) } }
+      try{ await MYRIDERKU_V81.riderArrival(k, drop?'drop':'pickup'); toast(drop?'Dah sampai di lokasi hantar 📍. Ambil gambar':'Customer dimaklumkan rider dah sampai 📍. Ambil gambar barang') }catch(err){ toast('Gagal: '+(err.code||err.message)) } }
     return }
   if(a==='sos'){ if(!confirm('Hantar SOS kepada admin dengan lokasi anda sekarang?')) return; const o=orders[k]||{}; try{ await RKB.report({type:'sos',orderId:k,ref:o.ref||'',from:'rider',name:me.name||'',phone:me.phone||'',msg:'🆘 SOS rider',loc:selfPos?{lat:+selfPos[0].toFixed(6),lng:+selfPos[1].toFixed(6)}:null}); toast('🆘 SOS dihantar kepada admin') }catch(err){ toast('SOS gagal dihantar. Hubungi admin terus.') } return }
   b.disabled=true;
   if(a==='terima'){ await acceptOrder(k); }
   else {
-    const up={status:a}; up['t/'+a]=Date.now();
     if(a==='selesai'){
       const o=orders[k]||{}, fd=tooFar(o);
       if(fd!=null){ toast('Anda masih '+fd+' m dari lokasi hantar (had '+dropR()+' m). Hantar dulu, baru tekan selesai.'); b.disabled=false; return }
-      const dm=dropDistM(o); if(dm==null) up.doneGps=false; else up.doneDist=dm;   // direkod untuk semakan admin
-      up.riderLoc=null; finishing.add(k)                                         // customer tak nampak lokasi rider lagi
+      const dm=dropDistM(o); finishing.add(k);
+      try{ await MYRIDERKU_V81.riderStatus(k,'complete',{doneGps:dm!=null,doneDist:dm==null?null:dm}); }
+      catch(err){ finishing.delete(k); toast('Gagal: '+(err.code||err.message)); render(); return }
+      showDone(k);
+    } else {
+      try{ await MYRIDERKU_V81.riderStatus(k,'pickup'); }
+      catch(err){ toast('Gagal: '+(err.code||err.message)); render(); return }
+      toast('Barang diambil. Menuju lokasi hantar 🛵');
     }
-    try{ await db.ref('orders/'+k).update(up); }catch(err){ toast('Gagal: '+err.code); render(); return }
-    if(a==='selesai') { await releaseWalletReservation(k); showDone(k); }
-    else toast('Barang diambil. Menuju lokasi hantar 🛵');
   }
   render();
 };
-async function reserveWalletForOrder(k, amount){
-  if(amount<=0) return true;
-  const ref=db.ref('riders/'+user.uid);
-  const tx=await ref.transaction(r=>{
-    if(!r) return;
-    const bal=Math.max(0,Math.round((+r.wallet||0)*100)/100);
-    const held=Math.max(0,Math.round((+r.walletReserved||0)*100)/100);
-    if(Math.round((bal-held)*100)/100<amount) return;
-    r.walletReserved=Math.round((held+amount)*100)/100;
-    return r;
-  });
-  if(!tx.committed) return false;
-  me=Object.assign({},me,tx.snapshot.val()||{}); return true;
-}
-async function releaseWalletReservation(k){
-  const o=orders[k]||{}; if(o.pay!=='cash'||o.walletReservedBy!==user.uid||o.walletReservationReleased) return;
-  const amount=Math.max(0,+o.need||0); if(!amount) return;
-  const mark=await db.ref('orders/'+k).transaction(x=>{ if(!x||x.walletReservationReleased) return; x.walletReservationReleased=true; return x; });
-  if(!mark.committed) return;
-  await db.ref('riders/'+user.uid+'/walletReserved').transaction(v=>Math.max(0,Math.round(((+v||0)-amount)*100)/100));
-  const snap=await db.ref('riders/'+user.uid).once('value'); me=Object.assign({},me,snap.val()||{});
-}
 async function acceptOrder(k){
-  const current=orders[k]||{}, amount=current.pay==='cash'?Math.max(0,+current.need||0):0;
-  let reserved=false;
   try{
-    if(amount>0){ reserved=await reserveWalletForOrder(k,amount); if(!reserved){ toast('Wallet tidak mencukupi untuk pesanan COD ini.'); return false; } }
-    const r=await db.ref('orders/'+k).transaction(o=>{ if(!o||o.status!=='baru') return;
-      if(o.pay==='cash'&&(+o.need||0)>0&&(!reserved||(+o.need||0)!==amount)) return;
-      o.status='diterima';o.riderUid=user.uid;o.riderName=me.name;o.riderPhone=me.phone;o.riderPlate=me.plate||'';o.t=Object.assign({},o.t,{diterima:Date.now()});
-      if(amount>0){o.walletReservedBy=user.uid;o.walletReservedAmount=amount;o.walletReservationReleased=false;}
-      return o;
-    });
-    if(!r.committed){ if(reserved) await db.ref('riders/'+user.uid+'/walletReserved').transaction(v=>Math.max(0,Math.round(((+v||0)-amount)*100)/100)); toast('Order telah diambil rider lain atau Wallet tidak mencukupi.'); return false; }
+    await MYRIDERKU_V81.acceptOrder(k);
     const snap=await db.ref('riders/'+user.uid).once('value'); me=Object.assign({},me,snap.val()||{});
-  }catch(err){ if(reserved) await db.ref('riders/'+user.uid+'/walletReserved').transaction(v=>Math.max(0,Math.round(((+v||0)-amount)*100)/100)).catch(()=>{}); toast('Gagal terima: '+err.code); return false }
+  }catch(err){
+    const code=err.code||'';
+    toast(code.includes('failed-precondition')?'Pesanan telah diambil atau Wallet COD tidak mencukupi.':'Gagal terima: '+(err.message||code));
+    return false;
+  }
   tab='aktif'; sel=k; startGps(); toast('Order diterima. Baki COD ditempah sementara.'); render(); return true;
 }
 // MYRIDERKU custom Aisyah voice alert (Rider)
@@ -542,5 +530,8 @@ function updSelf(){
 }
 }
 </script>
-<script src="health-check.js?v=77"></script>
+<script src="myriderku-standard.js?v=1"></script>
+<script src="health-check.js?v=78"></script>
 </body></html>
+
+window.addEventListener('beforeunload',()=>{if(riderFeedTimer)clearInterval(riderFeedTimer)});

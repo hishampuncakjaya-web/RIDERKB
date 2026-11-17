@@ -9,6 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MYRIDERKU Vendor">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <link rel="stylesheet" href="theme.css">
 <style>
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
@@ -42,6 +43,10 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 .mbox .err{color:#b42318!important;font-weight:700}
 .price-preview{background:#eaf5ee;color:#123d2b;border:1px solid #9bc9aa;border-radius:13px;padding:11px 13px;margin-top:10px;line-height:1.55}
 .price-preview b{color:#087443}
+#vendorMap{height:260px;width:100%;border-radius:16px;border:1px solid var(--line);z-index:1;margin-top:10px}
+.loc-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
+.loc-state{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-radius:12px;background:var(--card2);margin-top:10px;font-size:13px}
+.loc-help{font-size:12px;color:var(--mut);line-height:1.5;margin-top:7px}
 .mi .mut{color:var(--mut);line-height:1.5}
 @media(prefers-reduced-motion:no-preference){.tg,.btn{transition:background .18s ease,transform .12s ease}}
 </style>
@@ -58,7 +63,8 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 <link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
 <link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
 <link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
-<link rel="stylesheet" href="health-check.css?v=77">
+<link rel="stylesheet" href="health-check.css?v=78">
+<link rel="stylesheet" href="myriderku-standard.css?v=1">
 </head><body class="role-vendor">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">MYRIDERKU Vendor 🏪</h1><div class="sm" id="who"></div></div></header>
@@ -85,8 +91,14 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
   <label>Alamat</label><input id="sa" maxlength="200" autocomplete="street-address">
   <label>Penerangan ringkas</label><input id="sd" maxlength="160">
   <label>Promosi kedai (pilihan)</label><input id="sp" maxlength="80" placeholder="Cth: Diskaun 10% sebelum 12 tengah hari">
-  <div class="mut" style="margin-top:10px">📍 Lokasi: <span id="sl">belum ditetapkan</span></div>
-  <button class="btn gry full" id="sgeo" type="button" style="margin-top:8px">📍 Guna lokasi saya sekarang</button>
+  <label>📍 Lokasi kedai pada peta</label>
+  <div class="loc-help">Cari lokasi kedai dengan GPS atau gerakkan pin ke pintu masuk kedai yang tepat. Lokasi hanya dikunci selepas anda menekan Simpan.</div>
+  <div id="vendorMap" role="application" aria-label="Peta lokasi kedai vendor"></div>
+  <div class="loc-tools">
+    <button class="btn gry" id="sgeo" type="button">◎ My Location</button>
+    <button class="btn gry" id="sresetgeo" type="button">↺ Reset pin</button>
+  </div>
+  <div class="loc-state"><span>Koordinat: <b id="sl">belum ditetapkan</b></span><span id="locLock">Belum disimpan</span></div>
   <div class="err" id="serr"></div>
   <button class="btn full" id="ssave" style="margin-top:8px">Simpan</button>
   <button class="btn gry full hide" id="scan" style="margin-top:8px">Batal</button></div></div>
@@ -124,12 +136,15 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.__dip=e});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="v81-callables.js?v=81"></script>
 <script src="cloudinary-config.js"></script>
 <script src="common.js?v=61"></script>
 <script>RKB.gateInstall('KB Vendor')</script>
@@ -230,23 +245,42 @@ function alarm(){ // ulang bunyi setiap 12s selagi ada order baru belum dijawab
 }
 
 /* ---------- Profil kedai ---------- */
-let geo=null;
+let geo=null,vendorMap=null,vendorPin=null;
+function showGeo(){ $('#sl').textContent=geo?geo[0].toFixed(6)+', '+geo[1].toFixed(6):'belum ditetapkan'; }
+function setVendorGeo(lat,lng,zoom=true){
+  geo=[+lat,+lng];showGeo();
+  if(window.L&&vendorMap){if(vendorPin)vendorPin.setLatLng(geo);else vendorPin=L.marker(geo,{draggable:true}).addTo(vendorMap);
+    vendorPin.off('dragend').on('dragend',e=>{const p=e.target.getLatLng();geo=[p.lat,p.lng];showGeo()});
+    if(zoom)vendorMap.setView(geo,17);}
+}
+function initVendorMap(){
+  if(!window.L){$('#serr').textContent='Peta gagal dimuatkan. Semak sambungan internet.';return}
+  const fallback=[6.1256,102.2386],center=geo||fallback;
+  if(!vendorMap){vendorMap=L.map('vendorMap').setView(center,geo?17:13);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(vendorMap);
+    vendorMap.on('click',e=>setVendorGeo(e.latlng.lat,e.latlng.lng,false));}
+  else vendorMap.setView(center,geo?17:13);
+  if(vendorPin){vendorPin.remove();vendorPin=null;}
+  if(geo){vendorPin=L.marker(geo,{draggable:true}).addTo(vendorMap);vendorPin.on('dragend',e=>{const p=e.target.getLatLng();geo=[p.lat,p.lng];showGeo()});}
+  setTimeout(()=>vendorMap.invalidateSize(),180);
+}
 function openSetup(){
   show('setup');const s=shop||{};
   $('#stT').textContent=shop?'Edit profil kedai':'Siapkan profil kedai';
   $('#sn').value=s.name||me.shop||'';$('#sbiz').value=s.businessType||'kedai';$('#sc').value=s.cat||'Makanan & Minuman';$('#sa').value=s.addr||'';$('#sd').value=s.desc||'';$('#sp').value=s.promo||'';
-  geo=(s.lat!=null&&s.lng!=null)?[s.lat,s.lng]:null;$('#sl').textContent=geo?geo[0].toFixed(5)+', '+geo[1].toFixed(5):'belum ditetapkan';
-  $('#scan').classList.toggle('hide',!shop);
+  geo=(s.lat!=null&&s.lng!=null)?[s.lat,s.lng]:null;showGeo();
+  $('#locLock').textContent=s.locationLocked?'🔒 Lokasi tersimpan':'Belum disimpan';
+  $('#scan').classList.toggle('hide',!shop);setTimeout(initVendorMap,120);
 }
-$('#sgeo').onclick=()=>{navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>{geo=[p.coords.latitude,p.coords.longitude];$('#sl').textContent=geo[0].toFixed(5)+', '+geo[1].toFixed(5)},()=>{$('#serr').textContent='Lokasi tak dapat dikesan. Benarkan akses lokasi.'},{enableHighAccuracy:true,timeout:15000}):$('#serr').textContent='Peranti tak sokong lokasi.'};
+$('#sgeo').onclick=()=>{if(!navigator.geolocation){$('#serr').textContent='Peranti tak sokong lokasi.';return}$('#serr').textContent='Mengesan lokasi GPS…';navigator.geolocation.getCurrentPosition(p=>{setVendorGeo(p.coords.latitude,p.coords.longitude);$('#serr').textContent='Lokasi GPS dipilih. Semak pin sebelum simpan.'},()=>{$('#serr').textContent='Lokasi tak dapat dikesan. Benarkan akses lokasi dan pastikan HTTPS.'},{enableHighAccuracy:true,timeout:20000,maximumAge:0})};
+$('#sresetgeo').onclick=()=>{geo=null;if(vendorPin){vendorPin.remove();vendorPin=null}showGeo();$('#serr').textContent='Pilih lokasi dengan menekan peta atau My Location.'};
 $('#scan').onclick=()=>{editingProfile=false;setupShown=false;gate()};
 $('#editP').onclick=()=>{editingProfile=true;gate()};
 $('#ssave').onclick=async()=>{
   const n=$('#sn').value.trim();$('#serr').textContent='';
   if(!n){$('#serr').textContent='Isi nama kedai.';return}
   if(!geo){$('#serr').textContent='Tetapkan lokasi kedai (butang 📍) supaya rider tahu tempat ambil.';return}
-  const v={name:n.slice(0,60),businessType:$('#sbiz').value,cat:$('#sc').value,addr:$('#sa').value.trim().slice(0,200),desc:$('#sd').value.trim().slice(0,160),promo:$('#sp').value.trim().slice(0,80),lat:geo[0],lng:geo[1],open:!!(shop&&shop.open)};
-  try{await db.ref('vshops/'+user.uid).update(v);await db.ref('vendors/'+user.uid+'/shop').set(v.name);editingProfile=false;setupShown=false;toast('Profil disimpan ✅');gate()}
+  const v={name:n.slice(0,60),businessType:$('#sbiz').value,cat:$('#sc').value,addr:$('#sa').value.trim().slice(0,200),desc:$('#sd').value.trim().slice(0,160),promo:$('#sp').value.trim().slice(0,80),lat:geo[0],lng:geo[1],locationLocked:true,locationUpdatedAt:Date.now(),open:!!(shop&&shop.open)};
+  try{await db.ref('vshops/'+user.uid).update(v);await db.ref('vendors/'+user.uid+'/shop').set(v.name);editingProfile=false;setupShown=false;toast('Profil dan lokasi kedai disimpan & dikunci ✅');gate()}
   catch(e){$('#serr').textContent='Gagal simpan: '+(e.code||e.message)}
 };
 
@@ -286,7 +320,7 @@ function card(o){
   if(o.status==='diterima')acts=`<button class="btn grn" data-a="rdy" data-id="${esc(o.id)}">🍽️ Dah siap</button><button class="btn gry" data-a="can" data-id="${esc(o.id)}">🚫 Batal</button>`;
   if(o.status==='siap')acts=`<button class="btn grn" data-a="fin" data-id="${esc(o.id)}">🎉 Dah diserah</button><button class="btn gry" data-a="can" data-id="${esc(o.id)}">🚫 Batal</button>`;
   const ph=R.tel(o.phone);
-  return `<div class="card oc s-${esc(o.status)}"><div style="display:flex;justify-content:space-between;gap:8px"><b>#${esc(o.ref)}</b><span class="badge">${esc(ST_L[o.status]||o.status)}</span></div>
+  return `<details class="card oc s-${esc(o.status)} order-compact"><summary class="order-summary"><b>#${esc(o.ref)}</b><span class="order-summary-hint">Lihat info <span aria-hidden="true">⌄</span></span></summary><div class="order-details"><div style="display:flex;justify-content:flex-end"><span class="badge">${esc(ST_L[o.status]||o.status)}</span></div>
   <div class="mut">${esc(R.ago(o.createdAt))} · ${esc(o.pay==='cash'?'Tunai':'Online')}</div>
   <div style="margin:8px 0">${items}<div class="it" style="border-top:1px solid var(--line);margin-top:4px;padding-top:6px"><b>Anda terima</b><b>${rm(subOf(o))}</b></div></div>
   ${o.notes?`<div class="mut">📝 ${esc(String(o.notes).replace(/\[#U=[\d.]+;K=[\d.]+;S=[\d.]+\]\s?/,''))}</div>`:''}
@@ -294,7 +328,7 @@ function card(o){
   ${o.addr?`<div class="mut">📍 ${esc(o.addr)}</div>`:''}
   <div class="mut" style="margin-top:6px">👤 ${esc(o.name)} · <a href="https://wa.me/${esc(ph)}" target="_blank" rel="noopener">${esc(o.phone)}</a></div>
   ${w.length?'<div class="warn">⚠️ Semak sebelum terima:<br>'+w.map(esc).join('<br>')+'</div>':''}
-  ${acts?`<div class="acts">${acts}</div>`:''}</div>`;
+  ${acts?`<div class="acts">${acts}</div>`:''}</div></details>`;
 }
 $('#olist').onclick=async e=>{
   const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const id=b.dataset.id,o=orders[id];if(!o)return;b.disabled=true;
@@ -304,16 +338,16 @@ $('#olist').onclick=async e=>{
       if(o.status!=='baru'){toast('Order dah berubah status.');return}
       const prep=prompt('Anggaran masa sedia (minit):','15');if(prep===null)return;const pm=Math.max(1,Math.min(180,Math.round(+prep||15)));
       const bad=await takeStock(o);if(bad){toast('Stok tak cukup: '+bad);return}
-      await db.ref().update({[base+'status']:'diterima',[base+'prep']:pm,[base+'stk']:true,[base+'t/diterima']:TS});toast('Order diterima ✅');
+      await MYRIDERKU_V81.vendorStatus(id,'accept',pm,'');toast('Order diterima ✅');
     }else if(b.dataset.a==='rej'){
       const why=prompt('Sebab tolak (cth: stok habis):','');if(why===null)return;
-      await db.ref().update({[base+'status']:'ditolak',[base+'reason']:(why||'Ditolak kedai').trim().slice(0,120),[base+'t/ditolak']:TS});toast('Order ditolak');
-    }else if(b.dataset.a==='rdy'){await db.ref().update({[base+'status']:'siap',[base+'t/siap']:TS});toast('Ditanda siap 🍽️')}
-    else if(b.dataset.a==='fin'){await db.ref().update({[base+'status']:'selesai',[base+'t/selesai']:TS});toast('Selesai 🎉')}
+      await MYRIDERKU_V81.vendorStatus(id,'reject',0,(why||'Ditolak kedai').trim().slice(0,120));toast('Order ditolak');
+    }else if(b.dataset.a==='rdy'){await MYRIDERKU_V81.vendorStatus(id,'ready');toast('Ditanda siap 🍽️')}
+    else if(b.dataset.a==='fin'){await MYRIDERKU_V81.vendorStatus(id,'complete');toast('Selesai 🎉')}
     else if(b.dataset.a==='can'){
       const why=prompt('Sebab batal:','');if(why===null)return;
       await returnStock(o);
-      await db.ref().update({[base+'status']:'batal',[base+'reason']:(why||'Dibatalkan kedai').trim().slice(0,120),[base+'stk']:false,[base+'t/batal']:TS});toast('Order dibatalkan');
+      await MYRIDERKU_V81.vendorStatus(id,'cancel',0,(why||'Dibatalkan kedai').trim().slice(0,120));toast('Order dibatalkan');
     }
   }catch(err){toast('Gagal: '+(err.code||err.message))}
   finally{b.disabled=false}
@@ -432,5 +466,6 @@ function paintMore(){
   $('#rev').innerHTML=r.length?r.map(o=>`<div class="row" style="display:block"><b>${'★'.repeat(+o.rating.stars||0)}${'☆'.repeat(5-(+o.rating.stars||0))}</b> <span class="mut">#${esc(o.ref)}</span>${o.rating.c?'<div>'+esc(o.rating.c)+'</div>':''}</div>`).join(''):'<div class="mut">Belum ada ulasan.</div>';
 }
 </script>
-<script src="health-check.js?v=77"></script>
+<script src="myriderku-standard.js?v=1"></script>
+<script src="health-check.js?v=78"></script>
 </body></html>

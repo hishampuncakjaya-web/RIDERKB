@@ -1,0 +1,21 @@
+{
+  "rules_json_valid": true,
+  "source_assertions": {
+    "callable_added": true,
+    "bridge_added": true,
+    "rider_listener_uses_callable": true,
+    "global_orders_listener_removed": true
+  },
+  "node_syntax": {
+    "functions/index.js": {
+      "ok": true,
+      "stderr": ""
+    },
+    "v81-callables.js": {
+      "ok": true,
+      "stderr": ""
+    }
+  },
+  "emulator_tests": "not run",
+  "production_tests": "not run"
+}

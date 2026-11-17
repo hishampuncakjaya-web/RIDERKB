@@ -1,0 +1,128 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "publicConfig": {
+      ".read": true,
+      ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "system": {
+      "maintenance": {
+        ".read": true,
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      }
+    },
+    "vendors": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && ((auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true) || (auth.uid == $uid && newData.child('approved').val() == data.child('approved').val() && newData.child('suspended').val() == data.child('suspended').val() && newData.child('wallet').val() == data.child('wallet').val() && newData.child('walletReserved').val() == data.child('walletReserved').val() && newData.child('walletLog').val() == data.child('walletLog').val()))"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "riders": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && ((auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true) || (auth.uid == $uid && newData.child('approved').val() == data.child('approved').val() && newData.child('suspended').val() == data.child('suspended').val() && newData.child('wallet').val() == data.child('wallet').val() && newData.child('walletReserved').val() == data.child('walletReserved').val() && newData.child('walletLog').val() == data.child('walletLog').val()))"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "vshops": {
+      "$uid": {
+        ".read": true,
+        ".write": "auth != null && ((auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true) || (auth.uid == $uid && newData.child('approved').val() == data.child('approved').val() && newData.child('suspended').val() == data.child('suspended').val()))"
+      },
+      ".read": true
+    },
+    "vmenu": {
+      "$uid": {
+        ".read": true,
+        ".write": "auth != null && (auth.uid == $uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))"
+      },
+      ".read": true
+    },
+    "shops": {
+      ".read": true,
+      "$shopId": {
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      }
+    },
+    "hazards": {
+      ".read": true,
+      "$hazardId": {
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      }
+    },
+    "orders": {
+      "$orderId": {
+        ".read": "auth != null && (data.child('customerUid').val() == auth.uid || data.child('riderUid').val() == auth.uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "vorders": {
+      "$vendorUid": {
+        "$orderId": {
+          ".read": "auth != null && (auth.uid == $vendorUid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+          ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+        },
+        ".read": "auth != null && (auth.uid == $vendorUid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "vpayouts": {
+      "$vendorUid": {
+        ".read": "auth != null && (auth.uid == $vendorUid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "walletLog": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid == $uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      }
+    },
+    "orderContacts": {
+      "$orderId": {
+        ".read": "auth != null && (root.child('orders').child($orderId).child('riderUid').val() == auth.uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "proofs": {
+      "$orderId": {
+        ".read": "auth != null && (root.child('orders').child($orderId).child('riderUid').val() == auth.uid || root.child('orders').child($orderId).child('customerUid').val() == auth.uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "proofsP": {
+      "$orderId": {
+        ".read": "auth != null && (root.child('orders').child($orderId).child('riderUid').val() == auth.uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+        ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "fcmTokens": {
+      "$role": {
+        "$uid": {
+          ".read": "auth != null && (auth.uid == $uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+          "$token": {
+            ".write": "auth != null && (auth.uid == $uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))"
+          }
+        }
+      }
+    },
+    "reports": {
+      "$reportId": {
+        ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true",
+        ".write": "auth != null && ((!data.exists() && newData.child('uid').val() == auth.uid) || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))"
+      },
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    },
+    "settings": {
+      ".read": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true",
+      ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
+    }
+  }
+}
