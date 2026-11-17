@@ -57,14 +57,11 @@ const view=h=>{ $('#v').innerHTML=h; scrollTo({top:0}) };
 const base=m=>(m.pp!=null&&+m.pp<+m.p)?+m.pp:+m.p;          // harga vendor (apa yang vendor terima)
 let shops={}, uid=null, shop=null, menu={}, cart={}, off=null, geo=null;
 const SK='rkb-vlast';
-/* ---- Upah rider: formula SAMA seperti customer.html (asas + KM lebih, genap 0.50), tetapan dari admin ---- */
-const PR={base:5,perKm:1};
-(function(){ const n=(v,d)=>(v!==undefined&&v!==null&&v!==''&&isFinite(+v)&&+v>=0)?+v:d,
-  ap=pub=>{ const p=(pub&&pub.pricing)||{}; PR.base=n(p.base,PR.base); PR.perKm=n(p.perKm,PR.perKm) };
-  try{ ap(JSON.parse(localStorage.getItem('rkb-public-config')||'null')) }catch(_){}
-  if(RKB.ok) RKB.readPublicConfig().then(pub=>{ if(pub&&Object.keys(pub).length){ ap(pub); try{ localStorage.setItem('rkb-public-config',JSON.stringify(pub)) }catch(_){} } }).catch(()=>{});
-})();
-const feeOf=km=>Math.ceil((PR.base+Math.max(0,km)*PR.perKm)*2-1e-9)/2;   // POLISI: asas + RM1/km, bundar KE ATAS kepada gandaan RM0.50
+/* ---- Upah rider: RM5 untuk 5 KM pertama; RM1 bagi setiap KM tambahan ---- */
+const PR=Object.freeze({base:5,perKm:1});
+/* POLISI: RM5.00 meliputi 5 KM pertama. Selepas itu RM1.00/KM tambahan; tiada pembundaran tambang. */
+const FREE_KM=5;
+const feeOf=km=>+(PR.base+Math.max(0,+(+km).toFixed(1)-FREE_KM)*PR.perKm).toFixed(2);
 async function geocodeAddr(q){ try{ const r=await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=my&viewbox=102.0,6.4,102.5,5.9&q='+encodeURIComponent(/kelantan/i.test(q)?q:q+', Kota Bharu, Kelantan')); const j=await r.json(); return j[0]?[+(+j[0].lat).toFixed(6),+(+j[0].lon).toFixed(6)]:null }catch(_){ return null } }
 let quote=null, QM='ambil', qSeq=0;
 async function getQuote(){
@@ -77,7 +74,7 @@ async function getQuote(){
   let km, est=false; try{ const rt=await RKB.getRoute(sc,pt); if(rt) km=rt.distance/1000 }catch(_){}
   if(km==null){ km=RKB.hav(sc,pt)*1.3; est=true }
   if(my!==qSeq) return;
-  quote={km:+km.toFixed(1),fee:feeOf(km),est}; if(ft) ft.textContent='Upah rider dikira ikut jarak dari kedai ke lokasi anda. Satu order, satu bayaran.';
+  km=+km.toFixed(1); quote={km,fee:feeOf(km),est}; if(ft) ft.textContent='Upah rider dikira ikut jarak dari kedai ke lokasi anda. Satu order, satu bayaran.';
   refreshFee();
 }
 const SMALL_MIN=10, SMALL_FEE=0;                 // dimansuhkan: polisi baharu guna markup RM1/unit (bawah RM10). Order lama yang ada caj kecil masih dipaparkan betul
@@ -130,7 +127,7 @@ function sums(){ let sub=0, total=0, markup=0,n=0; Object.entries(cart).forEach(
 function drawMenu(){
   const I=items(); let cat=null, h=`<button class="btn gry sm" id="bk" type="button">‹ Semua kedai</button><div class="card"><div class="mut">${esc(shop.addr||'')}</div>${shop.promo?`<div>🏷️ ${esc(shop.promo)}</div>`:''}</div>`;
   h+=I.length?'<div class="card">'+I.map(([k,m])=>{ const out=m.st===0, q=cart[k]||0, max=m.st>0?Math.min(99,m.st):99, pr=RKB.vPrice(base(m)), was=(m.pp!=null&&+m.pp<+m.p)?RKB.vPrice(+m.p):0;
-    return `<div class="it"><div style="min-width:0"><div class="nm">${esc(m.n)}</div>${m.d?`<div class="mut">${esc(m.d)}</div>`:''}<div>${was?`<s class="mut">${rm(was)}</s> `:''}<b>${rm(pr)}</b>${out?' · <b style="color:#ef4444">HABIS</b>':m.st>0&&m.st<=5?` · <span class="mut">tinggal ${esc(m.st)}</span>`:''}</div></div>
+    return `<div class="it">${m.img&&m.img[0]?`<img src="${esc(m.img[0])}" alt="${esc(m.n)}" loading="lazy" style="width:76px;height:76px;object-fit:cover;border-radius:12px;flex:0 0 76px">`:``}<div style="min-width:0"><div class="nm">${esc(m.n)}</div>${m.d?`<div class="mut">${esc(m.d)}</div>`:''}<div>${was?`<s class="mut">${rm(was)}</s> `:''}<b>${rm(pr)}</b>${out?' · <b style="color:#ef4444">HABIS</b>':m.st>0&&m.st<=5?` · <span class="mut">tinggal ${esc(m.st)}</span>`:''}</div></div>
     <div class="qty">${out?'':`<button data-k="${esc(k)}" data-d="-1" type="button" ${q?'':'disabled'} aria-label="Kurang">−</button><b>${q}</b><button data-k="${esc(k)}" data-d="1" type="button" ${q>=max?'disabled':''} aria-label="Tambah">+</button>`}</div></div>` }).join('')+'</div>':'<div class="card mut">Kedai ini belum ada menu.</div>';
   view(h); cartBar();
   $('#bk').onclick=home;

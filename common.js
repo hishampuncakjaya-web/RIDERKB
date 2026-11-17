@@ -172,12 +172,12 @@
   const toggleLoghat=()=>{ try{ localStorage.setItem('rkb-loghat',kb()?'0':'1') }catch(e){} return kb() };
   const confetti=()=>{ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches) return; const E=['🎉','✨','🌙','💛','🛵']; for(let i=0;i<26;i++){ const s=document.createElement('span'); s.className='cf'; s.textContent=E[i%E.length]; s.style.left=(Math.random()*96)+'vw'; s.style.animationDelay=(Math.random()*0.8)+'s'; s.style.fontSize=(16+Math.random()*16)+'px'; document.body.appendChild(s); setTimeout(()=>s.remove(),4200) } };
   /* Kongsi upah rider & markup vendor. Nilai sebenar dibaca daripada settings (admin tukar), lalai daripada firebase-config.js */
-  const _sh={rider:+cfg.riderShare||80,mark:cfg.vendorMarkup!=null?+cfg.vendorMarkup:10};
+  const _sh={rider:cfg.platformShare!=null?100-(+cfg.platformShare):(+cfg.riderShare||80),mark:cfg.vendorMarkup!=null?+cfg.vendorMarkup:10};
   const r2=n=>Math.round((+n||0)*100)/100;
   // V60: tetapan awam dibaca daripada allowlist /publicConfig sahaja.
   // riderShare/vendorMarkup kekal daripada konfigurasi dalaman; jangan dedahkan /settings kepada pelanggan.
-  const loadShares=()=>Promise.resolve(_sh);
-  const readPublicConfig=()=>db?db.ref('publicConfig').once('value').then(s=>s.val()||{}).catch(()=>({})):Promise.resolve({});
+  const readPublicConfig=()=>db?db.ref('publicConfig').once('value').then(s=>{ const v=s.val()||{}; if(v.payout&&v.payout.platformShare!=null){ const pct=Math.max(0,Math.min(50,+v.payout.platformShare||0)); _sh.rider=100-pct; } return v }).catch(()=>({})):Promise.resolve({});
+  const loadShares=()=>readPublicConfig().then(()=>_sh);
   const readPublicPayment=()=>readPublicConfig().then(v=>v.payment||null);
   const riderPay=o=>o&&o.riderPay!=null?+o.riderPay:r2((+(o&&o.price)||0)*_sh.rider/100);          // bahagian rider (apa yang rider nampak)
   const platCut=o=>r2((+(o&&o.price)||0)-riderPay(o));                                              // untung platform daripada upah (admin sahaja)

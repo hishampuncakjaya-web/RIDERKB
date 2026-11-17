@@ -89,11 +89,11 @@
           <label>Gambar QR (pilihan)</label><input id="sQrF" type="file" accept="image/*">
           <img id="sQrP" alt="" style="display:none;max-width:180px;margin-top:8px;border-radius:10px;background:#fff">
           <div class="acts"><button class="btn gry sm hide" id="sQrX" type="button">🗑️ Buang QR</button></div></div>
-        <div class="card"><h3>💼 Kongsi hasil (admin sahaja nampak pengiraan)</h3>
-          <div class="mut" style="margin-bottom:6px">Rider hanya nampak amaun bahagian mereka. Vendor terima harga asal mereka; pelanggan bayar harga + markup, beza itu untung platform.</div>
-          <div class="acts" style="margin-top:0"><div style="flex:1 1 45%"><label style="margin-top:0">Bahagian rider (% upah)</label><input id="sRider" type="number" step="1" min="50" max="100" inputmode="numeric"></div>
+        <div class="card"><h3>💼 Dana Operasi & markup (Admin)</h3>
+          <div class="mut" style="margin-bottom:6px">Rider melihat pendapatan bersih mereka. Dana Operasi ialah bahagian MYRIDERKU daripada upah penghantaran. Vendor menerima harga asal; markup produk dikira berasingan.</div>
+          <div class="acts" style="margin-top:0"><div style="flex:1 1 45%"><label style="margin-top:0">Dana Operasi (% upah)</label><input id="sDana" type="number" step="1" min="0" max="50" inputmode="numeric"></div>
           <div style="flex:1 1 45%"><label style="margin-top:0">Markup harga vendor (%)</label><input id="sMark" type="number" step="1" min="0" max="50" inputmode="numeric"></div></div>
-          <label style="display:flex;gap:10px;align-items:flex-start;margin-top:10px"><input id="sAuto" type="checkbox" style="width:22px;height:22px;flex:0 0 auto"><span>Wallet automatik selepas order selesai <span class="mut">(perlu Cloud Functions). Tunai: tolak komisyen platform. Online: kredit upah rider.</span></span></label>
+          <label style="display:flex;gap:10px;align-items:flex-start;margin-top:10px"><input id="sAuto" type="checkbox" style="width:22px;height:22px;flex:0 0 auto"><span>Wallet automatik selepas order selesai <span class="mut">(perlu Cloud Functions). Tunai: rekod Dana Operasi. Online: kredit pendapatan rider.</span></span></label>
           <div class="mut" style="margin-top:6px">Ubah nilai ini pada waktu sunyi. Pelanggan yang skrinnya dibuka sebelum perubahan perlu muat semula.</div></div>
         <div class="acts"><button class="btn full" id="sSave" type="button">💾 Simpan tetapan</button></div>
         <div class="mut" id="sInfo" style="margin-top:8px;text-align:center"></div>
@@ -217,7 +217,7 @@ setInterval(()=>{ if(started) render() },15000);
 function stats(L){
   const today=new Date().setHours(0,0,0,0), T=L.filter(o=>o.createdAt>=today), D=T.filter(o=>o.status==='selesai');
   const per={}; D.forEach(o=>{const n=o.riderName||'-'; per[n]=per[n]||{n:0,s:0}; per[n].n++; per[n].s+=RKB.riderPay(o)});
-  $('#stats').innerHTML=[['Order hari ini',T.length],['Baru',L.filter(o=>o.status==='baru').length],['Aktif',L.filter(isAct).length],['Selesai hari ini',D.length],['Upah dikutip hari ini',rm(D.reduce((a,o)=>a+(+o.price||0),0))],['Bahagian rider',rm(D.reduce((a,o)=>a+RKB.riderPay(o),0))],['Untung platform',rm(D.reduce((a,o)=>a+RKB.platCut(o),0))],['Rider online',Object.values(riders).filter(isOn).length],['Rider menunggu',Object.values(riders).filter(r=>r.approved!==true).length]].map(x=>`<div class="stat"><b>${x[1]}</b><small>${x[0]}</small></div>`).join('');
+  $('#stats').innerHTML=[['Order hari ini',T.length],['Baru',L.filter(o=>o.status==='baru').length],['Aktif',L.filter(isAct).length],['Selesai hari ini',D.length],['Upah dikutip hari ini',rm(D.reduce((a,o)=>a+(+o.price||0),0))],['Bahagian rider',rm(D.reduce((a,o)=>a+RKB.riderPay(o),0))],['Dana Operasi',rm(D.reduce((a,o)=>a+RKB.platCut(o),0))],['Rider online',Object.values(riders).filter(isOn).length],['Rider menunggu',Object.values(riders).filter(r=>r.approved!==true).length]].map(x=>`<div class="stat"><b>${x[1]}</b><small>${x[0]}</small></div>`).join('');
   return per;
 }
 setInterval(()=>{ if(started) render() },15000);
@@ -235,7 +235,7 @@ function render(){
   const V=L.filter(o=>(filter==='semua'||(filter==='aktif'?isAct(o):o.status===filter))&&(!s||[o.ref,o.name,PH(o),o.riderName].join(' ').toLowerCase().includes(s)));
   const ropts=Object.entries(riders).filter(([u,r])=>r.approved===true).map(([u,r])=>`<option value="${u}">${esc(r.name||u)}</option>`).join('');
   $('#list').innerHTML=V.length?V.map(o=>`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>#${esc(o.ref)}${o.rating?' · ⭐'+o.rating.stars:''}</b><span>${(()=>{ const c=RKB.confState(o); if(!c) return ''; const far=(o.doneDist!=null&&o.doneDist>(+RKB.cfg.dropRadiusM||300))||o.doneGps===false; return '<span class="badge '+(c.k==='issue'?'b-batal':'b-'+(c.k==='ok'?'selesai':'diterima'))+'">'+esc(c.t)+'</span> '+(far?'<span class="badge b-batal">📍 '+(o.doneGps===false?'tiada GPS masa selesai':'selesai '+o.doneDist+' m dari lokasi hantar')+'</span> ':'') })()}${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
-    <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b> <span class="mut">(rider ${rm(RKB.riderPay(o))} · platform ${rm(RKB.platCut(o))})</span></div>
+    <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b style="color:#fff">${rm(o.price)}</b> <span class="mut">(Rider ${rm(RKB.riderPay(o))} · Dana Operasi ${rm(RKB.platCut(o))})</span></div>
     <div class="row"><span>Ambil</span><span>${esc(o.pick.addr)}</span></div>
     <div class="row"><span>Hantar</span><span>${esc(o.drop.addr)}</span></div>
     <div class="row"><span>Nota</span><span>${esc(String(o.notes||'-').replace(/\[#U=[\d.]+;K=[\d.]+;S=[\d.]+\]\s?/,''))}</span></div>
@@ -296,7 +296,7 @@ $('#list').onclick=async e=>{
   if(confirm('Padam order ini selamanya?')) try{ { const k=b.dataset.k; await db.ref().update({['orders/'+k]:null,['orderContacts/'+k]:null,['proofs/'+k]:null,['proofs/'+k+'p']:null,['proofsP/'+k]:null}) } }catch(err){ toast('Gagal padam (hanya admin): '+err.code) }
 };
 $('#csv').onclick=()=>{
-  const rows=[['Ref','Masa','Status','Servis','Kenderaan','Ambil','Hantar','KM','RM','Upah rider','Untung platform','Pelanggan','Telefon','Rider']];
+  const rows=[['Ref','Masa','Status','Servis','Kenderaan','Ambil','Hantar','KM','RM','Upah rider','Dana Operasi','Pelanggan','Telefon','Rider']];
   list().forEach(o=>rows.push([o.ref,new Date(o.createdAt).toLocaleString('ms-MY'),o.status,o.service,o.vehicle,o.pick.addr,o.drop.addr,o.km,o.price,RKB.riderPay(o),RKB.platCut(o),o.name,PH(o),o.riderName||'']));
   const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'})); a.download='order-rider-kb.csv'; a.click();
@@ -337,13 +337,13 @@ let SET={}, qrData='';
 const nv=(id,d)=>{ const v=$('#'+id).value.trim(); return v!==''&&isFinite(+v)&&+v>=0?+v:d };
 function fillSet(){
   const p=SET.pricing||{}, f=(id,v,d)=>{ if(document.activeElement!==$('#'+id)) $('#'+id).value=(v!=null?v:d) };
-  f('sBase',p.base,5); f('sFree',p.freeKm,5); f('sPer',p.perKm,1); f('sCar',p.car,10); f('sRain',p.rain,2); f('sAlert',SET.alertMin,5); if(document.activeElement!==$('#sAuto')) $('#sAuto').checked=SET.autoWallet===true; f('sRider',SET.riderShare,RKB.cfg.riderShare||80); f('sMark',SET.vendorMarkup,RKB.cfg.vendorMarkup!=null?RKB.cfg.vendorMarkup:10); if(SET.riderShare!=null) RKB.shares().rider=+SET.riderShare; if(SET.vendorMarkup!=null) RKB.shares().mark=+SET.vendorMarkup;
+  f('sBase',p.base,5); f('sFree',p.freeKm,5); f('sPer',p.perKm,1); f('sCar',p.car,10); f('sRain',p.rain,2); f('sAlert',SET.alertMin,5); if(document.activeElement!==$('#sAuto')) $('#sAuto').checked=SET.autoWallet===true; f('sDana',SET.platformShare!=null?SET.platformShare:(SET.riderShare!=null?100-SET.riderShare:(RKB.cfg.platformShare!=null?RKB.cfg.platformShare:100-(RKB.cfg.riderShare||80)))); f('sMark',SET.vendorMarkup,RKB.cfg.vendorMarkup!=null?RKB.cfg.vendorMarkup:10); if(SET.platformShare!=null) RKB.shares().rider=100-(+SET.platformShare); else if(SET.riderShare!=null) RKB.shares().rider=+SET.riderShare; if(SET.vendorMarkup!=null) RKB.shares().mark=+SET.vendorMarkup;
   f('sWa',SET.wa,RKB.cfg.waNumber||''); const y=SET.pay||{}; f('sBank',y.bank,''); f('sAcc',y.acc,''); f('sName',y.name,'');
   qrData=y.qr||''; $('#sQrP').style.display=qrData?'block':'none'; if(qrData) $('#sQrP').src=qrData; $('#sQrX').classList.toggle('hide',!qrData);
   alertMin=+SET.alertMin>0?+SET.alertMin:5;
 }
 /* V60: salinan awam (allowlist) untuk customer: harga + butiran bayaran sahaja */
-const publicOf=o=>{ const c={pricing:o.pricing||{}}; if(o.pay){ const y={}; ['bank','acc','name','qr'].forEach(k=>{ if(o.pay[k]) y[k]=o.pay[k] }); if(Object.keys(y).length) c.payment=y } return c };
+const publicOf=o=>{ const c={pricing:o.pricing||{},payout:{platformShare:o.platformShare!=null?+o.platformShare:20}}; if(o.pay){ const y={}; ['bank','acc','name','qr'].forEach(k=>{ if(o.pay[k]) y[k]=o.pay[k] }); if(Object.keys(y).length) c.payment=y } return c };
 let _pcSynced=false;
 db.ref('settings').on('value',sn=>{ SET=sn.val()||{}; fillSet(); render();
   if(!_pcSynced&&SET.pricing){ _pcSynced=true; db.ref('publicConfig').once('value').then(x=>{ if(!x.exists()) return db.ref('publicConfig').set(publicOf(SET)) }).catch(()=>{}) } },e=>toast('Ralat tetapan: '+e.code));
@@ -351,8 +351,9 @@ $('#sQrF').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f)
 $('#sQrX').onclick=()=>{ qrData=''; $('#sQrP').style.display='none'; $('#sQrX').classList.add('hide'); $('#sQrF').value='' };
 $('#sSave').onclick=async()=>{
   const wa=$('#sWa').value.replace(/\D/g,''); if(wa&&!/^60\d{8,11}$/.test(wa)) return toast('Nombor WhatsApp mesti bermula 60, cth 601139900099');
-  const o={pricing:{base:nv('sBase',5),freeKm:nv('sFree',5),perKm:nv('sPer',1),car:nv('sCar',10),rain:nv('sRain',2)},alertMin:Math.max(1,Math.round(nv('sAlert',5))),riderShare:Math.round(nv('sRider',80)),vendorMarkup:Math.round(nv('sMark',10)),autoWallet:$('#sAuto').checked};
-  if(!(o.riderShare>=50&&o.riderShare<=100)) return toast('Bahagian rider mesti 50 hingga 100%');
+  const danaShare=Math.round(nv('sDana',20));
+  const o={pricing:{base:nv('sBase',5),freeKm:nv('sFree',5),perKm:nv('sPer',1),car:nv('sCar',10),rain:nv('sRain',2)},alertMin:Math.max(1,Math.round(nv('sAlert',5))),platformShare:danaShare,riderShare:100-danaShare,vendorMarkup:Math.round(nv('sMark',10)),autoWallet:$('#sAuto').checked};
+  if(!(o.platformShare>=0&&o.platformShare<=50)) return toast('Dana Operasi mesti 0 hingga 50%');
   if(!(o.vendorMarkup>=0&&o.vendorMarkup<=50)) return toast('Markup vendor mesti 0 hingga 50%');
   if(wa) o.wa=wa;
   const pay={bank:$('#sBank').value.trim().slice(0,60),acc:$('#sAcc').value.trim().slice(0,40),name:$('#sName').value.trim().slice(0,80)}; if(qrData) pay.qr=qrData;

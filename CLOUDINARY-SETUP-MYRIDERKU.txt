@@ -1,0 +1,24 @@
+MYRIDERKU V71 – VENDOR PRODUCT IMAGE (RM0 CLOUDINARY FREE)
+
+ASAS: MYRIDERKU V70. Firebase Realtime Database kekal menyimpan metadata produk dan URL imej. Imej sebenar disimpan di Cloudinary.
+
+SEBELUM FUNGSI UPLOAD AKTIF
+1. Daftar akaun Cloudinary Free di https://cloudinary.com/users/register_free (pelan percuma dinyatakan tiada kad kredit).
+2. Di Cloudinary Console > Settings > Upload > Upload presets, cipta preset baharu.
+3. Tetapkan Signing Mode = Unsigned. Tetapkan Allowed formats = jpg,png,webp. Tetapkan folder jika pilihan itu tersedia. Jangan benarkan jenis fail lain.
+4. Salin Cloud name dan nama preset.
+5. Buka cloudinary-config.js dan gantikan YOUR_CLOUD_NAME serta YOUR_UNSIGNED_PRESET. Jangan masukkan API Secret.
+6. Upload keseluruhan kandungan ZIP ke Netlify.
+7. Log masuk Vendor > Menu > Tambah/Edit produk > pilih sehingga 3 gambar > Simpan.
+
+NOTA KESELAMATAN & KOS
+- Unsigned preset boleh digunakan oleh sesiapa yang mengetahui nama preset. Hadkan format dan tetapkan preset khas untuk produk sahaja. Pantau penggunaan/kuota Cloudinary.
+- Imej dikecilkan ke maksimum 1600px dan WebP sebelum upload. Maksimum 5MB setiap fail asal, maksimum 3 gambar setiap produk.
+- Apabila gambar dibuang atau diganti dalam produk, pautan lama dibuang daripada rekod produk tetapi fail Cloudinary lama tidak dipadam secara automatik. Pemadaman aset memerlukan proses pelayan yang ditandatangani; jangan letak API Secret dalam frontend.
+- Pelan Cloudinary percuma mempunyai had penggunaan bulanan; penggunaan melebihi kuota mungkin memerlukan pelan berbayar. Kekalkan pemantauan penggunaan.
+- Jika konfigurasi belum diisi, sistem akan memaparkan mesej dan tidak berpura-pura upload berjaya.
+
+FAIL PENTING
+- vendor.html: borang imej, pratonton, pemampatan WebP dan upload Cloudinary.
+- customer-shop.html: paparan gambar produk dalam katalog pelanggan.
+- cloudinary-config.js: konfigurasi awam cloud name dan unsigned preset sahaja.

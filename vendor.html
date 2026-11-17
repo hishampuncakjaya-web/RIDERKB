@@ -126,6 +126,7 @@ if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWor
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
+<script src="cloudinary-config.js"></script>
 <script src="common.js?v=61"></script>
 <script>RKB.gateInstall('KB Vendor')</script>
 <script>
@@ -324,7 +325,7 @@ function paintMenu(){
   const E=Object.entries(menu).sort((a,b)=>String(a[1].n).localeCompare(String(b[1].n)));
   $('#mlist').innerHTML=E.length?E.map(([id,m])=>{
     const out=m.st===0,pr=m.pp!=null&&m.pp<m.p?`<s class="mut">${rm(m.p)}</s> <b>${rm(m.pp)}</b> 🏷️`:`<b>${rm(m.p)}</b>`;
-    return `<div class="mi ${m.on&&!out?'':'off'}"><div style="min-width:0"><div class="nm">${esc(m.n)}</div><div class="mut">${pr} · ${m.st===-1?'Stok: tiada had':'Stok: '+esc(m.st)}${out?' · <b style="color:#ef4444">HABIS</b>':''}</div>
+    return `<div class="mi ${m.on&&!out?'':'off'}"><div style="min-width:0"><div class="nm">${esc(m.n)}</div>${m.img&&m.img[0]?`<img src="${esc(m.img[0])}" alt="${esc(m.n)}" loading="lazy" style="width:76px;height:76px;object-fit:cover;border-radius:12px;margin:6px 0">`:``}<div class="mut">${pr} · ${m.st===-1?'Stok: tiada had':'Stok: '+esc(m.st)}${out?' · <b style="color:#ef4444">HABIS</b>':''}</div>
     <div class="acts" style="margin-top:6px">${m.st===-1?'':`<button class="btn gry qb" data-m="dec" data-id="${esc(id)}" aria-label="Kurang stok">−</button><button class="btn gry qb" data-m="inc" data-id="${esc(id)}" aria-label="Tambah stok">+</button>`}<button class="btn gry sm" data-m="edit" data-id="${esc(id)}">✏️ Edit</button><button class="btn gry sm" data-m="del" data-id="${esc(id)}">🗑️</button></div></div>
     <button class="tg ${m.on?'on':''}" data-m="tog" data-id="${esc(id)}" aria-label="Sedia / tidak sedia"></button></div>`}).join(''):'<div class="mut">Belum ada produk. Tekan ➕ Tambah produk.</div>';
 }
@@ -339,6 +340,20 @@ $('#mlist').onclick=async e=>{
   }catch(err){toast('Gagal: '+(err.code||err.message))}
 };
 $('#addI').onclick=()=>itemModal(null);
+async function compressProductImage(file){
+  const img=await new Promise((resolve,reject)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>{URL.revokeObjectURL(u);resolve(im)};im.onerror=reject;im.src=u});
+  const scale=Math.min(1,1600/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*scale)),h=Math.max(1,Math.round(img.height*scale));
+  const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+  return await new Promise(resolve=>c.toBlob(resolve,'image/webp',0.78));
+}
+async function uploadProductImage(file){
+  const cfg=window.MYRIDERKU_IMAGE_CONFIG||{};
+  if(!cfg.cloudName||!cfg.uploadPreset||cfg.cloudName==='YOUR_CLOUD_NAME'||cfg.uploadPreset==='YOUR_UNSIGNED_PRESET')throw new Error('Tetapan Cloudinary belum lengkap. Isi cloudName dan uploadPreset dalam cloudinary-config.js.');
+  const blob=await compressProductImage(file);if(!blob)throw new Error('Gagal memproses imej.');
+  const fd=new FormData();fd.append('file',blob,file.name.replace(/\.[^.]+$/,'')+'.webp');fd.append('upload_preset',cfg.uploadPreset);fd.append('folder','myriderku/products');
+  const res=await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cfg.cloudName)}/image/upload`,{method:'POST',body:fd});
+  const data=await res.json();if(!res.ok||!data.secure_url)throw new Error(data.error?.message||'Muat naik imej gagal.');return data.secure_url;
+}
 function itemModal(id){
   const m=id?menu[id]:{n:'',p:'',pp:null,st:-1,on:true,d:'',c:''};
   const d=document.createElement('div');d.className='modal';
@@ -348,11 +363,23 @@ function itemModal(id){
   <div class="price-preview" id="pricePreview">Harga pelanggan dan markup MYRIDERKU akan dikira automatik.</div>
   <label>Harga promosi anda (RM, pilihan)</label><input id="mpp" type="number" inputmode="decimal" min="0" max="1000" step="0.10" value="${m.pp!=null?esc(m.pp):''}">
   <label>Stok (kosong = tiada had)</label><input id="ms" type="number" inputmode="numeric" min="0" max="9999" step="1" value="${m.st===-1?'':esc(m.st)}">
+  <label>Gambar produk (maksimum 3)</label>
+  <input id="mi" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+  <div class="mut" id="imgHelp">Pilih gambar dari galeri. Imej akan dikecilkan sebelum dihantar. Maksimum 5MB setiap fail.</div>
+  <div id="imgPreview" style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"></div>
+  <button class="btn gry sm" id="imgClear" type="button">Kosongkan gambar pilihan</button>
   <label>Kategori (pilihan)</label><input id="mc" maxlength="30" value="${esc(m.c||'')}">
   <label>Penerangan (pilihan)</label><input id="md" maxlength="120" value="${esc(m.d||'')}">
   <div class="err" id="merr"></div>
   <div class="acts"><button class="btn grn" id="msv">Simpan</button><button class="btn gry" id="mcn">Batal</button></div></div>`;
   document.body.appendChild(d);
+  let productImages=Array.isArray(m.img)?m.img.slice(0,3):[];
+  let selectedFiles=[];
+  const renderImages=()=>{const box=d.querySelector('#imgPreview');box.innerHTML=productImages.map((u,i)=>`<div style="position:relative"><img src="${esc(u)}" alt="Gambar ${i+1}" style="width:76px;height:76px;object-fit:cover;border-radius:10px"><button type="button" data-rmimg="${i}" style="position:absolute;right:2px;top:2px;border:0;border-radius:50%;background:#111;color:#fff">×</button></div>`).join('')+selectedFiles.map((f,i)=>`<div><img src="${URL.createObjectURL(f)}" alt="Pratonton ${i+1}" style="width:76px;height:76px;object-fit:cover;border-radius:10px"><small>Baharu</small></div>`).join('');};
+  renderImages();
+  d.querySelector('#mi').addEventListener('change',e=>{const files=[...e.target.files];if(productImages.length+files.length>3){d.querySelector('#merr').textContent='Maksimum 3 gambar. Buang gambar lama dahulu.';e.target.value='';return}if(files.some(f=>!/^image\/(jpeg|png|webp)$/.test(f.type)||f.size>5*1024*1024)){d.querySelector('#merr').textContent='Gunakan JPG, PNG atau WebP, maksimum 5MB setiap satu.';e.target.value='';return}selectedFiles=files;renderImages();});
+  d.querySelector('#imgPreview').addEventListener('click',e=>{const b=e.target.closest('[data-rmimg]');if(!b)return;productImages.splice(+b.dataset.rmimg,1);renderImages()});
+  d.querySelector('#imgClear').onclick=()=>{productImages=[];selectedFiles=[];d.querySelector('#mi').value='';renderImages()};
   const updatePricePreview=()=>{const raw=parseFloat(d.querySelector('#mpp').value||d.querySelector('#mp').value),base=Number.isFinite(raw)?raw:0,markup=base<10?1:Math.max(1,Math.round(base*10)/100),customer=Math.round((base+markup)*100)/100;d.querySelector('#pricePreview').innerHTML=`Harga Vendor: <b>${rm(base)}</b><br>Markup MYRIDERKU: <b>${rm(markup)}</b><br>Harga pelanggan: <b>${rm(customer)}</b><br><small>Vendor menerima harga asal sepenuhnya.</small>`};
   d.querySelector('#mp').addEventListener('input',updatePricePreview);d.querySelector('#mpp').addEventListener('input',updatePricePreview);updatePricePreview();
   d.querySelector('#mcn').onclick=()=>d.remove();
@@ -363,7 +390,8 @@ function itemModal(id){
     const pp=ppv===''?null:parseFloat(ppv);if(pp!==null&&!(pp>=0&&pp<p)){er.textContent='Harga promosi mesti kurang daripada harga biasa.';return}
     const st=sv===''?-1:parseInt(sv,10);if(!(st>=-1&&st<=9999)||!Number.isFinite(st)){er.textContent='Stok tak sah (0 hingga 9999).';return}
     const v={n:n.slice(0,60),p:Math.round(p*100)/100,st,on:m.on!==false,pp:pp===null?null:Math.round(pp*100)/100,c:d.querySelector('#mc').value.trim().slice(0,30)||null,d:d.querySelector('#md').value.trim().slice(0,120)||null};
-    try{await db.ref('vmenu/'+user.uid+'/'+(id||R.newId())).update(v);d.remove();toast('Disimpan ✅')}catch(e){er.textContent='Gagal simpan: '+(e.code||e.message)}
+    const saveBtn=d.querySelector('#msv');saveBtn.disabled=true;saveBtn.textContent='Memuat naik…';
+    try{for(const f of selectedFiles){productImages.push(await uploadProductImage(f))}v.img=productImages.slice(0,3);await db.ref('vmenu/'+user.uid+'/'+(id||R.newId())).update(v);d.remove();toast('Produk dan gambar disimpan ✅')}catch(e){er.textContent='Gagal: '+(e.code||e.message);saveBtn.disabled=false;saveBtn.textContent='Simpan'}
   };
 }
 

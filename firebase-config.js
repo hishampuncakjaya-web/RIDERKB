@@ -18,7 +18,8 @@ window.RKB_CFG = {
   riderMustInstall: true,         // rider wajib pasang app (set false untuk ujian dalam pelayar)
   dropRadiusM: 300,              // rider mesti dalam lingkungan ini (meter) dari lokasi hantar untuk tekan "Dah sampai" / "Hantar selesai"
   confAutoMin: 30,                // minit sebelum order dianggap auto-sah jika customer tak tekan apa-apa
-  riderShare: 80,                // % upah yang rider terima (lalai; admin boleh tukar di Tetapan). Baki = untung platform, hanya admin nampak
+  platformShare: 20,            // % Dana Operasi daripada upah; baki 80% ialah pendapatan rider (admin boleh ubah di Tetapan)
+  riderShare: 80,                // keserasian versi lama; dikira sebagai baki selepas Dana Operasi
   vendorMarkup: 10,              // % tambahan atas harga vendor untuk pelanggan (lalai; admin boleh tukar). Vendor terima harga asal
   walletMinCash: 0,               // baki minimum tambahan (RM); satu Wallet Rider, tiada baki negatif
   reviewUrl: "https://g.page/r/CW-FG4feUjmuEAI/review",   // pautan Google Review (kosongkan untuk sorok)

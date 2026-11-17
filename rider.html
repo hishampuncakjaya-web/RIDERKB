@@ -217,7 +217,7 @@ function renderTabs(){
   const L=list(), n={baru:L.filter(o=>o.status==='baru').length,aktif:L.filter(active).length,selesai:L.filter(o=>mine(o)&&o.status==='selesai').length};
   $('#tabs').innerHTML=[['baru','🆕 Baru'],['aktif','🛵 Aktif'],['selesai','✅ Selesai']].map(t=>`<button class="tab ${tab===t[0]?'on':''}" data-t="${t[0]}">${t[1]} (${n[t[0]]})</button>`).join('');
   const today=new Date().setHours(0,0,0,0), e=L.filter(o=>mine(o)&&o.status==='selesai'&&(o.t&&o.t.selesai||0)>=today);
-  const dn=L.filter(o=>mine(o)&&o.status==='selesai'), sum=a=>a.reduce((s,o)=>s+RKB.riderPay(o),0), wk=dn.filter(o=>(o.t&&o.t.selesai||0)>=Date.now()-7*864e5), mo=dn.filter(o=>(o.t&&o.t.selesai||0)>=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime()), rt=dn.filter(o=>o.rating&&o.rating.stars);
+  const dn=L.filter(o=>mine(o)&&o.status==='selesai'), sum=a=>a.reduce((s,o)=>s+riderExtras(o).total,0), wk=dn.filter(o=>(o.t&&o.t.selesai||0)>=Date.now()-7*864e5), mo=dn.filter(o=>(o.t&&o.t.selesai||0)>=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime()), rt=dn.filter(o=>o.rating&&o.rating.stars);
   $('#earn').innerHTML=`Hari ini: ${e.length} order · ${rm(sum(e))}<br>7 hari: ${wk.length} order · ${rm(sum(wk))}<br>Bulan ini: ${mo.length} order · ${rm(sum(mo))}`+(rt.length?`<br>⭐ <b>${(rt.reduce((s,o)=>s+o.rating.stars,0)/rt.length).toFixed(1)}</b> (${rt.length} penilaian)`:'');
   const w=walletBalance(), held=walletReserved(), available=walletAvailable();
   $('#wal').innerHTML='💰 Wallet Rider: <b>'+rm(w)+'</b><br>Baki tersedia: <b>'+rm(available)+'</b>'+(held>0?'<br>Digunakan sementara: '+rm(held):'');
@@ -230,6 +230,16 @@ function ensureContact(k){
   if(contacts[k]||cPend[k]||(cTry[k]||0)>=6) return; cPend[k]=1; cTry[k]=(cTry[k]||0)+1;
   db.ref('orderContacts/'+k).once('value').then(s=>{ cPend[k]=0; contacts[k]=s.val()||{}; render() },()=>{ cPend[k]=0; setTimeout(()=>{ if(orders[k]&&active(orders[k])) ensureContact(k) },1500*cTry[k]) });
 }
+function riderExtras(o){
+  const pick=(keys)=>{ for(const k of keys){ const v=+(o&&o[k]); if(Number.isFinite(v)&&v>0) return RKB.r2(v); } return 0; };
+  const bonus=pick(['bonus','bonusAmount','spotBonus','riderBonus']);
+  const tip=pick(['tip','tipAmount','customerTip','riderTip']);
+  return {bonus,tip,total:RKB.r2(RKB.riderPay(o)+bonus+tip)};
+}
+function riderEarningsRows(o){
+  const x=riderExtras(o);
+  return `${x.bonus>0?`<div class="row"><span>🎁 Bonus</span><b>${rm(x.bonus)}</b></div>`:''}${x.tip>0?`<div class="row"><span>💚 Tip pelanggan</span><b>${rm(x.tip)}</b></div>`:''}${x.bonus>0||x.tip>0?`<div class="row" style="font-weight:800;color:#15803d"><span>Jumlah pendapatan</span><b>${rm(x.total)}</b></div>`:''}`;
+}
 function card(o){
   const ok=eligible(o), C=contacts[o.k]||{}, ph=RKB.phoneOf(o,C), rv=C.recv||o.recv||'';
   const nx=o.status==='baru'?(ok?['terima','✅ Terima order','grn']:['lock','🔒 Wallet tidak mencukupi · tersedia '+rm(walletAvailable())+', perlu '+rm(o.need),'gry']):{diterima:(o.pickPhoto?['diambil','📦 Barang dah diambil','blu']:null),diambil:(o.dropPhoto?['selesai','🎉 Hantar selesai','grn']:null)}[o.status];
@@ -241,7 +251,8 @@ function card(o){
   <div class="row"><span>📝 Nota</span><span>${esc(o.notes||'-')}</span></div>
   <div class="row"><span>👤 Pelanggan</span><span>${esc(o.name)} · ${o.status==='selesai'?'🔒 nombor disembunyikan':(ph?esc(ph):'🔒 nombor dipaparkan selepas anda terima')}${rv&&o.status!=='selesai'?'<br>Penerima: '+esc(rv):''}</span></div>
   <div class="row"><span>💳 Bayaran</span><span>${payTxt(o)}</span></div>
-  <div class="row"><span>💰 Upah</span><span>${rm(RKB.riderPay(o))}${o.rain?' (hujan)':''}</span></div>
+  <div class="row"><span>💰 Pendapatan penghantaran</span><b>${rm(RKB.riderPay(o))}${o.rain?' (hujan)':''}</b></div>
+  ${riderEarningsRows(o)}
   ${o.status==='selesai'&&RKB.confState(o)?`<div class="row"><span>🧾 Pengesahan</span><span>${esc(RKB.confState(o).t)}</span></div>`:''}
   <div class="acts">${nx?`<button class="btn ${nx[2]} full" data-a="${nx[0]}" data-k="${o.k}" ${nx[0]==='lock'?'disabled':''}>${nx[1]}</button>`:''}
   ${mine(o)&&o.status==='diterima'&&!o.arrivedAt?`<button class="btn blu full" data-a="arrive" data-k="${o.k}">📍 Dah sampai di lokasi ambil</button>`:''}${mine(o)&&o.status==='diterima'&&o.arrivedAt&&!o.pickPhoto?`<button class="btn blu full" data-a="proofP" data-k="${o.k}">📷 Ambil gambar barang</button>`:''}${mine(o)&&o.status==='diambil'&&!o.arrivedDropAt?`<button class="btn blu full" data-a="arriveD" data-k="${o.k}">📍 Dah sampai di lokasi hantar</button>`:''}${mine(o)&&o.status==='diambil'&&o.arrivedDropAt&&!o.dropPhoto?`<button class="btn blu full" data-a="proofD" data-k="${o.k}">📷 Ambil gambar bukti hantar</button>`:''}</div>
@@ -326,7 +337,7 @@ async function acceptOrder(k){
 }
 function showDone(k){
   const o=orders[k]||{}, m=RKB.msgRider();
-  $('#dT').textContent=m.t; $('#dM').textContent=m.m; $('#dE').textContent='Upah order ni: '+rm(RKB.riderPay(o))+' · #'+(o.ref||'');
+  $('#dT').textContent=m.t; $('#dM').textContent=m.m; const ex=riderExtras(o); $('#dE').textContent='Pendapatan: '+rm(ex.total)+' · #'+(o.ref||'');
   $('#done').classList.remove('hide'); RKB.beep();
 }
 $('#dX').onclick=()=>$('#done').classList.add('hide');

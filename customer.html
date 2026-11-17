@@ -237,7 +237,7 @@ body.typing{padding-bottom:24px}
 /* ===== TETAPAN (ubah di sini) ===== */
 let WA_NUMBER = (window.RKB_CFG&&RKB_CFG.waNumber)||"601139900099";  // nombor WhatsApp rider, format 60xxxxxxxxx
 let BASE = 5;                    // RM5 untuk 5 km pertama
-let FREE_KM = 0;                 // POLISI: tiada km percuma; RM1 setiap km
+let FREE_KM = 5;                 // POLISI: RM5 meliputi 5 KM pertama
 let PER_KM = 1;                  // RM1 setiap km
 let CAR_EXTRA = 10, RAIN_EXTRA = 2;
 const CENTER = [6.1254, 102.2381]; // Kota Bharu
@@ -433,8 +433,8 @@ async function route(){
 }
 function etaTxt(){ return S.min==null?'':' · ≈ '+(S.min+8)+' min' }
 function parts(){
-  const km=S.km??0, o={base:BASE,extra:+(Math.max(0,km-FREE_KM)*PER_KM).toFixed(2),car:S.vehicle==='Kereta'?CAR_EXTRA:0,rain:$('#rain').checked?RAIN_EXTRA:0};
-  o.sum=o.base+o.extra+o.car+o.rain; o.total=Math.ceil(o.sum*2-1e-9)/2; o.round=o.total-o.sum; return o;   // bundar ke atas kepada gandaan 0.50
+  const km=+(S.km??0).toFixed(1), o={base:BASE,extra:+(Math.max(0,km-FREE_KM)*PER_KM).toFixed(2),car:S.vehicle==='Kereta'?CAR_EXTRA:0,rain:$('#rain').checked?RAIN_EXTRA:0};
+  o.sum=o.base+o.extra+o.car+o.rain; o.total=+o.sum.toFixed(2); o.round=0; return o;   // RM5 untuk 5 KM pertama; RM1 bagi setiap KM tambahan, ikut 0.1 KM
 }
 function calc(){ return parts().total }
 const rmx=n=>(+n%1?(+n).toFixed(2):String(+n));
@@ -500,7 +500,7 @@ function summary(){
     ['Kenderaan',S.vehicle],['Bayaran',S.pay==='cash'?'Tunai'+(BUY.includes(S.service)&&+$('#itemEst').value?' · barang ≈ RM'+(+$('#itemEst').value).toFixed(2):''):'Transfer / QR'],['Catatan',$('#notes').value.trim()],['Nama',$('#name').value+' · '+$('#phone').value]];
   let h=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
   const b=[['Upah asas',p.base]];
-  if(p.extra) b.push(['Jarak ('+(S.km??0).toFixed(1)+' KM × RM'+rmx(PER_KM)+')',p.extra]);
+  if(p.extra) b.push(['Jarak ('+Math.max(0,(S.km??0)-FREE_KM).toFixed(1)+' KM tambahan × RM'+rmx(PER_KM)+')',p.extra]);
   if(p.car) b.push(['Kenderaan kereta',p.car]);
   if(p.rain) b.push(['Caj hujan',p.rain]);
   if(p.round) b.push(['Pembundaran',p.round]);
@@ -557,7 +557,7 @@ async function send(){
   const order={ref,createdAt:firebase.database.ServerValue.TIMESTAMP,status:'baru',...(guestUser?{customerUid:guestUser.uid}:{}),service:S.service,vehicle:S.vehicle,pick:pt(S.pick,'#pick'),drop:pt(S.drop,'#drop'),
     notes:$('#notes').value.trim().slice(0,600),name:$('#name').value.trim().slice(0,60),km:+(S.km??0).toFixed(1),rain:$('#rain').checked,price:calc(),
     pay:S.pay,itemEst:item,need:S.pay==='cash'?minCash+item:0};
-  if(window.__rs!=null) order.riderPay=RKB.r2(order.price*window.__rs/100);
+  order.riderPay=RKB.r2(order.price*RKB.shares().rider/100);
   const contact={phone:$('#phone').value.trim().slice(0,20),phoneKey:RKB.phoneKey($('#phone').value)}; if(recv) contact.recv=recv;   // nombor disimpan asing: hanya admin & rider yang ditugaskan boleh baca
   let trackUrl='';
   const buildMsg=()=>{
@@ -591,7 +591,7 @@ async function send(){
     `🌧️ *Status Cuaca:* ${$('#rain').checked?'🌧️ Hujan (+RM'+RAIN_EXTRA.toFixed(2)+')':'Cerah'}`,
     `💰 *JUMLAH TAMBANG PELANGGAN: RM ${calc().toFixed(2)}*`,
     line,
-    `_Tambang: asas RM${BASE.toFixed(2)} + RM${PER_KM.toFixed(2)} setiap KM, dibundarkan ke atas kepada gandaan RM0.50. Bayar lepas sampai._`
+    `_Tambang: RM${BASE.toFixed(2)} untuk 5 KM pertama, kemudian RM${PER_KM.toFixed(2)} bagi setiap KM tambahan. Jarak perpuluhan dikira mengikut jarak sebenar tanpa pembundaran tambang. Bayar lepas sampai._`
   ].join('\n');
   };
   const nx=$('#next'), setBtn=(t,dis)=>{ nx.textContent=t; nx.disabled=!!dis };
@@ -779,7 +779,7 @@ function drawGreet(){ $('#greet').textContent=RKB.say('Nak tapau atau hantar apa
 $('#lg').onclick=()=>{ RKB.toggleLoghat(); drawGreet() }; drawGreet();
 /* ---- Tetapan dari admin (harga, WhatsApp, bayaran): cache dulu, kemudian kemas kini ---- */
 function applySettings(st){ if(!st) return; const p=st.pricing||{}, n=(v,d)=>(v!==undefined&&v!==null&&v!==''&&isFinite(+v)&&+v>=0)?+v:d;
-  BASE=n(p.base,BASE); PER_KM=n(p.perKm,PER_KM); CAR_EXTRA=n(p.car,CAR_EXTRA); RAIN_EXTRA=n(p.rain,RAIN_EXTRA);
+  /* POLISI: BASE & PER_KM dikunci (tetapan admin tak mengatasi) */ CAR_EXTRA=n(p.car,CAR_EXTRA); RAIN_EXTRA=n(p.rain,RAIN_EXTRA);
   if(st.wa&&/^60\d{8,11}$/.test(String(st.wa))) WA_NUMBER=String(st.wa);
   if(st.pay) PAY=st.pay;
   $('#carAmt').textContent=rmx(CAR_EXTRA); $('#rainAmt').textContent=rmx(RAIN_EXTRA); drawPay(); price(); }
