@@ -1,0 +1,18 @@
+/* MYRIDERKU V87 — pembaikan kontras & paparan (dimuat paling akhir) */
+/* Admin: butang header (Tema / Log keluar) mesti nampak atas latar gelap */
+html body .hd .hbtn,html body.role-admin .hd .hbtn,html[data-theme] body .hd .hbtn{background:rgba(255,255,255,.16)!important;color:#fff!important;border:1px solid rgba(255,255,255,.45)!important;box-shadow:none!important;text-shadow:none!important}
+html body .hd #styBtn{color:#fff!important}
+/* Admin Live Rider Radar: kad cerah = teks gelap, kotak statistik gelap = teks cerah */
+html body .admin-radar-card{background:linear-gradient(160deg,#f8fbff,#eef4f8)!important;color:#12261a!important}
+html body .admin-radar-card .radar-kicker{color:#0e7490!important}
+html body .admin-radar-card h3{color:#0f2a3d!important}
+html body .admin-radar-card .mut,html body .admin-radar-card .sm{color:#475a6b!important}
+html body .admin-radar-card .radar-stats>div{background:linear-gradient(135deg,#123a52,#0f2a44)!important;border:1px solid #2b5a78!important}
+html body .admin-radar-card .radar-stats b{color:#7dd3fc!important;opacity:1!important}
+html body .admin-radar-card .radar-stats small{color:#e0f2fe!important;opacity:1!important}
+html body .admin-radar-card .radar-tools .btn,html body .admin-radar-card .btn.gry{background:#e8f0f7!important;color:#0f2a3d!important;border:1px solid #b6c8d8!important}
+html body .admin-radar-card #radarWeatherText{color:#475a6b!important}
+html body .radar-my-location,html body #radarFull,html body .radar-full-btn{background:#fff!important;color:#0f2a3d!important;border:1px solid #b6c8d8!important}
+/* Peta vendor mesti ada ketinggian supaya tidak kosong */
+#vendorMap{min-height:300px;height:300px;width:100%;border-radius:18px;background:#e8efe9;position:relative;z-index:0}
+.leaflet-container{font-family:inherit}

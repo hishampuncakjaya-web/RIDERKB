@@ -117,6 +117,7 @@ body.typing{padding-bottom:24px}
 <link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
 <link rel="stylesheet" href="health-check.css?v=78">
 <link rel="stylesheet" href="myriderku-standard.css?v=1">
+<link rel="stylesheet" href="myriderku-v87-fixes.css?v=87">
 </head>
 <body class="role-customer">
 <div class="wrap">
@@ -175,7 +176,7 @@ body.typing{padding-bottom:24px}
   <div class="mut" style="font-size:12.5px;margin:6px 0 0">✏️ Boleh ubah: taip alamat, tekan peta atau seret pin.</div>
   <label>🎁 Penerima <span style="color:var(--mut);font-weight:400">· jika bukan anda (rider akan hubungi)</span></label>
   <input id="recv" maxlength="100" placeholder="Nama &amp; no. telefon, cth: Mak 0123456789" autocomplete="off">
-  <div class="rain" id="rainBox"><input type="checkbox" id="rain" disabled><div>🌧️ <b>Caj hujan +RM<span id="rainAmt">2</span></b><br><span id="rainTxt" style="color:var(--mut)">Tanda jika sedang hujan</span></div></div>
+  <div class="rain" id="rainBox"><input type="checkbox" id="rain" disabled><div>🌧️ <b>Caj hujan +RM<span id="rainAmt">2</span></b><br><span id="rainTxt" style="color:var(--mut)">Semakan cuaca automatik selepas lokasi ambil dan hantar dipilih</span></div></div>
   </div>
   <details class="fold"><summary>📌 Tempat pantas &amp; cari kedai berdekatan</summary><div class="fb">
   <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Kawasan panas (tekan untuk isi):</div>
@@ -248,8 +249,8 @@ body.typing{padding-bottom:24px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="v81-callables.js?v=81"></script>
-<script src="common.js?v=61"></script>
+<script src="common.js?v=87"></script>
+<script src="v81-callables.js?v=87"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('tempah')</script>
 <script>
 /* ===== TETAPAN (ubah di sini) ===== */
@@ -387,6 +388,7 @@ $('#bL').onclick=()=>{
   },()=>$('#err').textContent='Tak dapat akses lokasi. Benarkan kebenaran lokasi.');
 };
 
+let weatherPending=false, weatherSeq=0, weatherError=false;
 /* ---- Jarak & upah ---- */
 function hav(a,b){const R=6371,r=x=>x*Math.PI/180,dl=r(b[0]-a[0]),dn=r(b[1]-a[1]);
   const h=Math.sin(dl/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))}
@@ -427,7 +429,7 @@ async function getRoute(a,b){
   throw new Error('no route');
 }
 async function route(){
-  if(!(S.pick&&S.drop)){document.body.classList.remove('rt');stopRider();if(routeLine){map.removeLayer(routeLine);routeLine=null}S.km=null;S.min=null;price();return}
+  if(!(S.pick&&S.drop)){document.body.classList.remove('rt');stopRider();if(routeLine){map.removeLayer(routeLine);routeLine=null}S.km=null;S.min=null;price();checkRain();return}
   const id=++reqId; let km; document.body.classList.add('rt');
   // garis putus-putus serta-merta antara Ambil dan Hantar (diganti garis jalan sebenar bila siap)
   stopRider();
@@ -464,26 +466,37 @@ function price(){
   $('#fsInfo').textContent = S.km==null?'Menunggu pengiraan laluan':(S.km.toFixed(1)+' KM'+etaTxt()+'  ·  RM '+p.total.toFixed(2)+(S.est?' (anggaran)':''));
 }
 async function checkRain(){
-  const box=$('#rain'), label=$('#rainTxt');
-  if(!S.pick||!S.drop||!Number.isFinite(+S.pick[0])||!Number.isFinite(+S.drop[0])){
-    box.checked=false; label.textContent='Pilih lokasi ambil dan hantar untuk semakan cuaca automatik'; price(); return;
+  const seq=++weatherSeq, box=$('#rain'), label=$('#rainTxt');
+  const validPoint=pt=>Array.isArray(pt)&&Number.isFinite(+pt[0])&&Number.isFinite(+pt[1]);
+  if(!validPoint(S.pick)||!validPoint(S.drop)){
+    weatherPending=false; weatherError=false; box.checked=false;
+    label.textContent='Pilih lokasi ambil dan hantar untuk semakan cuaca automatik.';
+    price(); return;
   }
-  label.textContent='Sedang menyemak cuaca di lokasi ambil dan hantar…';
+  weatherPending=true; weatherError=false;
+  label.textContent='⏳ Menyemak cuaca automatik di lokasi ambil dan hantar…'; price();
+  const fetchJson=async url=>{
+    const ctl=new AbortController(), timer=setTimeout(()=>ctl.abort(),9000);
+    try{const r=await fetch(url,{signal:ctl.signal,cache:'no-store'});if(!r.ok)throw new Error('weather-http-'+r.status);return await r.json()}
+    finally{clearTimeout(timer)}
+  };
   try{
     const points=[['ambil',S.pick],['hantar',S.drop]];
     const checks=await Promise.all(points.map(async([name,pt])=>{
-      const url=`https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(pt[0])}&longitude=${encodeURIComponent(pt[1])}&current=precipitation,rain,showers,weather_code`;
-      const r=await fetch(url,{signal:AbortSignal.timeout(8000)}); if(!r.ok) throw new Error('weather-http');
-      const j=await r.json(), c=j.current||{};
-      const wet=Number(c.precipitation||0)>0 || Number(c.rain||0)>0 || Number(c.showers||0)>0 || [51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(Number(c.weather_code));
-      return {name,wet};
+      const url=`https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(pt[0])}&longitude=${encodeURIComponent(pt[1])}&current=precipitation,rain,showers,weather_code&timezone=Asia%2FKuala_Lumpur`;
+      const j=await fetchJson(url),c=j.current||{},code=Number(c.weather_code);
+      const wet=Number(c.precipitation||0)>0||Number(c.rain||0)>0||Number(c.showers||0)>0||[51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(code);
+      return{name,wet};
     }));
-    const wet=checks.some(x=>x.wet); box.checked=wet;
-    label.textContent=wet?'🌧️ Hujan dikesan di '+checks.filter(x=>x.wet).map(x=>x.name==='ambil'?'lokasi ambil':'lokasi hantar').join(' dan ')+' · Caj RM'+RAIN_EXTRA+' dimasukkan automatik':'☀️ Tiada hujan dikesan di kedua-dua lokasi';
+    if(seq!==weatherSeq)return;
+    const wet=checks.some(x=>x.wet),places=checks.filter(x=>x.wet).map(x=>x.name==='ambil'?'lokasi ambil':'lokasi hantar');
+    box.checked=wet;
+    label.textContent=wet?'🌧️ Hujan dikesan di '+places.join(' dan ')+' · Caj RM'+RAIN_EXTRA.toFixed(2)+' dimasukkan automatik.':'☀️ Tiada hujan dikesan di lokasi ambil dan hantar. Tiada caj hujan.';
   }catch(e){
-    box.checked=false; label.textContent='⚠️ Cuaca belum dapat disahkan. Caj hujan tidak dikenakan.';
-  }
-  price();
+    if(seq!==weatherSeq)return;
+    box.checked=false;weatherError=true;
+    label.textContent='⚠️ Data cuaca tidak dapat disahkan. Caj hujan tidak dikenakan. Semak sambungan internet atau ubah lokasi untuk cuba semula.';
+  }finally{if(seq===weatherSeq){weatherPending=false;price()}}
 }
 
 /* ---- Wizard ---- */
@@ -506,7 +519,8 @@ function valid(){
   if(S.step===0){
     if(!S.pick){ setMode('pick'); return 'Pilih lokasi ambil dahulu: taip alamat, tekan kawasan panas atau tekan peta.' }
     if(!S.drop){ setMode('drop'); return 'Pilih lokasi hantar pula: taip alamat atau tekan peta.' }
-    if(S.km==null) return 'Jarak laluan masih dikira. Tunggu sehingga jarak dipaparkan sebelum meneruskan.'
+    if(S.km==null) return 'Jarak laluan masih dikira. Tunggu sehingga jarak dipaparkan sebelum meneruskan.';
+    if(weatherPending) return 'Semakan cuaca automatik sedang berjalan. Tunggu sebentar sebelum meneruskan.'
   }
   if(S.step===1){
     if(!$('#notes').value.trim()) return bad('notes','Tulis sikit apa yang rider perlu buat, supaya order anda tak tersilap.');

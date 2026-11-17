@@ -1,0 +1,27 @@
+MYRIDERKU V86 — SMART AUTO SYSTEM (STAGING CANDIDATE)
+Tarikh: 17 November 2026
+Asas: MYRIDERKU V85.3 integrated candidate. Tiada sambungan live Firebase dibuat.
+
+PEMBAIKAN:
+1. Susunan skrip portal: firebase-config.js -> common.js -> v81-callables.js.
+2. Callable bridge memilih Firebase app bernama Admin/Rider/Vendor; Customer/Tracking menggunakan app default.
+3. Customer weather UI menjelaskan semakan automatik, bukan arahan manual "Tanda jika sedang hujan".
+4. Semakan cuaca Customer menggunakan AbortController timeout serasi Android WebView, perlindungan respons lama dan status pending.
+5. Customer tidak boleh meneruskan langkah lokasi ketika semakan cuaca masih berjalan.
+6. Jika cuaca gagal disahkan, tiada caj hujan dikenakan dan amaran dipaparkan.
+7. Admin Live Rider Radar memuatkan cuaca secara automatik, mengemas kini selepas peta dialihkan dan menyegarkan setiap 10 minit.
+8. Admin weather fetch mempunyai timeout dan perlindungan respons lama.
+
+TINGKAH LAKU YANG MEMERLUKAN PILIHAN:
+- GPS Customer auto mengisi lokasi HANTAR (Customer mungkin membuat pesanan untuk orang lain); lokasi AMBIL mesti dipilih.
+- Cuaca hanya boleh disemak selepas kedua-dua koordinat wujud.
+- Kedai berdekatan kekal pilihan Customer; sistem tidak boleh meneka kedai yang dikehendaki.
+- Vendor perlu memilih/menyimpan lokasi kedai sekali.
+- GPS Rider memerlukan kebenaran lokasi dan status online.
+
+BELUM LULUS / JANGAN DEPLOY PRODUKSI:
+- Emulator, Firebase live, Netlify staging dan Android fizikal belum diuji.
+- Marketplace checkout masih memerlukan callable createMarketplaceOrder.
+- Customer tracking masih memerlukan token keselamatan.
+- Rules candidate tidak diterbitkan.
+- Tiada data Firebase dipadam/ditulis/diubah.

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ms"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>MYRIDERKU · Semak & Baiki</title>
+<style>
+:root{--bg:#f4faf5;--card:#fff;--txt:#12261a;--mut:#55695c;--line:#cfe3d3;--ok:#0f8a5f;--bad:#c0262d;--warn:#b7791f;--pri:#15945b}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1a13;--card:#16261d;--txt:#e8f3ea;--mut:#9db3a4;--line:#2a4034}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);padding:14px;padding-top:max(14px,env(safe-area-inset-top));padding-bottom:max(30px,env(safe-area-inset-bottom))}
+.w{max-width:640px;margin:0 auto}h1{font-size:20px;margin:4px 0}p{margin:4px 0;color:var(--mut)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin:12px 0}
+.row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}.row:first-child{border-top:0}
+.ic{font-size:18px;width:24px;text-align:center}.t b{display:block}.t small{color:var(--mut);display:block;word-break:break-word}
+.fix{color:var(--warn)!important}
+.sum{font-weight:700;padding:10px 12px;border-radius:12px;margin:10px 0}.sum.ok{background:#dff5ea;color:#0b6b48}.sum.bad{background:#fde4ea;color:#a31d3a}.sum.warn{background:#fff1d6;color:#8a5a00}
+button,a.b{display:block;width:100%;text-align:center;border:0;border-radius:14px;padding:13px;font:inherit;font-weight:700;margin:8px 0;cursor:pointer;text-decoration:none;background:var(--pri);color:#fff}
+button.g,a.b.g{background:transparent;color:var(--txt);border:2px solid var(--line)}button.r{background:#c0262d}
+button:disabled{opacity:.6}pre{white-space:pre-wrap;word-break:break-word;font-size:12px;background:#0001;padding:8px;border-radius:10px;max-height:200px;overflow:auto}
+</style></head><body><div class="w">
+<h1>🛠️ MYRIDERKU · Semak & Baiki</h1>
+<p>Halaman ini berdiri sendiri, jadi masih boleh dibuka walaupun app utama rosak. Versi: <b>V87</b></p>
+<div id="sum" class="sum warn">Sedang menyemak…</div>
+<button id="fix" class="r">🔧 Baiki automatik (padam cache lama &amp; muat semula)</button>
+<button id="rerun" class="g">🔄 Semak semula</button>
+<div class="card" id="list"></div>
+<div class="card"><b>Buka portal</b>
+<a class="b g" href="customer.html">🛵 Customer</a><a class="b g" href="rider.html">🏍️ Rider</a><a class="b g" href="vendor.html">🏪 Vendor</a><a class="b g" href="admin.html">🧑‍💼 Admin</a></div>
+<div class="card"><b>Laporan</b><p>Hantar laporan ini kepada pembangun jika masalah berterusan.</p><pre id="rep"></pre>
+<button id="copy" class="g">📋 Salin laporan</button><a id="wa" class="b g" target="_blank" rel="noopener">💬 Hantar melalui WhatsApp</a></div>
+</div>
+<script>
+(function(){
+var EXPECT='v87',$=function(s){return document.querySelector(s)},res=[],list=$('#list');
+function add(st,title,detail,fix){res.push({st:st,title:title,detail:detail||'',fix:fix||''});render()}
+function render(){
+  list.innerHTML=res.map(function(r){var ic={ok:'✅',bad:'❌',warn:'⚠️',info:'ℹ️'}[r.st];
+    return '<div class="row"><div class="ic">'+ic+'</div><div class="t"><b>'+esc(r.title)+'</b><small>'+esc(r.detail)+'</small>'+(r.fix?'<small class="fix">➜ '+esc(r.fix)+'</small>':'')+'</div></div>'}).join('');
+  var bad=res.filter(function(r){return r.st==='bad'}).length,warn=res.filter(function(r){return r.st==='warn'}).length,s=$('#sum');
+  s.className='sum '+(bad?'bad':warn?'warn':'ok');
+  s.textContent=bad?('❌ '+bad+' masalah ditemui. Tekan "Baiki automatik" dahulu.'):warn?('⚠️ Berfungsi, tetapi ada '+warn+' amaran.'):'✅ Semua semakan lulus.';
+  var rep='MYRIDERKU semak '+EXPECT+' · '+new Date().toLocaleString()+'\n'+location.href+'\n'+navigator.userAgent+'\n\n'+res.map(function(r){return r.st.toUpperCase()+' | '+r.title+(r.detail?' — '+r.detail:'')}).join('\n');
+  $('#rep').textContent=rep;
+  $('#wa').href='https://wa.me/601139900099?text='+encodeURIComponent(rep.slice(0,1500));
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function to(p,ms){return Promise.race([p,new Promise(function(_,j){setTimeout(function(){j(new Error('tamat masa'))},ms||9000)})])}
+function get(u){return to(fetch(u+(u.indexOf('?')<0?'?':'&')+'_r='+Date.now(),{cache:'no-store'}))}
+function loadScript(u){return to(new Promise(function(ok,no){var s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=function(){no(new Error('gagal dimuat'))};document.head.appendChild(s)}),12000)}
+
+async function run(){
+  res=[];render();
+  // 1. Sambungan & persekitaran
+  add(navigator.onLine?'ok':'bad','Internet',navigator.onLine?'Dalam talian':'Tiada internet','Hidupkan data/Wi-Fi.');
+  add(location.protocol==='https:'||location.hostname==='localhost'?'ok':'bad','HTTPS',location.protocol,'GPS, notifikasi & PWA hanya berfungsi atas HTTPS.');
+  try{localStorage.setItem('_t','1');localStorage.removeItem('_t');add('ok','Storan pelayar','localStorage berfungsi')}catch(e){add('bad','Storan pelayar','localStorage disekat (mod peribadi?)','Guna pelayar biasa.')}
+  add('info','Mod app',(matchMedia('(display-mode: standalone)').matches||navigator.standalone)?'Dipasang (PWA)':'Dalam pelayar');
+  // 2. Fail projek
+  var files=['index.html','customer.html','customer-track.html','customer-shop.html','rider.html','vendor.html','admin.html','common.js','v81-callables.js','firebase-config.js','theme.js','sw.js','health-check.js','myriderku-standard.js','app.css','theme.css','myriderku-v87-fixes.css','myriderku-admin-radar-v65.css'],missing=[],txt={};
+  await Promise.all(files.map(async function(f){try{var r=await get(f);if(!r.ok)missing.push(f+' ('+r.status+')');else if(/\.(js|css)$/.test(f))txt[f]=await r.text()}catch(e){missing.push(f+' ('+e.message+')')}}));
+  add(missing.length?'bad':'ok','Fail projek ('+files.length+')',missing.length?'Hilang: '+missing.join(', '):'Semua fail wujud di server',missing.length?'Muat naik semula SEMUA fail daripada zip V87 ke host (GitHub/Netlify).':'');
+  // 3. Versi
+  var sw=txt['sw.js']||'';
+  if(sw)add(sw.indexOf('myriderku-'+EXPECT)>=0?'ok':'warn','Versi service worker',(sw.match(/CACHE\s*=\s*'([^']+)'/)||[])[1]||'?',sw.indexOf('myriderku-'+EXPECT)>=0?'':'Server masih ada versi lama. Muat naik fail V87.');
+  var br=txt['v81-callables.js']||'',cm=txt['common.js']||'';
+  add(br.indexOf('MYRIDERKU_V81')>=0&&cm.indexOf('MYRIDERKU_V81')>=0?'ok':'bad','Jambatan fungsi (V81)',br&&cm.indexOf('MYRIDERKU_V81')>=0?'Ada dalam common.js dan v81-callables.js':'Tiada dalam fail server','Punca ralat "MYRIDERKU_V81 is not defined". Muat naik common.js &amp; v81-callables.js V87.'.replace('&amp;','&'));
+  // 4. Config Firebase
+  var cfg=null;try{await loadScript('firebase-config.js?_r='+Date.now());cfg=window.RKB_CFG&&window.RKB_CFG.firebase}catch(e){}
+  if(!cfg||!cfg.projectId||!cfg.apiKey){add('bad','Konfigurasi Firebase','firebase-config.js kosong atau tidak sah','Semak firebase-config.js.')}
+  else{
+    add('ok','Konfigurasi Firebase','Projek: '+cfg.projectId);
+    // 5. SDK
+    var sdk=['app','auth','database','functions'],sdkBad=[];
+    for(var i=0;i<sdk.length;i++){try{await loadScript('https://www.gstatic.com/firebasejs/10.12.2/firebase-'+sdk[i]+'-compat.js')}catch(e){sdkBad.push(sdk[i])}}
+    add(sdkBad.length?'bad':'ok','Firebase SDK',sdkBad.length?'Gagal: '+sdkBad.join(', '):'Dimuat dari gstatic','Semak internet / sekatan rangkaian.');
+    // 6. Database
+    try{var r=await to(fetch(cfg.databaseURL+'/.json?shallow=true&limitToFirst=1'));add('ok','Realtime Database','Boleh dicapai (status '+r.status+(r.status===401?' = dilindungi rules, normal':'')+')')}
+    catch(e){add('bad','Realtime Database','Tidak dapat dicapai: '+e.message,'Semak databaseURL dalam firebase-config.js & internet.')}
+    // 7. Cloud Functions
+    var names=['getCustomerSession','createCustomerOrder','listRiderOrders','riderUpdateOrderStatus','updateVendorOrderStatus','adminAdjustRiderWallet'],fb=[];
+    await Promise.all(names.map(async function(n){try{await to(fetch('https://asia-southeast1-'+cfg.projectId+'.cloudfunctions.net/'+n,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"data":{}}'}))}catch(e){fb.push(n)}}));
+    add(fb.length?'bad':'ok','Cloud Functions (asia-southeast1)',fb.length?'Tidak dikesan: '+fb.join(', '):'Semua fungsi utama menjawab','Jalankan: firebase deploy --only functions (wilayah asia-southeast1). Tanpa ini order & status rider gagal.');
+  }
+  // 8. Peta
+  try{await loadScript('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js');add('ok','Peta (Leaflet)','Dimuat')}catch(e){add('bad','Peta (Leaflet)',e.message,'Semak internet; cdnjs mungkin disekat.')}
+  try{await to(fetch('https://a.tile.openstreetmap.org/0/0/0.png',{mode:'no-cors'}));add('ok','Jubin peta OpenStreetMap','Boleh dicapai')}catch(e){add('warn','Jubin peta OpenStreetMap',e.message,'Peta mungkin kosong.')}
+  // 9. GPS
+  if(!navigator.geolocation)add('bad','GPS','Peranti/pelayar tidak sokong');
+  else try{var p=await navigator.permissions.query({name:'geolocation'});add(p.state==='denied'?'bad':p.state==='granted'?'ok':'warn','Kebenaran lokasi',p.state,p.state==='denied'?'Tetapan pelayar > Lokasi > Benarkan untuk laman ini.':p.state==='prompt'?'Akan diminta apabila guna ciri GPS.':'')}catch(e){add('info','Kebenaran lokasi','Tidak dapat disemak')}
+  // 10. SW & cache
+  try{
+    var regs=navigator.serviceWorker?await navigator.serviceWorker.getRegistrations():[],keys=window.caches?await caches.keys():[];
+    add(regs.length?'ok':'info','Service worker',regs.length?regs.length+' aktif':'Tiada');
+    var old=keys.filter(function(k){return k.indexOf(EXPECT)<0});
+    add(old.length?'warn':'ok','Cache app',keys.length?keys.join(', '):'Kosong',old.length?'Ada cache versi lama. Tekan "Baiki automatik".':'');
+  }catch(e){add('info','Service worker/cache',e.message)}
+}
+async function repair(){
+  var b=$('#fix');b.disabled=true;b.textContent='Membaiki…';
+  try{var regs=navigator.serviceWorker?await navigator.serviceWorker.getRegistrations():[];await Promise.all(regs.map(function(r){return r.unregister()}))}catch(e){}
+  try{var ks=window.caches?await caches.keys():[];await Promise.all(ks.map(function(k){return caches.delete(k)}))}catch(e){}
+  b.textContent='✅ Siap. Memuat semula…';
+  setTimeout(function(){location.replace(location.pathname+'?clean='+Date.now())},900);
+}
+$('#fix').onclick=repair;$('#rerun').onclick=run;
+$('#copy').onclick=function(){var t=$('#rep').textContent;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$('#copy').textContent='✅ Disalin'}).catch(function(){var r=document.createRange();r.selectNode($('#rep'));getSelection().removeAllRanges();getSelection().addRange(r);$('#copy').textContent='Tekan lama & salin'})};
+if(/[?&]auto=1/.test(location.search))repair();else run();
+})();
+</script></body></html>

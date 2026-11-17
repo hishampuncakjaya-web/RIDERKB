@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
 <link rel="stylesheet" href="health-check.css?v=78">
 <link rel="stylesheet" href="myriderku-standard.css?v=1">
+<link rel="stylesheet" href="myriderku-v87-fixes.css?v=87">
 </head><body class="role-admin">
 <div class="wrap wide">
 <header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -139,8 +140,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="v81-callables.js?v=81"></script>
-<script src="common.js?v=61"></script>
+<script src="common.js?v=87"></script>
+<script src="v81-callables.js?v=87"></script>
 <script>RKB.gateInstall('KB Admin')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm}=RKB;
@@ -496,6 +497,7 @@ function updMap(LST){
   renderRadarStats(LST,rk,actU);
 }
 function renderRadarStats(LST,rk,actU){const online=Object.entries(riders).filter(([u,r])=>isOn(r)&&r.lat!=null).length,active=actU.size,waiting=Math.max(0,online-active),stale=[...rk].filter(u=>!isOn(riders[u]||{})).length;[['radarOnline',online],['radarJobs',active],['radarWaiting',waiting],['radarStale',stale]].forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=String(v)})}
+let radarWeatherMoveTimer=null,radarWeatherSeq=0,radarWeatherInterval=null;
 function initRadarControls(){
  const card=document.getElementById('radarCard'),full=document.getElementById('radarFull');
  const toggleRadarFull=async()=>{try{if(!document.fullscreenElement){await card.requestFullscreen()}else{await document.exitFullscreen()}}catch(e){card.classList.toggle('radar-expanded')}setTimeout(()=>map&&map.invalidateSize(),220)};
@@ -511,8 +513,32 @@ function initRadarControls(){
  });
  document.getElementById('radarFit')?.addEventListener('click',()=>{if(!map)return;const pts=Object.values(rm_).map(m=>m.getLatLng());if(pts.length)map.fitBounds(L.latLngBounds(pts),{padding:[45,45],maxZoom:15});else toast('Tiada lokasi Rider untuk dipaparkan')});
  document.getElementById('radarWeather')?.addEventListener('click',loadRadarWeather);
+ if(map){
+   map.off('moveend',scheduleRadarWeather);
+   map.on('moveend',scheduleRadarWeather);
+   setTimeout(loadRadarWeather,700);
+   if(radarWeatherInterval) clearInterval(radarWeatherInterval);
+   radarWeatherInterval=setInterval(loadRadarWeather,10*60*1000);
+ }
 }
-async function loadRadarWeather(){const out=document.getElementById('radarWeatherText'),btn=document.getElementById('radarWeather');if(!map||!out)return;const c=map.getCenter();out.textContent='Memuatkan cuaca…';if(btn)btn.disabled=true;try{const url=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat.toFixed(4)}&longitude=${c.lng.toFixed(4)}&current=temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m&timezone=Asia%2FKuala_Lumpur`;const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw new Error('HTTP '+res.status);const j=await res.json(),w=j.current;if(!w)throw new Error('Tiada data cuaca');const desc=({0:'Cerah',1:'Cerah berawan',2:'Separa mendung',3:'Mendung',45:'Kabut',48:'Kabut tebal',51:'Renyai',53:'Renyai sederhana',55:'Renyai lebat',61:'Hujan',63:'Hujan sederhana',65:'Hujan lebat',80:'Hujan setempat',81:'Hujan setempat sederhana',82:'Hujan setempat lebat',95:'Ribut petir',96:'Ribut petir + hujan batu',99:'Ribut petir kuat'})[w.weather_code]||'Keadaan berubah-ubah';out.textContent=`${desc} · ${Math.round(w.temperature_2m)}°C · Hujan ${w.precipitation} mm · Angin ${w.wind_speed_10m} km/j · ${new Date(w.time).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}`}catch(e){out.textContent='Cuaca tidak tersedia. Cuba lagi kemudian.';console.warn('Weather:',e)}finally{if(btn)btn.disabled=false}}
+function scheduleRadarWeather(){
+ clearTimeout(radarWeatherMoveTimer);
+ radarWeatherMoveTimer=setTimeout(loadRadarWeather,1400);
+}
+async function loadRadarWeather(){
+ const out=document.getElementById('radarWeatherText'),btn=document.getElementById('radarWeather');
+ if(!map||!out)return;
+ const seq=++radarWeatherSeq,c=map.getCenter();out.textContent='Memuatkan cuaca kawasan peta…';if(btn)btn.disabled=true;
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),9000);
+ try{
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat.toFixed(4)}&longitude=${c.lng.toFixed(4)}&current=temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m&timezone=Asia%2FKuala_Lumpur`;
+  const res=await fetch(url,{cache:'no-store',signal:ctl.signal});if(!res.ok)throw new Error('HTTP '+res.status);
+  const j=await res.json(),w=j.current;if(!w)throw new Error('Tiada data cuaca');if(seq!==radarWeatherSeq)return;
+  const desc=({0:'Cerah',1:'Cerah berawan',2:'Separa mendung',3:'Mendung',45:'Kabut',48:'Kabut tebal',51:'Renyai',53:'Renyai sederhana',55:'Renyai lebat',61:'Hujan',63:'Hujan sederhana',65:'Hujan lebat',80:'Hujan setempat',81:'Hujan setempat sederhana',82:'Hujan setempat lebat',95:'Ribut petir',96:'Ribut petir + hujan batu',99:'Ribut petir kuat'})[w.weather_code]||'Keadaan berubah-ubah';
+  out.textContent=`${desc} · ${Math.round(w.temperature_2m)}°C · Hujan ${w.precipitation} mm · Angin ${w.wind_speed_10m} km/j · ${new Date(w.time).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}`;
+ }catch(e){if(seq===radarWeatherSeq){out.textContent='Cuaca tidak tersedia. Cuba lagi kemudian.';console.warn('Weather:',e)}}
+ finally{clearTimeout(timer);if(seq===radarWeatherSeq&&btn)btn.disabled=false}
+}
 }
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>

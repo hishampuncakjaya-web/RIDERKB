@@ -1,0 +1,34 @@
+MYRIDERKU V86 — NETLIFY STAGING PACKAGE
+
+Pakej ini mempunyai fail projek di root arkib supaya mudah diekstrak dan dimuat naik sebagai folder publish Netlify.
+
+PENTING — FIREBASE:
+firebase-config.js dalam pakej ini masih menunjuk kepada projek Firebase sedia ada:
+- projectId: riderkb-fe7e1
+- database: riderkb-fe7e1-default-rtdb.asia-southeast1.firebasedatabase.app
+
+Ini bermakna jika portal diuji dengan login atau transaksi sebenar, ia boleh membaca/menulis data Firebase utama. Netlify staging tidak menjadikan Firebase staging secara automatik.
+
+SEBELUM UJIAN END-TO-END:
+1. Wujudkan projek Firebase staging berasingan.
+2. Aktifkan Authentication dan Realtime Database di lokasi yang sesuai.
+3. Salin struktur/rules yang telah diaudit ke projek staging, bukan terus ke production.
+4. Sediakan Cloud Functions yang diperlukan dalam projek staging.
+5. Tukar firebase-config.js kepada konfigurasi projek staging.
+6. Semak admin allowlist, App Check, Storage dan domain Auth yang dibenarkan.
+7. Deploy folder ini ke Netlify staging.
+8. Jalankan QA checklist V86.
+
+JANGAN:
+- Jangan publish database.rules candidate sebelum audit.
+- Jangan gunakan pesanan/bayaran sebenar semasa ujian.
+- Jangan padam atau reset data Firebase production.
+- Jangan kongsi fail konfigurasi peribadi atau credential server.
+
+Netlify:
+- Extract ZIP.
+- Upload folder hasil extract sebagai manual deploy / publish directory.
+- Pastikan index.html berada di root publish directory.
+- Tambah domain Netlify staging dalam Firebase Authentication > Authorized domains (projek staging sahaja).
+
+Pakej ini ialah staging web bundle; bukan pengesahan bahawa backend Firebase atau Cloud Functions telah diuji.

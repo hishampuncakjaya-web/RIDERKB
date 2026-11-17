@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MYRIDERKU Vendor">
 <link rel="stylesheet" href="app.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="theme.css">
 <style>
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom))}
@@ -65,6 +65,7 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 <link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
 <link rel="stylesheet" href="health-check.css?v=78">
 <link rel="stylesheet" href="myriderku-standard.css?v=1">
+<link rel="stylesheet" href="myriderku-v87-fixes.css?v=87">
 </head><body class="role-vendor">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">MYRIDERKU Vendor 🏪</h1><div class="sm" id="who"></div></div></header>
@@ -136,7 +137,7 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();window.__dip=e});
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -144,9 +145,9 @@ if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWor
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="v81-callables.js?v=81"></script>
 <script src="cloudinary-config.js"></script>
-<script src="common.js?v=61"></script>
+<script src="common.js?v=87"></script>
+<script src="v81-callables.js?v=87"></script>
 <script>RKB.gateInstall('KB Vendor')</script>
 <script>
 /*PURE*/
@@ -215,7 +216,7 @@ function gate(){
 let started=false;
 function stopData(){dataOffs.forEach(f=>f());dataOffs=[];started=false}
 // MYRIDERKU custom Aisyah voice alert (Vendor)
-const vendorAisyahAlert = new Audio('sounds/vendor-order-aisyah.wav');
+const vendorAisyahAlert = new Audio('vendor-order-aisyah.wav');
 vendorAisyahAlert.preload='auto';
 let vendorAisyahLastPlay=0;
 function playVendorAisyahAlert(){
@@ -261,7 +262,7 @@ function initVendorMap(){
   else vendorMap.setView(center,geo?17:13);
   if(vendorPin){vendorPin.remove();vendorPin=null;}
   if(geo){vendorPin=L.marker(geo,{draggable:true}).addTo(vendorMap);vendorPin.on('dragend',e=>{const p=e.target.getLatLng();geo=[p.lat,p.lng];showGeo()});}
-  setTimeout(()=>vendorMap.invalidateSize(),180);
+  [180,500,1200].forEach(t=>setTimeout(()=>{try{vendorMap.invalidateSize()}catch(e){}},t));
 }
 function openSetup(){
   show('setup');const s=shop||{};

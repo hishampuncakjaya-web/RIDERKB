@@ -17,5 +17,17 @@
     }
   },
   "emulator_tests": "not run",
-  "production_tests": "not run"
+  "production_tests": "not run",
+  "v86_smart_auto": {
+    "callable_order_common_before_bridge": true,
+    "callable_role_specific_firebase_app": true,
+    "customer_weather_auto_status": true,
+    "customer_weather_timeout_and_race_guard": true,
+    "customer_step_waits_for_weather": true,
+    "admin_radar_weather_auto_refresh": true,
+    "emulator_tests": "not run",
+    "live_firebase_tests": "not run",
+    "android_device_tests": "not run",
+    "netlify_staging_tests": "not run"
+  }
 }

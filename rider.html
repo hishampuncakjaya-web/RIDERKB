@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
 <link rel="stylesheet" href="health-check.css?v=78">
 <link rel="stylesheet" href="myriderku-standard.css?v=1">
+<link rel="stylesheet" href="myriderku-v87-fixes.css?v=87">
 </head><body class="role-rider">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP RIDER</span><h1>MYRIDERKU Rider 🛵</h1><div class="sm" id="who"></div></div><div><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -107,8 +108,8 @@ if('serviceWorker' in navigator)addEventListener('load',function(){navigator.ser
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="v81-callables.js?v=81"></script>
-<script src="common.js?v=61"></script>
+<script src="common.js?v=87"></script>
+<script src="v81-callables.js?v=87"></script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,hav}=RKB;
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3200)}
@@ -328,7 +329,7 @@ async function acceptOrder(k){
   tab='aktif'; sel=k; startGps(); toast('Order diterima. Baki COD ditempah sementara.'); render(); return true;
 }
 // MYRIDERKU custom Aisyah voice alert (Rider)
-const riderAisyahAlert = new Audio('sounds/rider-alert-aisyah.wav');
+const riderAisyahAlert = new Audio('rider-alert-aisyah.wav');
 riderAisyahAlert.preload='auto';
 let riderAisyahLastPlay=0;
 function playRiderAisyahAlert(){

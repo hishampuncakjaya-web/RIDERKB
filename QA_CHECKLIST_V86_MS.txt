@@ -1,0 +1,53 @@
+MYRIDERKU V86 — QA / UAT CHECKLIST
+
+A. Deployment
+[ ] index.html terbuka di root domain
+[ ] Customer / Rider / Vendor / Admin shortcuts membuka halaman betul
+[ ] Semua CSS, icon, manifest dan JS dimuat tanpa 404
+[ ] PWA install prompt dan app icons betul
+[ ] Refresh halaman tidak menghasilkan halaman kosong
+[ ] Service worker cache V86 aktif (buang cache lama / reinstall PWA jika perlu)
+
+B. Customer
+[ ] GPS permission ditolak: mesej alternatif jelas, taip/pin masih boleh digunakan
+[ ] GPS permission dibenarkan: lokasi HANTAR auto isi, tidak menimpa pin yang telah dipilih
+[ ] Lokasi AMBIL dan HANTAR boleh dipilih / diseret
+[ ] Laluan OSRM dipaparkan; fallback jarak anggaran jelas
+[ ] Cuaca menyemak kedua-dua koordinat selepas kedua-duanya tersedia
+[ ] Jika hujan dikesan, caj hujan hanya sekali dan dipaparkan pada jumlah
+[ ] Jika API cuaca gagal, tiada caj hujan dikenakan dan amaran dipaparkan
+[ ] Tidak boleh ke langkah seterusnya ketika semakan cuaca masih berjalan
+[ ] Semak jumlah tambang, nota, telefon dan ringkasan sebelum hantar
+[ ] Pesanan ujian dihantar ke Firebase staging sahaja
+
+C. Rider
+[ ] Rider login menggunakan sesi/app yang betul
+[ ] Online/offline dan GPS permission berfungsi
+[ ] Lokasi GPS dikemas kini semasa online
+[ ] Order baharu muncul dan butang Terima berfungsi
+[ ] Wallet tidak negatif; COD disekat jika baki tidak mencukupi
+[ ] Status ambil / selesai dan bukti foto diuji
+
+D. Vendor
+[ ] Vendor login menggunakan sesi/app yang betul
+[ ] Profil kedai dan lokasi boleh disimpan
+[ ] Menu, stok dan harga dipaparkan betul
+[ ] Vendor hanya melihat maklumat kewangan miliknya
+[ ] Status penyediaan order berfungsi
+
+E. Admin
+[ ] Admin login dan allowlist disahkan
+[ ] Live Rider Radar memaparkan rider online
+[ ] Cuaca Radar auto load ketika peta dibuka
+[ ] Cuaca refresh selepas peta digerakkan dan setiap 10 minit
+[ ] Order, vendor, rider, wallet dan tetapan hanya diuji pada staging DB
+
+F. Security / regression
+[ ] Rules diuji melalui Firebase Emulator
+[ ] Callable functions diuji dengan role yang betul
+[ ] Customer tidak boleh membaca nombor telefon / data peribadi pihak lain
+[ ] Tracking token diuji sebelum pautan live dikongsi
+[ ] Tiada negative wallet / double claim / duplicate order
+[ ] Tiada data production terjejas
+
+Rekod setiap isu dengan: halaman, langkah untuk ulang, hasil dijangka, hasil sebenar, screenshot dan masa ujian.
