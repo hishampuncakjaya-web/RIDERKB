@@ -4,7 +4,11 @@
   let db=null, auth=null;
   const configured=!!(window.firebase&&fbc.apiKey&&!/^ISI/i.test(fbc.apiKey));
   if(configured){
-    try{ firebase.initializeApp(fbc); if(cfg.appCheckKey&&firebase.appCheck){ try{ firebase.appCheck().activate(cfg.appCheckKey,true) }catch(e){ console.warn('AppCheck',e) } } db=firebase.database(); auth=firebase.auth?firebase.auth():null; }
+    try{ firebase.initializeApp(fbc);   // app lalai (diperlukan oleh push messaging)
+      /* V61: sesi log masuk berasingan bagi rider/vendor/admin supaya tak perlu log keluar bila tukar app. Customer kekal pada app lalai. */
+      const role=(/\/(rider|vendor|admin)\.html$/.exec(location.pathname)||[])[1]; const fb=role?firebase.initializeApp(fbc,role):firebase.app();
+      if(cfg.appCheckKey&&firebase.appCheck){ try{ firebase.appCheck(fb).activate(cfg.appCheckKey,true) }catch(e){ console.warn('AppCheck',e) } }
+      db=fb.database(); auth=fb.auth?fb.auth():null; }
     catch(e){ console.error('Firebase',e); db=null; }
   }
   // status order: baru > diterima > diambil > selesai  (batal = dibatalkan)
@@ -170,11 +174,15 @@
   /* Kongsi upah rider & markup vendor. Nilai sebenar dibaca daripada settings (admin tukar), lalai daripada firebase-config.js */
   const _sh={rider:+cfg.riderShare||80,mark:cfg.vendorMarkup!=null?+cfg.vendorMarkup:10};
   const r2=n=>Math.round((+n||0)*100)/100;
-  const loadShares=()=>db?db.ref('settings').once('value').then(s=>{const v=s.val()||{};if(v.riderShare!=null)_sh.rider=+v.riderShare;if(v.vendorMarkup!=null)_sh.mark=+v.vendorMarkup;return _sh}).catch(()=>_sh):Promise.resolve(_sh);
+  // V60: tetapan awam dibaca daripada allowlist /publicConfig sahaja.
+  // riderShare/vendorMarkup kekal daripada konfigurasi dalaman; jangan dedahkan /settings kepada pelanggan.
+  const loadShares=()=>Promise.resolve(_sh);
+  const readPublicConfig=()=>db?db.ref('publicConfig').once('value').then(s=>s.val()||{}).catch(()=>({})):Promise.resolve({});
+  const readPublicPayment=()=>readPublicConfig().then(v=>v.payment||null);
   const riderPay=o=>o&&o.riderPay!=null?+o.riderPay:r2((+(o&&o.price)||0)*_sh.rider/100);          // bahagian rider (apa yang rider nampak)
   const platCut=o=>r2((+(o&&o.price)||0)-riderPay(o));                                              // untung platform daripada upah (admin sahaja)
-  const vMarkup=b=>r2(Math.max(1,r2((+b||0)*0.10)));                                                   // markup setiap unit: minimum RM1 atau 10% harga asal
-  const vPrice=b=>r2((+b||0)+vMarkup(b));                                                               // harga pelanggan = harga vendor + markup
+  const vMarkup=b=>{const base=r2(Math.max(0,+b||0));return r2(base*0.10)};
+  const vPrice=b=>r2(Math.max(0,+b||0)+vMarkup(b)); // Polisi rasmi: markup MYRIDERKU 10% atas harga vendor; vendor kekal terima harga asal
   // akaun admin tersangkut di halaman rider/vendor: tunjuk mesej jelas (bukan skrin kosong)
   const adminGuard=(u,role)=>{
     const old=document.getElementById('admGuard'); if(old) old.remove();
@@ -193,7 +201,7 @@
     if(!result || !result.user) throw new Error('Sesi pelanggan tidak dapat disahkan.');
     return result.user;
   }
-  window.RKB={ensureGuestAuth,adminGuard,r2,loadShares,riderPay,platCut,vMarkup,vPrice,shares:()=>_sh,confState,phoneOf,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
+  window.RKB={ensureGuestAuth,adminGuard,r2,loadShares,readPublicConfig,readPublicPayment,riderPay,platCut,vMarkup,vPrice,shares:()=>_sh,confState,phoneOf,kb,say,toggleLoghat,confetti,phoneKey,report,compressImg,cfg,ok:!!db,db,auth,ST,esc,rm,ago,hm,tel,f6,gmNav,gmFull,newId,getRoute,mkIcon,riderIcon,baseMap,flowLine,glide,beep,hav,makeNav,osmCams,hazIcon,msgRider,msgCust,CATS};
 })();
 
 /* ===== Pasang app (banner) =====
@@ -294,7 +302,7 @@
       if(document.getElementById('rkTabs')) return;
       var h=document.querySelector('.hd')||document.querySelector('header'); if(!h) return;
       var last=''; try{ last=localStorage.getItem('rkb-last')||'' }catch(e){}
-      var t=[['tempah','🛵','Tempah','index.html'],['kedai','🏪','Kedai','shop.html'],['jejak','📍','Jejak',last?('track.html?id='+encodeURIComponent(last)):'']];
+      var t=[['tempah','🛵','Tempah','customer.html'],['kedai','🏪','Kedai','customer-shop.html'],['jejak','📍','Jejak',last?('customer-track.html?id='+encodeURIComponent(last)):'']];
       var n=document.createElement('nav'); n.id='rkTabs'; n.className='rkt'; n.setAttribute('aria-label','Navigasi utama');
       n.innerHTML=t.map(function(x){ var on=x[0]===active; return x[3]?'<a href="'+x[3]+'" class="'+(on?'on':'')+'"'+(on?' aria-current="page"':'')+'><span>'+x[1]+'</span>'+x[2]+'</a>':'<span class="off" title="Belum ada tempahan"><span>'+x[1]+'</span>'+x[2]+'</span>' }).join('');
       h.insertAdjacentElement('afterend',n);

@@ -5,7 +5,7 @@
   "description": "App rider: terima order, navigasi dan kongsi lokasi",
   "lang": "ms",
   "start_url": "./rider.html",
-  "scope": "./",
+  "scope": "./rider.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F5F0E5",

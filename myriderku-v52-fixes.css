@@ -1,0 +1,9 @@
+/* MYRIDERKU V52 - accessibility and contrast corrections */
+:root{--mr-v52-ink:#172b45;--mr-v52-muted:#526579;--mr-v52-border:#cbd5df}
+html[data-theme="light"] .card,html[data-theme="light"] .stat,html[data-theme="light"] .sum,html[data-theme="light"] .mi,html[data-theme="light"] .oc{color:var(--mr-v52-ink)}
+html[data-theme="light"] .mut,html[data-theme="light"] .sm,html[data-theme="light"] small{color:var(--mr-v52-muted)}
+input,select,textarea{color:var(--mr-v52-ink)}
+input::placeholder,textarea::placeholder{color:#64748b;opacity:1}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #168447!important;outline-offset:3px!important}
+button,a{touch-action:manipulation}
+@media(max-width:420px){.card{overflow-wrap:anywhere}.row{gap:8px}.row span:last-child{min-width:0}}

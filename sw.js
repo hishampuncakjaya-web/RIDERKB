@@ -1,5 +1,5 @@
-const CACHE = 'myriderku-micro-marketplace-v50';
-const SHELL = ['./', './index.html', './track.html', './manifest-rider.webmanifest', './rider.html', './admin.html', './vendor.html', './manifest-vendor.webmanifest', './app.css', './theme.css', './myriderku-brand.css', './myriderku-ui.css', './myriderku-ceria.css', './myriderku-v37.css?v=38', './myriderku-v38-design.css?v=39', './myriderku-v41-fixes.css?v=41','./myriderku-v43-complete.css?v=45', './theme.js', './common.js?v=46', './shop.html', './firebase-config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './manifest-admin.webmanifest', './icon-customer-192.png', './icon-customer-512.png', './icon-rider-192.png', './icon-rider-512.png', './icon-vendor-192.png', './icon-vendor-512.png', './icon-admin-192.png', './icon-admin-512.png', './apple-touch-icon-customer.png', './apple-touch-icon-rider.png', './apple-touch-icon-vendor.png', './apple-touch-icon-admin.png', './icon-customer-maskable-512.png', './icon-rider-maskable-512.png', './icon-vendor-maskable-512.png', './icon-admin-maskable-512.png'];
+const CACHE = 'myriderku-micro-marketplace-v62-pisah';
+const SHELL = ['./', './customer.html', './customer-track.html', './manifest-rider.webmanifest', './rider.html', './admin.html', './vendor.html', './manifest-vendor.webmanifest', './app.css', './theme.css', './myriderku-brand.css', './myriderku-ui.css', './myriderku-ceria.css', './myriderku-v37.css?v=38', './myriderku-v38-design.css?v=39', './myriderku-v41-fixes.css?v=41','./myriderku-v43-complete.css?v=44', './myriderku-v52-fixes.css?v=52', './theme.js', './common.js?v=61', './customer-shop.html', './firebase-config.js', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png', './manifest-admin.webmanifest', './icon-customer-192.png', './icon-customer-512.png', './icon-rider-192.png', './icon-rider-512.png', './icon-vendor-192.png', './icon-vendor-512.png', './icon-admin-192.png', './icon-admin-512.png', './apple-touch-icon-customer.png', './apple-touch-icon-rider.png', './apple-touch-icon-vendor.png', './apple-touch-icon-admin.png', './icon-customer-maskable-512.png', './icon-rider-maskable-512.png', './icon-vendor-maskable-512.png', './icon-admin-maskable-512.png'];
 const CDN = ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js','https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'];
 
 self.addEventListener('install', e => {
@@ -33,7 +33,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   // halaman: rangkaian dahulu, cache jika luar talian
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(req, cp)); return r; }).catch(() => caches.match(req, {ignoreSearch:true}).then(h => h || caches.match('./index.html'))));
+    e.respondWith(fetch(req).then(r => { const cp = r.clone(); caches.open(CACHE).then(c => c.put(req, cp)); return r; }).catch(() => caches.match(req, {ignoreSearch:true}).then(h => h || caches.match('./customer.html'))));
     return;
   }
   // fail app sendiri: rangkaian dahulu (sentiasa versi terkini), cache jika luar talian

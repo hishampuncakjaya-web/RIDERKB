@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="myriderku-v41-fixes.css?v=41">
 <link rel="stylesheet" href="myriderku-admin-v42.css?v=42">
 <link rel="stylesheet" href="myriderku-v43-complete.css?v=44">
+<link rel="stylesheet" href="myriderku-v52-fixes.css?v=52">
 </head><body class="role-admin">
 <div class="wrap wide">
 <header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
@@ -114,7 +115,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=38"></script>
+<script src="common.js?v=61"></script>
 <script>RKB.gateInstall('KB Admin')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm}=RKB;
@@ -236,7 +237,7 @@ function render(){
     <div class="acts">
       <select data-k="${o.k}" data-a="assign" style="flex:1 1 140px"><option value="">Tugaskan rider…</option>${ropts}</select>
       <select data-k="${o.k}" data-a="status" style="flex:1 1 120px">${['baru','diterima','diambil','selesai','batal'].map(x=>`<option ${x===o.status?'selected':''}>${x}</option>`).join('')}</select>
-      <a class="btn gry sm" target="_blank" href="track.html?id=${o.k}">📡 Jejak</a>
+      <a class="btn gry sm" target="_blank" href="customer-track.html?id=${o.k}">📡 Jejak</a>
       <a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(PH(o))}">💬 WA</a>
       <button class="btn gry sm" data-a="del" data-k="${o.k}">🗑️</button>
     </div></div>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
@@ -327,7 +328,11 @@ function fillSet(){
   qrData=y.qr||''; $('#sQrP').style.display=qrData?'block':'none'; if(qrData) $('#sQrP').src=qrData; $('#sQrX').classList.toggle('hide',!qrData);
   alertMin=+SET.alertMin>0?+SET.alertMin:5;
 }
-db.ref('settings').on('value',sn=>{ SET=sn.val()||{}; fillSet(); render() },e=>toast('Ralat tetapan: '+e.code));
+/* V60: salinan awam (allowlist) untuk customer: harga + butiran bayaran sahaja */
+const publicOf=o=>{ const c={pricing:o.pricing||{}}; if(o.pay){ const y={}; ['bank','acc','name','qr'].forEach(k=>{ if(o.pay[k]) y[k]=o.pay[k] }); if(Object.keys(y).length) c.payment=y } return c };
+let _pcSynced=false;
+db.ref('settings').on('value',sn=>{ SET=sn.val()||{}; fillSet(); render();
+  if(!_pcSynced&&SET.pricing){ _pcSynced=true; db.ref('publicConfig').once('value').then(x=>{ if(!x.exists()) return db.ref('publicConfig').set(publicOf(SET)) }).catch(()=>{}) } },e=>toast('Ralat tetapan: '+e.code));
 $('#sQrF').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; try{ qrData=await RKB.compressImg(f,600,.8); $('#sQrP').src=qrData; $('#sQrP').style.display='block'; $('#sQrX').classList.remove('hide'); toast('QR dimuat. Tekan Simpan tetapan.') }catch(_){ toast('Gambar tak dapat dibaca') } };
 $('#sQrX').onclick=()=>{ qrData=''; $('#sQrP').style.display='none'; $('#sQrX').classList.add('hide'); $('#sQrF').value='' };
 $('#sSave').onclick=async()=>{
@@ -340,7 +345,7 @@ $('#sSave').onclick=async()=>{
   if(pay.bank||pay.acc||pay.name||pay.qr) o.pay=pay;
   if(o.pricing.base>200||o.pricing.car>200||o.pricing.rain>200||o.pricing.perKm>50) return toast('Nilai harga nampak terlalu tinggi, semak semula');
   $('#sSave').disabled=true;
-  try{ await db.ref('settings').set(o); $('#sInfo').textContent='✅ Disimpan '+new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})+'. Customer terus guna harga baharu.'; toast('Tetapan disimpan ✅') }
+  try{ await db.ref().update({settings:o,publicConfig:publicOf(o)}); $('#sInfo').textContent='✅ Disimpan '+new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})+'. Customer terus guna harga baharu.'; toast('Tetapan disimpan ✅') }
   catch(err){ toast(err.code==='PERMISSION_DENIED'?'Tiada kebenaran. Tampal rules terkini (nod settings) di Firebase.':'Gagal: '+err.code) }
   $('#sSave').disabled=false;
 };

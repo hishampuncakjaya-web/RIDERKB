@@ -34,6 +34,16 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 .modal{position:fixed;inset:0;z-index:6000;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px}
 .mbox{width:100%;max-width:520px;max-height:92vh;overflow:auto;background:var(--card);border-radius:24px;padding:18px 16px calc(16px + env(safe-area-inset-bottom))}
 .big2{font-size:26px;font-weight:900}
+
+/* V52: kontras borang Vendor dan maklumat markup */
+.mbox label{display:block;color:var(--txt)!important;font-weight:800!important;font-size:14px!important;margin:14px 0 7px}
+.mbox input,.mbox select,.mbox textarea{background:#fffdf7!important;color:#172b45!important;border:1.5px solid #b8c4d0!important;border-radius:14px!important;min-height:48px;font-size:16px!important}
+.mbox input::placeholder{color:#64748b!important;opacity:1}
+.mbox .err{color:#b42318!important;font-weight:700}
+.price-preview{background:#eaf5ee;color:#123d2b;border:1px solid #9bc9aa;border-radius:13px;padding:11px 13px;margin-top:10px;line-height:1.55}
+.price-preview b{color:#087443}
+.mi .mut{color:var(--mut);line-height:1.5}
+@media(prefers-reduced-motion:no-preference){.tg,.btn{transition:background .18s ease,transform .12s ease}}
 </style>
 <link rel="stylesheet" href="myriderku-brand.css">
 <link rel="stylesheet" href="myriderku-ui.css">
@@ -42,6 +52,7 @@ html[data-theme="light"] .warn{background:#fff4dc;color:#7a4b00}
 <link rel="stylesheet" href="myriderku-v38-design.css?v=39">
 <link rel="stylesheet" href="myriderku-v41-fixes.css?v=41">
 <link rel="stylesheet" href="myriderku-v43-complete.css?v=44">
+<link rel="stylesheet" href="myriderku-v52-fixes.css?v=52">
 </head><body class="role-vendor">
 <div class="wrap">
 <header class="hd"><div><span class="tag">APP VENDOR</span><h1 id="shopT">MYRIDERKU Vendor 🏪</h1><div class="sm" id="who"></div></div></header>
@@ -113,7 +124,7 @@ if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWor
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=38"></script>
+<script src="common.js?v=61"></script>
 <script>RKB.gateInstall('KB Vendor')</script>
 <script>
 /*PURE*/
@@ -332,13 +343,17 @@ function itemModal(id){
   d.innerHTML=`<div class="mbox"><h3 style="margin:0 0 4px">${id?'Edit':'Tambah'} produk</h3>
   <label>Nama produk</label><input id="mn" maxlength="60" value="${esc(m.n)}">
   <label>Harga anda (RM): jumlah yang anda terima</label><input id="mp" type="number" inputmode="decimal" min="0" max="1000" step="0.10" value="${esc(m.p)}">
+  <div class="price-preview" id="pricePreview">Harga pelanggan dan markup MYRIDERKU akan dikira automatik.</div>
   <label>Harga promosi anda (RM, pilihan)</label><input id="mpp" type="number" inputmode="decimal" min="0" max="1000" step="0.10" value="${m.pp!=null?esc(m.pp):''}">
   <label>Stok (kosong = tiada had)</label><input id="ms" type="number" inputmode="numeric" min="0" max="9999" step="1" value="${m.st===-1?'':esc(m.st)}">
   <label>Kategori (pilihan)</label><input id="mc" maxlength="30" value="${esc(m.c||'')}">
   <label>Penerangan (pilihan)</label><input id="md" maxlength="120" value="${esc(m.d||'')}">
   <div class="err" id="merr"></div>
   <div class="acts"><button class="btn grn" id="msv">Simpan</button><button class="btn gry" id="mcn">Batal</button></div></div>`;
-  document.body.appendChild(d);d.querySelector('#mcn').onclick=()=>d.remove();
+  document.body.appendChild(d);
+  const updatePricePreview=()=>{const raw=parseFloat(d.querySelector('#mpp').value||d.querySelector('#mp').value),base=Number.isFinite(raw)?raw:0,markup=base<10?1:Math.max(1,Math.round(base*10)/100),customer=Math.round((base+markup)*100)/100;d.querySelector('#pricePreview').innerHTML=`Harga Vendor: <b>${rm(base)}</b><br>Markup MYRIDERKU: <b>${rm(markup)}</b><br>Harga pelanggan: <b>${rm(customer)}</b><br><small>Vendor menerima harga asal sepenuhnya.</small>`};
+  d.querySelector('#mp').addEventListener('input',updatePricePreview);d.querySelector('#mpp').addEventListener('input',updatePricePreview);updatePricePreview();
+  d.querySelector('#mcn').onclick=()=>d.remove();
   d.querySelector('#msv').onclick=async()=>{
     const n=d.querySelector('#mn').value.trim(),p=parseFloat(d.querySelector('#mp').value),ppv=d.querySelector('#mpp').value,sv=d.querySelector('#ms').value,er=d.querySelector('#merr');
     if(!n){er.textContent='Isi nama produk.';return}
