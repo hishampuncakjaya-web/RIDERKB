@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="icon-customer-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon-customer.png">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
 <style>#toast{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:7000;background:#0d6b4d;border:1px solid #10b981;border-radius:14px;padding:12px 14px;font-weight:700;display:none}.star{background:none;border:0;font-size:34px;padding:2px 4px;filter:grayscale(1);opacity:.5}.star.on{filter:none;opacity:1}@keyframes pop{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}.modal{position:fixed;inset:0;z-index:6000;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px}.mbox{width:100%;max-width:520px;background:var(--card);border:2px solid var(--grn);border-radius:24px;padding:20px 16px calc(16px + env(safe-area-inset-bottom));animation:pop .35s ease-out;text-align:center}</style>
 <link rel="stylesheet" href="theme.css">
@@ -63,8 +64,9 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=88"></script>
-<script src="v81-callables.js?v=88"></script>
+<script src="common.js?v=91"></script>
+<script src="map-controls.js?v=88"></script>
+<script src="v81-callables.js?v=91"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('jejak')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,ST}=RKB;
@@ -111,19 +113,21 @@ else{
       const ll=[o.riderLoc.lat,o.riderLoc.lng];
       if(!riderMk){ riderMk=L.marker(ll,{icon:RKB.riderIcon(o.riderName),zIndexOffset:900}).addTo(map); map.fitBounds(L.latLngBounds([pm.getLatLng(),dm.getLatLng(),ll]),{padding:[40,40]}); }
       else RKB.glide(riderMk,ll,1500);
+      const gpsAge=Date.now()-(+o.riderLoc.t||0), gpsFresh=gpsAge>=0&&gpsAge<=90000;
+      riderMk.bindPopup(`<div class="rider-detail-popup"><b>🛵 ${esc(o.riderName||'Rider')}</b><hr><b>Status:</b> ${o.status==='diambil'?'Dalam perjalanan ke anda':'Menuju lokasi ambil'}<br><b>Telefon:</b> ${o.riderPhone?`<a href="tel:${esc(String(o.riderPhone))}">${esc(o.riderPhone)}</a>`:'Tidak tersedia'}<br><b>Kenderaan:</b> ${esc(o.vehicle||'Motor')}<br><b>No. pendaftaran:</b> ${esc(o.riderPlate||'Tidak direkod')}<br><b>Kelajuan:</b> ${gpsFresh&&o.riderLoc.spd!=null?esc(String(o.riderLoc.spd))+' km/j':'—'}<br><b>Lokasi GPS:</b> ${gpsFresh?'Terkini':'Lokasi tidak terkini'}<br><b>Kemas kini:</b> ${esc(RKB.ago(o.riderLoc.t))}</div>`);
     } else if(riderMk){ map.removeLayer(riderMk); riderMk=null; }
     $('#rinfo').innerHTML=(!over&&o.riderName)?'✅ <b>Rider disahkan</b> · '+esc(o.riderName)+(o.riderPlate?' · 🛵 '+esc(o.riderPlate):'')+(o.arrivedAt&&o.status==='diterima'?'<br>📍 <b>Rider dah sampai di lokasi ambil</b>':'')+(o.arrivedDropAt&&o.status==='diambil'?'<br>📍 <b>Rider dah sampai di lokasi anda</b>':''):'';
     if(chg){ const msg={diterima:RKB.say('Rider dah terima order anda 🛵','Rider doh terima order demo 🛵'),diambil:RKB.say('Barang dah diambil, rider menuju ke lokasi anda 📦','Barang doh ambik, rider tengah mari 📦'),selesai:RKB.say('Order anda dah sampai! 🎉','Doh sampai! 🎉'),batal:'Order dibatalkan'}[o.status]; if(msg) notify('MYRIDERKU · #'+o.ref,msg) }
     if(o.arrivedAt&&!prevArr&&wasSt!==null&&o.status==='diterima') notify('MYRIDERKU · #'+o.ref,'Rider dah sampai di lokasi ambil 📍');
     prevArr=o.arrivedAt||null;
     $('#again2').classList.toggle('hide',!over); drawConf(); drawRate(); loadProof(); drawPayC();
-    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],['Anggaran upah',rm(o.price)]];
+    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],[o.status==='selesai'?'Harga akhir':'Jumlah tambang',rm(o.price)]];
     $('#sum').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
   }
   $('#dX').onclick=()=>$('#done').classList.add('hide');
   $('#cxlB').onclick=async()=>{
     if(!o||o.status!=='baru'||!confirm('Batalkan order ini?')) return; const b=$('#cxlB'); b.disabled=true;
-    try{ await RKB.db.ref('orders/'+id).update({status:'batal','t/batal':firebase.database.ServerValue.TIMESTAMP}); notify('MYRIDERKU','Order dibatalkan') }
+    try{ await MYRIDERKU_V81.customerCancelOrder(id); notify('MYRIDERKU','Order dibatalkan') }
     catch(e){ notify('MYRIDERKU','Tak dapat batal: rider mungkin baru terima. Guna "Lapor masalah" atau hubungi rider.') }
     b.disabled=false };
   const myPhone=()=>{ try{ return String((JSON.parse(localStorage.getItem('rkb')||'{}')||{}).p||'').slice(0,20) }catch(_){ return '' } };
@@ -221,4 +225,30 @@ else{
 }
 </script>
 <script>RKB.installBanner('MYRIDERKU')</script>
+<style>
+.leaflet-container.myr-map-fs{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:99999!important;border-radius:0!important;background:#fff}
+.myr-map-fs-exit{position:absolute;top:12px;right:12px;z-index:10000;border:0;border-radius:12px;padding:10px 13px;background:#111827;color:#fff;font-weight:700;box-shadow:0 2px 10px #0003}
+</style>
+<script>
+(()=>{
+ const attached=new WeakSet();
+ function setup(c){if(attached.has(c))return;attached.add(c);let last=0,lastTouchGesture=0,old=null,exit=null;
+  const excluded=e=>e.target&&e.target.closest&&e.target.closest('.leaflet-marker-icon,.leaflet-interactive,.leaflet-popup,.leaflet-control');
+  const invalidate=()=>{try{const id=c._leaflet_id;const map=id&&window.L&&L.Map&&L.Map._instances&&L.Map._instances[id];if(map)map.invalidateSize({pan:false});}catch(_){}};
+  const toggle=()=>{
+   const nativeFs=c.querySelector('.fsb');if(nativeFs){nativeFs.click();return;}
+   if(c.classList.contains('myr-map-fs')){c.classList.remove('myr-map-fs');document.body.style.overflow=old||'';if(exit)exit.remove();exit=null;}
+   else{old=document.body.style.overflow;c.classList.add('myr-map-fs');document.body.style.overflow='hidden';exit=document.createElement('button');exit.type='button';exit.className='myr-map-fs-exit';exit.textContent='✕ Tutup skrin penuh';exit.addEventListener('click',toggle);c.appendChild(exit);}
+   [80,250,500].forEach(t=>setTimeout(invalidate,t));
+  };
+  c.addEventListener('touchend',e=>{if(excluded(e)||!e.changedTouches||e.changedTouches.length!==1)return;const now=Date.now();if(now-last<360){e.preventDefault();lastTouchGesture=now;toggle();last=0;}else last=now;},{passive:false});
+  c.addEventListener('dblclick',e=>{if(excluded(e)||Date.now()-lastTouchGesture<700)return;e.preventDefault();e.stopPropagation();toggle();},true);
+  // Peta tersuai yang tidak menggunakan RKB.baseMap tetap mendapat butang skrin penuh.
+  if(!c.querySelector('.fsb')){const b=document.createElement('button');b.type='button';b.className='myr-map-fs-exit';b.textContent='⛶ Skrin penuh';b.style.top='12px';b.style.right='12px';b.addEventListener('click',toggle);c.appendChild(b);}
+ }
+ function scan(root=document){root.querySelectorAll('.leaflet-container').forEach(setup);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>scan());else scan();
+ new MutationObserver(()=>scan()).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 </body></html>

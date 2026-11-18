@@ -10,6 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="MYRIDERKU Rider">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="app.css">
 <style>@keyframes pop{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}@keyframes ring{from{transform:rotate(-14deg)}to{transform:rotate(14deg)}}
 .modal{position:fixed;inset:0;z-index:6000;background:#000c;display:flex;align-items:flex-end;justify-content:center;padding:12px}
@@ -108,8 +109,9 @@ if('serviceWorker' in navigator)addEventListener('load',function(){navigator.ser
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=88"></script>
-<script src="v81-callables.js?v=88"></script>
+<script src="common.js?v=91"></script>
+<script src="map-controls.js?v=88"></script>
+<script src="v81-callables.js?v=91"></script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,hav}=RKB;
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3200)}
@@ -126,7 +128,7 @@ if(mustInstall){ showGate() }
 else if(!RKB.ok){ $('#login').classList.remove('hide'); $('#login').innerHTML='<div class="card">Firebase belum disetup. Lihat FIREBASE-SETUP.md.</div>'; }
 else{
 const db=RKB.db, auth=RKB.auth;
-let user=null, me={}, orders={}, tab='baru', first=true, watchId=null, online=false, lastPush=0, wl=null, sel=null, manual=false;
+let user=null, me={}, orders={}, tab='baru', first=true, watchId=null, online=false, gpsStarting=false, lastPush=0, lastVendorLocPush=0, wl=null, sel=null, manual=false;
 let map=null, nav=null, mm={}, routeFor=null, selfMk=null, selfPos=null, spd=0, prevPos=null, selfFit=false, ovSig='';
 let regMode=false, registering=false, prompted=false, ordersRef=null, profRef=null, hazRef=null, gpsAuto=false;
 let gpsErr='', netOk=true, lastFix=0, lastBeep=0;
@@ -329,7 +331,7 @@ async function acceptOrder(k){
   tab='aktif'; sel=k; startGps(); toast('Order diterima. Baki COD ditempah sementara.'); render(); return true;
 }
 // MYRIDERKU custom Aisyah voice alert (Rider)
-const riderAisyahAlert = new Audio('sounds/rider-alert-aisyah.wav');
+const riderAisyahAlert = new Audio('rider-alert-aisyah.wav');
 riderAisyahAlert.preload='auto';
 let riderAisyahLastPlay=0;
 function playRiderAisyahAlert(){
@@ -400,24 +402,31 @@ function askNotif(){ try{ if('Notification' in window&&Notification.permission==
 
 /* ---------- GPS, kelajuan, kamera/AES ---------- */
 async function startGps(){
-  if(online||!user) return;
+  if(online||gpsStarting||!user) return;
   if(!navigator.geolocation){ toast('Peranti tak sokong GPS'); return }
-  online=true; updOn(); lastDuty=''; dutyUpdate();
-  db.ref('riders/'+user.uid+'/online').onDisconnect().set(false);
+  gpsStarting=true; online=false; gpsErr='Menunggu bacaan GPS pertama…'; updOn(); dutyCheck();
+  db.ref('riders/'+user.uid+'/online').onDisconnect().set(false).catch(()=>{});
   watchId=navigator.geolocation.watchPosition(p=>{
-    const ll=[p.coords.latitude,p.coords.longitude], now=Date.now();
+    const lat=Number(p.coords.latitude), lng=Number(p.coords.longitude);
+    if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180){ gpsErr='Koordinat GPS tidak sah'; online=false; updOn(); dutyCheck(); return }
+    const ll=[lat,lng], now=Date.now();
     let v=p.coords.speed;
     if((v==null||isNaN(v))&&prevPos){ const dt=(now-prevPos.t)/1000; if(dt>0.5) v=hav(prevPos.ll,ll)*1000/dt }
     spd=(v!=null&&isFinite(v))?Math.max(0,Math.round(v*3.6)):0;
-    prevPos={ll,t:now}; selfPos=ll; lastFix=now; gpsErr='';
-    push(p); updSelf(); updNav(); checkHaz(); fetchOsm();
-  },e=>{ gpsErr=e.code===1?'Kebenaran lokasi ditolak. Benarkan lokasi untuk app ini di tetapan telefon':e.code===2?'GPS tak tersedia. Hidupkan lokasi telefon':'GPS lambat bertindak balas'; dutyCheck() },{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
+    prevPos={ll,t:now}; selfPos=ll; lastFix=now; gpsErr=''; gpsStarting=false; online=true; updOn(); dutyUpdate();
+    push(p); updSelf(); updNav(); checkHaz(); fetchOsm(); dutyCheck();
+  },e=>{
+    gpsErr=e.code===1?'Kebenaran lokasi ditolak. Benarkan lokasi untuk app ini di tetapan telefon':e.code===2?'GPS tak tersedia. Hidupkan lokasi telefon':'GPS belum memberi bacaan. Tunggu atau cuba semula';
+    online=false; gpsStarting=false; updOn();
+    if(user) db.ref('riders/'+user.uid+'/online').set(false).catch(()=>{});
+    dutyCheck();
+  },{enableHighAccuracy:true,maximumAge:3000,timeout:20000});
   try{ wl=await navigator.wakeLock.request('screen') }catch(e){}
   clearInterval(window.__hb);
   window.__hb=setInterval(()=>{ if(!online||!user||!selfPos||Date.now()-lastFix<20000) return; const b='riders/'+user.uid+'/'; db.ref().update({[b+'lat']:+selfPos[0].toFixed(6),[b+'lng']:+selfPos[1].toFixed(6),[b+'t']:firebase.database.ServerValue.TIMESTAMP,[b+'online']:true,[b+'spd']:0}).catch(()=>{}) },25000);
 }
 function stopGps(){
-  online=false; manual=false; clearInterval(window.__hb); if(watchId!=null&&navigator.geolocation) navigator.geolocation.clearWatch(watchId); watchId=null;
+  online=false; gpsStarting=false; manual=false; clearInterval(window.__hb); if(watchId!=null&&navigator.geolocation) navigator.geolocation.clearWatch(watchId); watchId=null;
   try{wl&&wl.release()}catch(e){} wl=null;
   if(user) db.ref('riders/'+user.uid+'/online').set(false).catch(()=>{});
   updOn(); dutyClear();
@@ -425,7 +434,7 @@ function stopGps(){
 document.addEventListener('visibilitychange',async()=>{
   if(document.visibilityState!=='visible'||!user||me.approved!==true) return;
   lastDuty=''; dutyUpdate();
-  if(online){ try{wl=await navigator.wakeLock.request('screen')}catch(e){} if(Date.now()-lastFix>30000) restartGps() }
+  if(online){ try{wl=await navigator.wakeLock.request('screen')}catch(e){} if(Date.now()-lastFix>30000) restartGps() } else if(gpsStarting&&watchId==null) startGps();
   else if(manual||hasActive()) startGps();
 });
 function restartGps(){ try{ if(watchId!=null) navigator.geolocation.clearWatch(watchId) }catch(e){} watchId=null; online=false; gpsErr=''; startGps() }
@@ -438,7 +447,7 @@ function dutyCheck(){
   const bar=$('#dutybar'); if(!user||me.approved!==true){ bar.classList.add('hide'); return }
   const act=hasActive(), p=[];
   if(!netOk||!navigator.onLine) p.push('📡 Tiada sambungan internet');
-  if(act){
+  if(act||gpsStarting||gpsErr){
     if(gpsErr) p.push('📍 '+gpsErr);
     else if(!online) p.push('📍 Kongsi lokasi tidak aktif');
     else if(Date.now()-lastFix>45000) p.push('📍 Isyarat GPS hilang. Pastikan lokasi dihidupkan');
@@ -458,13 +467,13 @@ $('#prof').onclick=async e=>{ e.preventDefault();
   dlg.querySelector('#plateSave').onclick=async()=>{const p=field.value.trim().toUpperCase().replace(/\s+/g,' ').slice(0,12);if(!p){field.focus();return}const b=dlg.querySelector('#plateSave');b.disabled=true;try{await db.ref('riders/'+user.uid+'/plate').set(p);me.plate=p;toast('Plat dikemas kini ✅');close()}catch(err){b.disabled=false;toast('Gagal: '+(err.code||'sila cuba lagi'))}};
   dlg.addEventListener('click',ev=>{if(ev.target===dlg)close()}); field.addEventListener('keydown',ev=>{if(ev.key==='Enter')dlg.querySelector('#plateSave').click();if(ev.key==='Escape')close()});
 };
-$('#proofIn').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!proofK) return; try{ const d=await RKB.compressImg(f,720,.6), P=proofT==='P'; await db.ref((P?'proofsP/':'proofs/')+proofK).set(d); await db.ref('orders/'+proofK).update(P?{pickPhoto:true}:{dropPhoto:true}); toast(P?'📷 Gambar barang disimpan. Tekan "Barang dah diambil" ✅':'📷 Bukti hantar disimpan. Tekan "Hantar selesai" ✅'); render() }catch(err){ toast('Gagal simpan gambar: '+(err.code||'cuba lagi')) } };
+$('#proofIn').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f||!proofK) return; try{ const d=await RKB.compressImg(f,720,.6), P=proofT==='P'; await MYRIDERKU_V81.riderSaveProof(proofK,P?'pickup':'drop',d); toast(P?'📷 Gambar barang disimpan. Tekan \"Barang dah diambil\" ✅':'📷 Bukti hantar disimpan. Tekan \"Hantar selesai\" ✅'); render() }catch(err){ toast('Gagal simpan gambar: '+(err.code||err.message||'cuba lagi')) } };
 function push(p){
   const now=Date.now(); if(now-lastPush<4000) return; lastPush=now;
   const loc={lat:+p.coords.latitude.toFixed(6),lng:+p.coords.longitude.toFixed(6),t:now,spd}, up={};
   const b='riders/'+user.uid+'/'; up[b+'lat']=loc.lat; up[b+'lng']=loc.lng; up[b+'t']=firebase.database.ServerValue.TIMESTAMP; up[b+'online']=true; up[b+'spd']=spd;
   db.ref().update(up).catch(()=>{});
-  Object.keys(orders).forEach(k=>{ if(active(orders[k])&&!finishing.has(k)) db.ref('orders/'+k+'/riderLoc').set(loc).catch(()=>{}) });
+  Object.keys(orders).forEach(k=>{ if(active(orders[k])&&!finishing.has(k)){ db.ref('orders/'+k+'/riderLoc').set(loc).catch(()=>{}); if(now-lastVendorLocPush>=15000){ lastVendorLocPush=now; MYRIDERKU_V81.riderLocation(k,loc).catch(()=>{}); } } });
 }
 function updOn(){ $('#onTxt').innerHTML=online?'<span class="on-dot"></span>Online · kongsi lokasi':'<span class="off-dot"></span>Offline'; $('#onBtn').textContent=online?'Berhenti':'Mula kongsi lokasi'; $('#onBtn').className='btn sm '+(online?'gry':'grn'); }
 $('#onBtn').onclick=()=>{ askNotif(); if(online&&hasActive()){ toast('⛔ Tak boleh offline semasa ada tugas aktif'); return } if(online) stopGps(); else { manual=true; startGps() } };
@@ -527,12 +536,40 @@ function updSelf(){
   const sb=document.querySelector('#spdBox b'); if(sb) sb.textContent=spd;
   if(!map||!selfPos) return;
   if(!selfMk){ selfMk=L.marker(selfPos,{icon:RKB.riderIcon(),zIndexOffset:900}).addTo(map) } else RKB.glide(selfMk,selfPos,1200);
+  const meNow=me||{};
+  selfMk.bindPopup(`<b>🛵 ${esc(meNow.name||user.displayName||'Rider')}</b><hr><b>Status:</b> ${online?'Online':'Offline'}<br><b>Telefon:</b> ${esc(meNow.phone||'—')}<br><b>Kenderaan:</b> ${esc(meNow.vehicle||'Motor')}<br><b>No. pendaftaran:</b> ${esc(meNow.plate||'—')}<br><b>Kelajuan:</b> ${meNow.spd!=null?esc(String(meNow.spd))+' km/j':'—'}<br><b>Lokasi:</b> Kedudukan GPS anda`);
   if(!selfFit&&routeFor==='ov'){ selfFit=true; map.setView(selfPos,14) }
 }
 }
 </script>
 <script src="myriderku-standard.js?v=1"></script>
 <script src="health-check.js?v=78"></script>
+<style>
+.leaflet-container.myr-map-fs{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:99999!important;border-radius:0!important;background:#fff}
+.myr-map-fs-exit{position:absolute;top:12px;right:12px;z-index:10000;border:0;border-radius:12px;padding:10px 13px;background:#111827;color:#fff;font-weight:700;box-shadow:0 2px 10px #0003}
+</style>
+<script>
+(()=>{
+ const attached=new WeakSet();
+ function setup(c){if(attached.has(c))return;attached.add(c);let last=0,lastTouchGesture=0,old=null,exit=null;
+  const excluded=e=>e.target&&e.target.closest&&e.target.closest('.leaflet-marker-icon,.leaflet-interactive,.leaflet-popup,.leaflet-control');
+  const invalidate=()=>{try{const id=c._leaflet_id;const map=id&&window.L&&L.Map&&L.Map._instances&&L.Map._instances[id];if(map)map.invalidateSize({pan:false});}catch(_){}};
+  const toggle=()=>{
+   const nativeFs=c.querySelector('.fsb');if(nativeFs){nativeFs.click();return;}
+   if(c.classList.contains('myr-map-fs')){c.classList.remove('myr-map-fs');document.body.style.overflow=old||'';if(exit)exit.remove();exit=null;}
+   else{old=document.body.style.overflow;c.classList.add('myr-map-fs');document.body.style.overflow='hidden';exit=document.createElement('button');exit.type='button';exit.className='myr-map-fs-exit';exit.textContent='✕ Tutup skrin penuh';exit.addEventListener('click',toggle);c.appendChild(exit);}
+   [80,250,500].forEach(t=>setTimeout(invalidate,t));
+  };
+  c.addEventListener('touchend',e=>{if(excluded(e)||!e.changedTouches||e.changedTouches.length!==1)return;const now=Date.now();if(now-last<360){e.preventDefault();lastTouchGesture=now;toggle();last=0;}else last=now;},{passive:false});
+  c.addEventListener('dblclick',e=>{if(excluded(e)||Date.now()-lastTouchGesture<700)return;e.preventDefault();e.stopPropagation();toggle();},true);
+  // Peta tersuai yang tidak menggunakan RKB.baseMap tetap mendapat butang skrin penuh.
+  if(!c.querySelector('.fsb')){const b=document.createElement('button');b.type='button';b.className='myr-map-fs-exit';b.textContent='⛶ Skrin penuh';b.style.top='12px';b.style.right='12px';b.addEventListener('click',toggle);c.appendChild(b);}
+ }
+ function scan(root=document){root.querySelectorAll('.leaflet-container').forEach(setup);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>scan());else scan();
+ new MutationObserver(()=>scan()).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
 </body></html>
 
 window.addEventListener('beforeunload',()=>{if(riderFeedTimer)clearInterval(riderFeedTimer)});

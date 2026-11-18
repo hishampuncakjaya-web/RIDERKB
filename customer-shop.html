@@ -46,9 +46,12 @@ body{padding-bottom:90px}
 <div id="toast" class="toast hide"></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=61"></script>
+<script src="common.js?v=91"></script>
+<script src="v81-callables.js?v=91"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('kedai')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,r2}=RKB;
@@ -73,8 +76,7 @@ async function getQuote(){
   const addr=$('#addr')?$('#addr').value.trim():''; let pt=geo;
   if(!pt&&addr){ if(ft) ft.textContent='Mencari lokasi alamat…'; pt=await geocodeAddr(addr); if(my!==qSeq) return; if(pt) geo=pt }
   if(!pt){ if(ft) ft.textContent='Lokasi belum dapat dikesan. Tekan “Guna lokasi saya” atau taip alamat lebih jelas.'; return }
-  let km, est=false; try{ const rt=await RKB.getRoute(sc,pt); if(rt) km=rt.distance/1000 }catch(_){}
-  if(km==null){ km=RKB.hav(sc,pt)*1.3; est=true }
+  let km=RKB.hav(sc,pt)*1.3, est=true; // Anggaran sama seperti pengiraan server supaya harga checkout konsisten
   if(my!==qSeq) return;
   km=+km.toFixed(1); quote={km,fee:feeOf(km),est}; if(ft) ft.textContent='Upah rider dikira ikut jarak dari kedai ke lokasi anda. Satu order, satu bayaran.';
   refreshFee();
@@ -173,22 +175,31 @@ async function place(st,s){
     menu=m.val()||{}; const bad=Object.entries(cart).find(([k,q])=>{ const x=menu[k]; return !x||x.on===false||x.st===0||(x.st>0&&q>x.st) });
     if(bad){ b.disabled=false; refreshFee(); toast('Stok berubah, sila semak semula pesanan.'); drawMenu(); return }
   }catch(e){}
-  const S2=sums(), id=RKB.newId(), ref='KDI-'+id.slice(0,4).toUpperCase(), TS=firebase.database.ServerValue.TIMESTAMP, its={};
+  const S2=sums(), TS=firebase.database.ServerValue.TIMESTAMP, its={};
   Object.entries(cart).forEach(([k,q],i)=>{ const m=menu[k]; its['i'+i]={n:String(m.n).slice(0,60),q,p:r2(base(m)),id:k.slice(0,40)} });
+  const pendingKey='rkb-marketplace-pending', fingerprint=JSON.stringify({vendor:uid,items:its,mode:st.mode,pay:st.pay,phone:ph});
+  let pending=null; try{ pending=JSON.parse(localStorage.getItem(pendingKey)||'null') }catch(_){}
+  const id=pending&&pending.fingerprint===fingerprint&&Date.now()-pending.at<600000?pending.id:RKB.newId();
+  try{ localStorage.setItem(pendingKey,JSON.stringify({id,fingerprint,at:Date.now()})) }catch(_){}
+  const ref='KDI-'+id.slice(0,4).toUpperCase();
   const SM=smallOf(S2.total), hq=st.mode==='hantar'&&quote, tag=`[#U=${hq?quote.fee.toFixed(2):'0.00'};K=${hq?quote.km:0};S=${SM.toFixed(2)}] `;
   const note=(st.mode==='hantar'?'[HANTAR] ':'[AMBIL SENDIRI] ')+tag+$('#nt').value.trim();
-  const od={ref,createdAt:TS,name:nm.slice(0,60),phone:ph.slice(0,20),phoneKey:RKB.phoneKey(ph),items:its,sub:S2.sub,markup:S2.markup,total:S2.total,pricingPolicy:'vendor_full_price_plus_platform_markup_v1',status:'baru',pay:st.pay,notes:note.slice(0,300)};
+  const od={ref,createdAt:Date.now(),name:nm.slice(0,60),phone:ph.slice(0,20),phoneKey:RKB.phoneKey(ph),items:its,sub:S2.sub,markup:S2.markup,total:S2.total,pricingPolicy:'vendor_full_price_plus_platform_markup_v1',status:'baru',pay:st.pay,notes:note.slice(0,300)};
   if(st.mode==='hantar'){ od.addr=addr.slice(0,200); if(geo){ od.lat=geo[0]; od.lng=geo[1] } }
-  const up={}; up['vorders/'+uid+'/'+id]=od; up['ratelimit/'+od.phoneKey]=TS;
   try{
-    await Promise.race([RKB.db.ref().update(up),new Promise((_,r)=>setTimeout(()=>r({code:'TIMEOUT'}),9000))]);
+    // Pesanan marketplace mesti melalui Callable kerana Firebase Rules melarang
+    // Customer menulis terus ke vorders/orders.
+    await RKB.ensureGuestAuth();
+    if(!window.MYRIDERKU_V81||typeof window.MYRIDERKU_V81.createMarketplaceOrder!=='function') throw new Error('Jambatan fungsi marketplace belum dimuat. Muat semula halaman.');
+    await Promise.race([window.MYRIDERKU_V81.createMarketplaceOrder({vendorUid:uid,orderId:id,order:od,delivery:st.mode==='hantar'}),new Promise((_,r)=>setTimeout(()=>r({code:'TIMEOUT'}),15000))]);
+    try{ localStorage.removeItem(pendingKey) }catch(_){}
     try{ localStorage.setItem('rkb',JSON.stringify({n:nm,p:ph})); localStorage.setItem('rkb-lastsend',String(Date.now())); localStorage.setItem(SK,JSON.stringify({v:uid,o:id})) }catch(_){}
     track(uid,id);
   }catch(e){
     // tulisan tertunda mungkin sudah sampai
     try{ const ex=await Promise.race([RKB.db.ref('vorders/'+uid+'/'+id+'/ref').once('value'),new Promise((_,r)=>setTimeout(r,4000))]); if(ex&&ex.exists()){ try{ localStorage.setItem(SK,JSON.stringify({v:uid,o:id})) }catch(_){} track(uid,id); return } }catch(_){}
     b.disabled=false; refreshFee();
-    err(e&&e.code==='TIMEOUT'?'⚠️ Talian lemah. Pesanan belum masuk, tekan sekali lagi.':e&&e.code==='PERMISSION_DENIED'?'⚠️ Pesanan ditolak: kedai mungkin baru tutup, atau terlalu kerap dalam masa singkat. Cuba lagi sebentar lagi.':'⚠️ Sambungan bermasalah. Tekan sekali lagi.');
+    err(e&&e.code==='TIMEOUT'?'⚠️ Talian lemah. Semak Jejak pesanan sebelum cuba semula.':e&&e.code==='permission-denied'?'⚠️ Akaun tidak dibenarkan membuat pesanan. Sila hubungi Admin.':e&&e.code==='failed-precondition'?('⚠️ '+(e.message||'Kedai tidak tersedia.')):e&&e.message?('⚠️ '+e.message):'⚠️ Sambungan bermasalah. Tekan sekali lagi.');
   }
 }
 
@@ -245,7 +256,7 @@ function track(u,id){
     h+='<div class="acts"><a class="btn gry" href="customer-shop.html">🏪 Semua kedai</a><a class="btn gry" href="customer.html">🛵 Hantar barang</a></div>';
     view(h);
     const rd=$('#rd'); if(rd) rd.onclick=()=>{ DS[id]=null; dispatchRider(id,ext(cur),sh) };
-    const cx=$('#cx'); if(cx) cx.onclick=async()=>{ if(!confirm('Batalkan pesanan ini?')) return; cx.disabled=true; try{ await ref.child('status').set('batal') }catch(e){ toast('Tak dapat batal: kedai mungkin baru terima.'); cx.disabled=false } };
+    const cx=$('#cx'); if(cx) cx.onclick=async()=>{ if(!confirm('Batalkan pesanan ini?')) return; cx.disabled=true; try{ await MYRIDERKU_V81.cancelMarketplaceOrder(u,id); toast('Pesanan dibatalkan.'); }catch(e){ toast(e&&e.message?e.message:'Tak dapat batal: kedai mungkin sudah memproses.'); cx.disabled=false } };
     const st=$('#stars'); if(st) st.onclick=async e=>{ const b=e.target.closest('.star'); if(!b||rated) return; rated=true; try{ await ref.child('rating').set({stars:+b.dataset.n,t:Date.now()}) }catch(_){ rated=false; toast('Tak dapat hantar penilaian.') } };
   }
 }

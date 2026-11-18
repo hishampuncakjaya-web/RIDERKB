@@ -1,44 +1,575 @@
-<!DOCTYPE html>
-<html lang="ms">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyRiderKu - Admin Login</title>
-    <link rel="stylesheet" href="myriderku-ceria.css">
-</head>
-<body>
-    <div class="container my-5" style="max-width: 450px;">
-        <div class="card p-4">
-            <h3 class="mb-3">Log Masuk Admin</h3>
-            <form id="admin-login-form">
-                <div class="mb-3">
-                    <label>E-mel</label>
-                    <input type="email" id="admin-email" class="form-control" value="mnhzuan@gmail.com" required>
-                </div>
-                <div class="mb-3">
-                    <label>Kata Laluan</label>
-                    <input type="password" id="admin-password" class="form-control" required>
-                </div>
-                <div id="login-error" class="text-danger mb-3" style="display:none;">E-mel atau kata laluan salah.</div>
-                <button type="submit" class="btn btn-warning w-100">Log Masuk</button>
-            </form>
-        </div>
-    </div>
-    <script>
-        // Admin login normalization & error handling fix
-        document.getElementById('admin-login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('admin-email').value.trim().toLowerCase();
-            const password = document.getElementById('admin-password').value;
+<!doctype html>
+<html lang="ms"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>MYRIDERKU Admin</title><meta name="theme-color" content="#182E4A">
+<script src="theme.js"></script>
+<link rel="manifest" href="manifest-admin.webmanifest">
+<link rel="icon" type="image/png" href="icon-admin-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon-admin.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MYRIDERKU Admin">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="myriderku-brand.css">
+<link rel="stylesheet" href="myriderku-ui.css">
+<link rel="stylesheet" href="myriderku-ceria.css">
+<link rel="stylesheet" href="myriderku-v37.css?v=38">
+<link rel="stylesheet" href="myriderku-v38-design.css?v=39">
+<link rel="stylesheet" href="myriderku-v41-fixes.css?v=41">
+<link rel="stylesheet" href="myriderku-admin-v42.css?v=42">
+<link rel="stylesheet" href="myriderku-v43-complete.css?v=44">
+<link rel="stylesheet" href="myriderku-v52-fixes.css?v=52">
+<link rel="stylesheet" href="myriderku-mascot-v2.css?v=2">
+<link rel="stylesheet" href="myriderku-admin-radar-v65.css?v=65">
+<link rel="stylesheet" href="myriderku-v66-premium-ui.css?v=66">
+<link rel="stylesheet" href="myriderku-v72-premium-polish.css?v=72">
+<link rel="stylesheet" href="myriderku-v73-ceria-multipage.css?v=73">
+<link rel="stylesheet" href="myriderku-v75-role-redesign.css?v=75">
+<link rel="stylesheet" href="health-check.css?v=78">
+<link rel="stylesheet" href="myriderku-standard.css?v=1">
+<link rel="stylesheet" href="myriderku-v87-fixes.css?v=87">
+</head><body class="role-admin">
+<div class="wrap wide">
+<header class="hd"><div><span class="tag">ADMIN</span><h1>MYRIDERKU Admin 🧑‍💼</h1><div class="sm" id="who"></div></div><div style="display:flex;gap:8px"><button class="hbtn" id="thB" type="button"></button><button class="hbtn hide" id="out">Log keluar</button></div></header>
 
-            // Mock check for UAT admin
-            if (email === "mnhzuan@gmail.com" && password.length >= 4) {
-                alert("Admin berjaya log masuk! Mengalihkan ke Dashboard...");
-                window.location.href = "admin.html#dashboard";
-            } else {
-                document.getElementById('login-error').style.display = 'block';
-            }
-        });
-    </script>
-</body>
-</html>
+<div id="login" class="pad hide" style="max-width:520px;margin:0 auto">
+  <div class="card"><form id="lf" onsubmit="return false"><h3>Log masuk admin</h3>
+    <label>E-mel</label><input id="em" name="username" type="email" autocomplete="username" autocapitalize="none" inputmode="email">
+    <label>Kata laluan</label><input id="pw" name="password" type="password" autocomplete="current-password">
+    <div class="err" id="lerr"></div>
+    <button class="btn full" id="go" type="submit" style="margin-top:8px">Log masuk</button></form>
+  </div>
+</div>
+
+<div id="app" class="pad hide">
+  <div class="stats" id="stats"></div>
+  <div id="late" class="hide" style="background:#3b1d0a;border:2px solid #f59e0b;border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:14px;line-height:1.5;cursor:pointer"></div>
+  <div class="card hide" id="repCard" style="margin-top:0"><h3>🆘 Laporan &amp; SOS <span id="repN" class="mut"></span></h3><div id="reps"></div></div>
+  <div class="tabs" id="mtabs" style="padding:0 0 10px"></div>
+  <div>
+    <div>
+      <div data-tab="peta" class="hide"><div class="card admin-radar-card" id="radarCard" style="margin-top:0">
+        <div class="radar-head"><div><span class="radar-kicker">MYRIDERKU FLEET CONTROL</span><h3 style="margin:3px 0 0">Live Rider Radar</h3><div class="mut">Pemantauan lokasi Rider melalui GPS Firebase</div></div><button class="btn sm" id="radarFull" type="button">⛶ Skrin penuh</button></div>
+        <div class="radar-stats"><div><b id="radarOnline">0</b><small>Online</small></div><div><b id="radarJobs">0</b><small>Sedang bertugas</small></div><div><b id="radarWaiting">0</b><small>Menunggu order</small></div><div><b id="radarStale">0</b><small>GPS lama</small></div></div>
+        <div class="radar-tools"><button class="btn gry sm" id="radarWeather" type="button">☁️ Cuaca kawasan peta</button><button class="btn gry sm" id="radarFit" type="button">◎ Semua Rider</button><span id="radarWeatherText" class="radar-weather-text">Cuaca belum dimuatkan</span></div>
+        <div class="radar-map-wrap"><div id="map" class="map" style="height:min(66vh,620px);min-height:390px"></div><button id="radarMyLocation" class="radar-my-location" type="button" aria-label="Lokasi saya">◎ Lokasi saya</button><div class="radar-live-pill"><i></i> LIVE GPS</div><div class="radar-map-legend"><span>🟢 Online</span><span>🟡 Bertugas</span><span>🔴 Ambil / hantar</span><span>⚪ Isyarat lama</span></div></div>
+        <div class="mut" style="margin-top:9px">Label Rider memaparkan nama, kelajuan GPS dan umur isyarat. Kelajuan tidak dipaparkan jika data tiada atau sudah lapuk.</div><div id="rChips" class="radar-rider-list"></div>
+      </div></div>
+      <div data-tab="vendor" class="hide"><div class="card" style="margin-top:0"><h3>Vendor <button class="btn gry sm" id="vCalc" type="button" style="float:right">↻ Kira bayaran</button></h3><div class="mut" id="vInfo">Tekan "Kira bayaran" untuk muat jualan belum dibayar.</div><div id="vendors"></div></div></div>
+      <div data-tab="rider" class="hide"><div class="card" style="margin-top:0"><h3>Rider</h3><div id="riders"></div></div></div>
+      <div data-tab="kedai" class="hide">
+      <div class="card" style="margin-top:0"><h3>📷 Kamera laju / AES / speed trap</h3>
+        <div class="mut" style="margin-bottom:8px">Rider akan diberi amaran bila hampir lokasi ini. Tekan butang, kemudian tekan lokasi di peta.</div>
+        <button class="btn sm" id="addHaz">➕ Tambah kamera/AES</button><div id="hazl" style="margin-top:10px"></div></div>
+      <div class="card"><h3>⭐ Kedai pilihan (dicadangkan kepada customer)</h3>
+        <input id="shN" placeholder="Nama kedai">
+        <select id="shC" style="margin-top:8px"></select>
+        <input id="shA" placeholder="Alamat ringkas" style="margin-top:8px">
+        <input id="shH" placeholder="Waktu buka (cth: 8pg - 10mlm)" style="margin-top:8px">
+        <input id="shNote" placeholder="Nota / promosi (pilihan)" style="margin-top:8px">
+        <div class="mut" style="margin:10px 0 4px">Hari buka (pasar malam/bazar). Kosongkan = setiap hari:</div>
+        <div class="chips" id="shD"></div>
+        <div class="acts"><button class="btn gry sm" id="shLoc" type="button">📍 Pilih lokasi di peta</button></div>
+        <div class="mut" id="shLocT" style="margin-top:6px">Lokasi belum dipilih</div>
+        <div class="acts"><button class="btn sm" id="shSave" type="button">💾 Simpan kedai</button></div>
+        <div id="shl" style="margin-top:12px"></div></div>
+      </div>
+      <div data-tab="customer" class="hide">
+        <div class="card" style="margin-top:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div><h3 style="margin:0">👤 Pengurusan Customer</h3><div class="mut">Senarai akaun berdaftar melalui WhatsApp OTP</div></div>
+            <button class="btn sm" id="customerReload" type="button">↻ Muat semula</button>
+          </div>
+          <div class="acts" style="margin-top:10px"><input id="customerSearch" placeholder="Cari nama / nombor telefon" style="flex:1;min-width:180px"><select id="customerFilter"><option value="all">Semua pengguna</option><option value="active">Aktif</option><option value="blocked">Disekat</option></select></div>
+          <div id="customerStats" class="mut" style="margin:10px 0">Memuatkan senarai...</div>
+          <div id="customerList"></div>
+        </div>
+      </div>
+      <div data-tab="tetapan" class="hide">
+        <div class="card" style="margin-top:0"><h3>💰 Harga</h3>
+          <div class="mut" style="margin-bottom:6px">Berkuat kuasa serta-merta di app customer (tak perlu upload semula).</div>
+          <div class="acts" style="margin-top:0">
+            <div style="flex:1 1 45%"><label style="margin-top:0">Upah asas (RM)</label><input id="sBase" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label style="margin-top:0">KM termasuk asas</label><input id="sFree" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label>RM setiap KM lebihan</label><input id="sPer" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label>Tambahan kereta (RM)</label><input id="sCar" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label>Caj hujan (RM)</label><input id="sRain" type="number" step="0.5" min="0" inputmode="decimal"></div>
+            <div style="flex:1 1 45%"><label>Amaran order tiada rider (min)</label><input id="sAlert" type="number" step="1" min="1" inputmode="numeric"></div>
+          </div></div>
+        <div class="card"><h3>💬 WhatsApp pusat</h3>
+          <label style="margin-top:0">Nombor (format 60xxxxxxxxx)</label><input id="sWa" type="tel" inputmode="tel" placeholder="601139900099"></div>
+        <div class="card"><h3>📲 Bayaran Transfer / QR</h3>
+          <div class="mut" style="margin-bottom:6px">Dipaparkan kepada customer bila pilih Transfer/QR, dan di halaman jejak.</div>
+          <label style="margin-top:0">Bank</label><input id="sBank" placeholder="cth: Maybank / TNG eWallet">
+          <label>No. akaun</label><input id="sAcc" inputmode="numeric" placeholder="cth: 1234567890">
+          <label>Nama akaun</label><input id="sName" placeholder="Nama penerima">
+          <label>Gambar QR (pilihan)</label><input id="sQrF" type="file" accept="image/*">
+          <img id="sQrP" alt="" style="display:none;max-width:180px;margin-top:8px;border-radius:10px;background:#fff">
+          <div class="acts"><button class="btn gry sm hide" id="sQrX" type="button">🗑️ Buang QR</button></div></div>
+        <div class="card"><h3>💼 Dana Operasi & markup (Admin)</h3>
+          <div class="mut" style="margin-bottom:6px">Rider melihat pendapatan bersih mereka. Dana Operasi ialah bahagian MYRIDERKU daripada upah penghantaran. Vendor menerima harga asal; markup produk dikira berasingan.</div>
+          <div class="acts" style="margin-top:0"><div style="flex:1 1 45%"><label style="margin-top:0">Dana Operasi (% upah)</label><input id="sDana" type="number" step="1" min="0" max="50" inputmode="numeric"></div>
+          <div style="flex:1 1 45%"><label style="margin-top:0">Markup harga vendor (%)</label><input id="sMark" type="number" step="1" min="0" max="50" inputmode="numeric"></div></div>
+          <label style="display:flex;gap:10px;align-items:flex-start;margin-top:10px"><input id="sAuto" type="checkbox" style="width:22px;height:22px;flex:0 0 auto"><span>Wallet automatik selepas order selesai <span class="mut">(perlu Cloud Functions). Tunai: rekod Dana Operasi. Online: kredit pendapatan rider.</span></span></label>
+          <div class="mut" style="margin-top:6px">Ubah nilai ini pada waktu sunyi. Pelanggan yang skrinnya dibuka sebelum perubahan perlu muat semula.</div></div>
+        <div class="acts"><button class="btn full" id="sSave" type="button">💾 Simpan tetapan</button></div>
+        <div class="mut" id="sInfo" style="margin-top:8px;text-align:center"></div>
+      </div>
+    </div>
+    <div data-tab="order">
+      <div id="vendorLiveMonitor" class="card" style="margin:0 0 14px;border:1px solid #42617f;background:linear-gradient(135deg,#172b43,#203b58);color:#fff">
+  <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><b style="font-size:16px">🏪 Pemantauan Pesanan Vendor — LIVE</b><div style="font-size:12px;opacity:.8;margin-top:3px">Data masa nyata daripada Firebase · paparan Admin sahaja</div></div><span id="vLiveUpdated" style="font-size:11px;opacity:.8">Menunggu data…</span></div>
+  <div id="vLiveStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin:12px 0"></div>
+  <div id="vLiveList" style="display:grid;gap:7px"><div style="font-size:13px;opacity:.8">Memuatkan pesanan vendor…</div></div>
+</div>
+
+      <div class="chips" id="flt"></div>
+      <input id="q" placeholder="Cari ref / nama / telefon / rider…">
+      <div id="list"></div>
+      <div class="acts"><button class="btn gry sm" id="csv">⬇️ Eksport CSV</button></div>
+    </div>
+  </div>
+</div>
+</div>
+<div id="toast" class="toast hide"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="common.js?v=91"></script>
+<script src="map-controls.js?v=88"></script>
+<script src="v81-callables.js?v=91"></script>
+<script>RKB.gateInstall('KB Admin')</script>
+<script>
+const $=s=>document.querySelector(s), {esc,rm}=RKB;
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.add('hide'),3000)}
+if(!RKB.ok){ $('#login').classList.remove('hide'); $('#login').innerHTML='<div class="card">Firebase belum disetup. Lihat FIREBASE-SETUP.md.</div>'; }
+else{
+const db=RKB.db, auth=RKB.auth, admins=(RKB.cfg.admins||[]).map(x=>x.toLowerCase());
+let contacts={}; const PH=o=>RKB.phoneOf(o,contacts[o.k]);
+
+let vendorLiveOrders={};
+const VLIVE_STATUS={baru:['Menunggu Vendor','#f59e0b'],diterima:['Diterima Vendor','#3b82f6'],siap:['Sedia Diambil','#16a34a'],selesai:['Selesai','#64748b'],ditolak:['Ditolak','#dc2626'],batal:['Dibatalkan','#dc2626']};
+function renderVendorLive(){
+ const all=[];Object.entries(vendorLiveOrders||{}).forEach(([uid,os])=>Object.entries(os||{}).forEach(([id,o])=>{if(o&&typeof o==='object')all.push({uid,id,...o})}));
+ all.sort((a,b)=>(+b.createdAt||0)-(+a.createdAt||0));
+ const active=all.filter(o=>!['selesai','ditolak','batal'].includes(o.status));
+ const counts={baru:0,diterima:0,siap:0,selesai:0,masalah:0};all.forEach(o=>{if(counts[o.status]!==undefined)counts[o.status]++;if(['ditolak','batal'].includes(o.status))counts.masalah++});
+ const stat=$('#vLiveStats'),list=$('#vLiveList');if(!stat||!list)return;
+ stat.innerHTML=[['Aktif',active.length,'#0ea5e9'],['Menunggu Vendor',counts.baru,'#f59e0b'],['Sedang Disediakan',counts.diterima,'#3b82f6'],['Sedia Diambil',counts.siap,'#16a34a'],['Selesai',counts.selesai,'#94a3b8'],['Ditolak / Batal',counts.masalah,'#ef4444']].map(x=>`<div style="padding:9px;border-radius:10px;background:#ffffff12;border:1px solid #ffffff20"><div style="font-size:22px;font-weight:800;color:${x[2]}">${x[1]}</div><div style="font-size:11px;opacity:.9">${x[0]}</div></div>`).join('');
+ const shown=all.slice(0,30);list.innerHTML=shown.length?shown.map(o=>{const st=VLIVE_STATUS[o.status]||[String(o.status||'Tidak diketahui'),'#64748b'];const vendor=(vendors[o.uid]&&(vendors[o.uid].shop||vendors[o.uid].name))||o.shop||'Vendor';const when=o.createdAt?new Date(+o.createdAt).toLocaleString('ms-MY'):'Masa tidak direkod';return `<div style="display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:9px 10px;border-radius:10px;background:#ffffff0d;border:1px solid #ffffff18"><div style="min-width:0"><b>${esc(o.ref||o.id)}</b> · ${esc(vendor)}<div style="font-size:11px;opacity:.8;margin-top:3px">${esc(o.name||'Pelanggan')} · ${when}${o.reason?' · Sebab: '+esc(o.reason):''}</div></div><span style="white-space:nowrap;padding:5px 8px;border-radius:99px;background:${st[1]}22;color:${st[1]};font-size:11px;font-weight:800">${st[0]}</span></div>`}).join(''):'<div style="font-size:13px;opacity:.8">Belum ada pesanan marketplace vendor.</div>';
+ const up=$('#vLiveUpdated');if(up)up.textContent='Dikemas kini '+new Date().toLocaleTimeString('ms-MY');
+}
+
+let vendors={}, vshops={}, vcalc=null, reps={}, orders={}, riders={}, filter='semua', q='', map=null, rm_={}, om={}, first=true, started=false;
+$('#go').onclick=async()=>{ $('#lerr').textContent=''; try{ await auth.signInWithEmailAndPassword($('#em').value.trim(),$('#pw').value) }catch(e){ const m={'auth/invalid-credential':'E-mel atau kata laluan salah.','auth/user-not-found':'Akaun Admin belum didaftarkan dalam Firebase Authentication.','auth/wrong-password':'Kata laluan salah.','auth/too-many-requests':'Terlalu banyak cubaan. Cuba lagi kemudian.','auth/network-request-failed':'Sambungan internet bermasalah.','auth/invalid-email':'Format e-mel tidak sah.'}; $('#lerr').textContent=(m[e&&e.code]||'Log masuk gagal: '+(e&&e.code||'ralat tidak diketahui')); } };
+$('#out').onclick=()=>auth.signOut();
+auth.onAuthStateChanged(u=>{
+  if(!u){ $('#login').classList.remove('hide'); $('#app').classList.add('hide'); $('#out').classList.add('hide'); return }
+  if(!admins.includes((u.email||'').toLowerCase())){ $('#lerr').textContent='Akaun ini bukan admin.'; auth.signOut(); return }
+  $('#login').classList.add('hide'); $('#app').classList.remove('hide'); $('#out').classList.remove('hide'); $('#who').textContent=u.email;
+  const vb=$('#verBar'); if(vb) vb.remove();
+  if(!u.emailVerified){
+    const d=document.createElement('div'); d.id='verBar'; d.className='card'; d.style.cssText='border:2px solid #f59e0b;margin:0 0 12px';
+    d.innerHTML='⚠️ <b>E-mel admin belum disahkan.</b> Peraturan keselamatan V32 hanya terima admin yang e-melnya sudah disahkan.<div class="acts"><button class="btn sm" id="verSend" type="button">📧 Hantar e-mel pengesahan</button><button class="btn gry sm" id="verDone" type="button">✅ Dah sahkan, muat semula</button></div>';
+    $('#app').prepend(d);
+    $('#verSend').onclick=async()=>{ try{ await u.sendEmailVerification(); toast('E-mel pengesahan dihantar. Semak peti masuk/spam.') }catch(e){ toast('Gagal: '+(e.code||e.message)) } };
+    $('#verDone').onclick=async()=>{ try{ await u.reload(); await auth.currentUser.getIdToken(true) }catch(e){} location.reload() };
+  }
+  RKB.pushInit('admin',u);
+  if(!started){ started=true; listen(); initMap(); goTab(curTab); }
+});
+/* ---- Vendor ---- */
+const VDONE=o=>(o.t&&+o.t.selesai)||+o.createdAt||0;
+function vUnpaid(u){ // order selesai selepas bayaran terakhir -> {net (bayar vendor), plat (untung platform), n, upto}
+  if(!vcalc)return null; const last=Math.max(0,...Object.values(vcalc.pay[u]||{}).map(p=>+p.upto||0));
+  let g=0,tot=0,n=0,upto=0; Object.values(vcalc.ord[u]||{}).forEach(o=>{ if(o.status!=='selesai')return; const t=VDONE(o); if(t>last){ const sub=o.sub!=null?+o.sub:Object.values(o.items||{}).reduce((a,i)=>a+(+i.p||0)*(+i.q||0),0); g+=sub; tot+=+o.total||0; n++; upto=Math.max(upto,t) } });
+  return {net:Math.round(g*100)/100,plat:Math.round((tot-g)*100)/100,n,upto};
+}
+function renderV(){
+  const E=Object.entries(vendors).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||String(a[1].shop||'').localeCompare(String(b[1].shop||'')));
+  $('#vendors').innerHTML=E.length?E.map(([u,v])=>{
+    const ok=v.approved===true,sp=v.approved===false,sh=vshops[u],un=vUnpaid(u);
+    return `<div class="row" style="align-items:center"><span>${ok&&sh&&sh.open?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(v.shop||v.name||u)}<br><small class="mut">${esc(v.name||'')} · ${esc(v.phone||'')} · ${esc(v.email||'')}</small><br><small>${ok?'✅ Aktif':sp?'⛔ Digantung':'⏳ Menunggu'}${sh?' · '+(sh.open?'Buka':'Tutup'):' · profil belum lengkap'}${un?' · Bayar vendor '+rm(un.net)+' · Untung platform '+rm(un.plat)+' ('+un.n+' order)':''}</small></span>
+    <span class="acts" style="justify-content:flex-end">${ok?`<button class="btn gry sm" data-v="pay" data-u="${esc(u)}">💸</button><button class="btn gry sm" data-v="rev" data-u="${esc(u)}">Gantung</button>`:`<button class="btn grn sm" data-v="ok" data-u="${esc(u)}">✅ ${sp?'Aktifkan':'Lulus'}</button>`}</span></div>`}).join(''):'<div class="mut">Belum ada vendor mendaftar.</div>';
+}
+$('#vendors').onclick=async e=>{
+  const b=e.target.closest('[data-v]'); if(!b) return; const u=b.dataset.u,a=b.dataset.v,v=vendors[u]||{};
+  try{
+    if(a==='ok'){ await db.ref('vendors/'+u+'/approved').set(true); toast('Vendor diluluskan ✅') }
+    if(a==='rev'){ if(!confirm('Gantung '+(v.shop||'vendor')+'? Kedai akan ditutup serta-merta.'))return;
+      const up={['vendors/'+u+'/approved']:false}; if(vshops[u]) up['vshops/'+u+'/open']=false; await db.ref().update(up); toast('Vendor digantung') }
+    if(a==='pay'){ if(!vcalc){toast('Tekan ↻ Kira bayaran dahulu');return} const un=vUnpaid(u); if(!un||!un.n){toast('Tiada jualan belum dibayar');return}
+      const amt=prompt('Jumlah dibayar kepada '+(v.shop||'vendor')+' (RM). Belum dibayar: '+un.net.toFixed(2),String(un.net.toFixed(2))); if(amt===null)return; const x=Math.round(parseFloat(amt)*100)/100; if(!(x>=0&&x<=1000000)){toast('Jumlah tak sah');return}
+      const note=(prompt('Nota (cth: transfer bank, rujukan):','')||'').trim().slice(0,100);
+      const rec={amt:x,t:firebase.database.ServerValue.TIMESTAMP,upto:un.upto}; if(note) rec.note=note;
+      await db.ref('vpayouts/'+u).push(rec); toast('Bayaran direkod ✅'); await loadVcalc() }
+  }catch(err){ toast('Gagal: '+(err.code||err.message)) }
+};
+async function loadVcalc(){
+  $('#vInfo').textContent='Memuat…';
+  try{ const [o,p]=await Promise.all([db.ref('vorders').once('value'),db.ref('vpayouts').once('value')]); vcalc={ord:o.val()||{},pay:p.val()||{}}; $('#vInfo').textContent='Dikemas kini '+new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})+'. Bayar vendor = jumlah harga asal vendor bagi order selesai selepas bayaran terakhir. Untung platform = markup.'; renderV() }
+  catch(err){ $('#vInfo').textContent='Gagal muat: '+(err.code||err.message) }
+}
+$('#vCalc').onclick=loadVcalc;
+function listen(){
+  db.ref('vendors').on('value',s=>{ const nw=s.val()||{}, n=Object.values(nw).filter(v=>v.approved===undefined).length, o=Object.values(vendors).filter(v=>v.approved===undefined).length; if(started&&n>o&&Object.keys(vendors).length+1>0&&listen._v){RKB.beep();toast('🆕 Vendor baru menunggu kelulusan')} listen._v=true; vendors=nw; renderV(); try{ if(typeof render==='function') render() }catch(_){} },e=>toast('Ralat vendor: '+e.code));
+  db.ref('vshops').on('value',s=>{ vshops=s.val()||{}; renderV() },()=>{});
+  db.ref('orderContacts').on('value',s=>{ contacts=s.val()||{}; render() },e=>toast('Ralat nombor pelanggan: '+e.code));
+  db.ref('orders').orderByChild('createdAt').limitToLast(300).on('value',s=>{
+    const prev=Object.keys(orders).length; orders=s.val()||{};
+    if(!first&&Object.keys(orders).length>prev){ RKB.beep(); toast('🆕 Order baru!') } first=false; render();
+  },e=>toast('Ralat baca order: '+e.code));
+  let rpFirst=true; db.ref('reports').limitToLast(50).on('value',s=>{ const nw=s.val()||{}; const n=Object.keys(nw).filter(k=>!reps[k]).length; reps=nw; if(!rpFirst&&n){ RKB.beep(); const sos=Object.values(nw).some(x=>x.type==='sos'); toast((sos?'🆘 SOS rider! ':'⚠️ Laporan baru. ')+'Semak panel Laporan') } rpFirst=false; drawReps() },e=>toast('Ralat baca laporan: '+e.code));
+  let pc=null; db.ref('riders').on('value',s=>{ riders=s.val()||{}; const n=Object.values(riders).filter(r=>r.approved!==true).length; if(pc!==null&&n>pc){RKB.beep();toast('🆕 Rider baru menunggu kelulusan')} pc=n; render() });
+}
+db.ref('vorders').on('value',s=>{ vendorLiveOrders=s.val()||{}; renderVendorLive(); },e=>{ const el=$('#vLiveList');if(el)el.textContent='Tidak dapat memuatkan pesanan vendor: '+e.code; });
+  const list=()=>Object.entries(orders).filter(([k,o])=>o&&o.pick&&o.drop&&o.pick.lat!=null&&o.drop.lat!=null).map(([k,o])=>({k,...o})).sort((a,b)=>b.createdAt-a.createdAt);
+const isAct=o=>o.status==='diterima'||o.status==='diambil';
+let srvOff=0; RKB.db.ref('.info/serverTimeOffset').on('value',s=>{ srvOff=s.val()||0 });
+const nowS=()=>Date.now()+srvOff;
+const isOn=r=>r.online&&r.t&&nowS()-r.t<120000;
+setInterval(()=>{ if(started) render() },15000);
+function stats(L){
+  const today=new Date().setHours(0,0,0,0), T=L.filter(o=>o.createdAt>=today), D=T.filter(o=>o.status==='selesai');
+  const per={}; D.forEach(o=>{const n=o.riderName||'-'; per[n]=per[n]||{n:0,s:0}; per[n].n++; per[n].s+=RKB.riderPay(o)});
+  $('#stats').innerHTML=[['Order hari ini',T.length],['Baru',L.filter(o=>o.status==='baru').length],['Aktif',L.filter(isAct).length],['Selesai hari ini',D.length],['Upah dikutip hari ini',rm(D.reduce((a,o)=>a+(+o.price||0),0))],['Bahagian rider',rm(D.reduce((a,o)=>a+RKB.riderPay(o),0))],['Dana Operasi',rm(D.reduce((a,o)=>a+RKB.platCut(o),0))],['Rider online',Object.values(riders).filter(isOn).length],['Rider menunggu',Object.values(riders).filter(r=>r.approved!==true).length]].map(x=>`<div class="stat"><b>${x[1]}</b><small>${x[0]}</small></div>`).join('');
+  return per;
+}
+setInterval(()=>{ if(started) render() },15000);
+function drawReps(){
+  const R=Object.entries(reps).sort((x,y)=>y[1].t-x[1].t); $('#repN').textContent=R.length?'('+R.length+')':''; $('#repCard').classList.toggle('hide',!R.length);
+  $('#reps').innerHTML=R.length?R.map(([k,r])=>{ const wa=RKB.tel(r.phone); return `<div class="row" style="align-items:flex-start"><span>${r.type==='sos'?'🆘':'⚠️'} <b>${esc(r.from||'')}</b> ${esc(r.name||'')}<br><small class="mut">${RKB.hm(r.t)} · ${r.ref?'#'+esc(r.ref):''}</small><br>${esc(r.msg||'')}</span><span>${wa?`<a class="btn grn sm" target="_blank" href="https://wa.me/${wa}">💬</a> `:''}${r.loc?`<a class="btn gry sm" target="_blank" href="https://www.google.com/maps?q=${r.loc.lat},${r.loc.lng}">🗺️</a> `:''}<button class="btn gry sm" data-rp="${k}">✅ Selesai</button></span></div>` }).join(''):'<div class="mut">Tiada laporan.</div>';
+}
+$('#reps').onclick=async e=>{ const b=e.target.closest('[data-rp]'); if(!b) return; try{ await db.ref('reports/'+b.dataset.rp).remove() }catch(err){ toast('Gagal: '+err.code) } };
+function render(){
+  if(!started) return;
+  const L=list(), per=stats(L);
+  const maxW=Math.max(0,...Object.values(riders).filter(r=>r.approved===true).map(r=>+r.wallet||0));
+  $('#flt').innerHTML=[['semua','Semua'],['baru','Baru'],['aktif','Aktif'],['selesai','Selesai'],['batal','Batal']].map(f=>`<button class="tab ${filter===f[0]?'on':''}" data-f="${f[0]}">${f[1]}</button>`).join('');
+  const s=q.toLowerCase();
+  const V=L.filter(o=>(filter==='semua'||(filter==='aktif'?isAct(o):o.status===filter))&&(!s||[o.ref,o.name,PH(o),o.riderName].join(' ').toLowerCase().includes(s)));
+  const ropts=Object.entries(riders).filter(([u,r])=>r.approved===true).map(([u,r])=>`<option value="${u}">${esc(r.name||u)}</option>`).join('');
+  $('#list').innerHTML=V.length?V.map(o=>`<details class="card order-compact"><summary class="order-summary"><b>#${esc(o.ref)}</b><span class="order-summary-hint">Lihat info <span aria-hidden="true">⌄</span></span></summary><div class="order-details"><div style="display:flex;justify-content:flex-end;align-items:center;gap:6px;flex-wrap:wrap"><span>${(()=>{ const c=RKB.confState(o); if(!c) return ''; const far=(o.doneDist!=null&&o.doneDist>(+RKB.cfg.dropRadiusM||300))||o.doneGps===false; return '<span class="badge '+(c.k==='issue'?'b-batal':'b-'+(c.k==='ok'?'selesai':'diterima'))+'">'+esc(c.t)+'</span> '+(far?'<span class="badge b-batal">📍 '+(o.doneGps===false?'tiada GPS masa selesai':'selesai '+o.doneDist+' m dari lokasi hantar')+'</span> ':'') })()}${o.status==='baru'&&o.pay==='cash'&&(+o.need||0)>maxW?'<span class="badge b-batal">⚠️ tiada rider layak (perlu '+rm(o.need)+')</span> ':''}${isAct(o)&&(!o.riderLoc||Date.now()-o.riderLoc.t>60000)&&!(riders[o.riderUid]&&nowS()-(riders[o.riderUid].t||0)<60000)?'<span class="badge b-batal">⚠️ rider tiada isyarat</span> ':''}<span class="badge b-${o.status}">${o.status}</span></span></div>
+    <div class="mut" style="margin:4px 0 8px">${new Date(o.createdAt).toLocaleString('ms-MY')} · ${esc(o.service)} · ${esc(o.vehicle)} · ${(+o.km||0).toFixed(1)} KM · <b>${rm(o.price)}</b> <span class="mut">(Rider ${rm(RKB.riderPay(o))} · Dana Operasi ${rm(RKB.platCut(o))})</span></div>
+    <div class="row"><span>Ambil</span><span>${esc(o.pick.addr)}</span></div>
+    <div class="row"><span>Hantar</span><span>${esc(o.drop.addr)}</span></div>
+    <div class="row"><span>Nota</span><span>${esc(String(o.notes||'-').replace(/\[#U=[\d.]+;K=[\d.]+;S=[\d.]+\]\s?/,''))}</span></div>
+    <div class="row"><span>Pelanggan</span><span>${esc(o.name)} · ${esc(PH(o))}</span></div>
+    <div class="row"><span>Rider</span><span>${esc(o.riderName||'Belum ada')}</span></div>
+    <div class="acts">
+      <select data-k="${o.k}" data-a="assign" style="flex:1 1 140px"><option value="">Tugaskan rider…</option>${ropts}</select>
+      <select data-k="${o.k}" data-a="status" style="flex:1 1 120px">${['baru','diterima','diambil','selesai','batal'].map(x=>`<option ${x===o.status?'selected':''}>${x}</option>`).join('')}</select>
+      <a class="btn gry sm" target="_blank" href="customer-track.html?id=${o.k}">📡 Jejak</a>
+      <a class="btn gry sm" target="_blank" href="https://wa.me/${RKB.tel(PH(o))}">💬 WA</a>
+      <button class="btn gry sm" data-a="del" data-k="${o.k}">🗑️</button>
+    </div></div></details>`).join(''):'<div class="card mut" style="text-align:center">Tiada order.</div>';
+  const R=Object.entries(riders).sort((a,b)=>(a[1].approved===true)-(b[1].approved===true)||(a[1].name||'').localeCompare(b[1].name||''));
+  $('#riders').innerHTML=R.length?R.map(([u,r])=>{const ok=r.approved===true;const uid=esc(u);return `<article class="admin-rider-card"><div class="admin-rider-main"><div class="admin-rider-name">${ok&&isOn(r)?'<span class="on-dot"></span>':'<span class="off-dot"></span>'}${esc(r.name||u)}</div><div class="admin-rider-meta">${esc(r.phone||'')}${r.plate?' · 🛵 '+esc(r.plate):''} · ${ok?'✅ Lulus':'⏳ Menunggu'}${r.email?' · '+esc(r.email):''}${ok&&isOn(r)&&r.spd!=null?' · '+r.spd+' km/j':''}</div>${ok?`<div class="admin-rider-wallet">💰 Wallet Rider <strong>${rm(r.wallet||0)}</strong>${(+r.walletReserved||0)>0?`<div class="mut">Tempahan COD: ${rm(r.walletReserved)} · Tersedia: ${rm(Math.max(0,(+r.wallet||0)-(+r.walletReserved||0)))}</div>`:''}</div>`:''}${ok&&per[r.name]?`<div class="admin-rider-orders">📦 ${per[r.name].n} order · ${rm(per[r.name].s)}</div>`:''}</div><div class="admin-rider-actions">${ok?`<button class="btn grn sm" data-r="top" data-u="${uid}">＋ Wallet</button><button class="btn gry sm" data-r="ded" data-u="${uid}">－ Tolak</button><button class="btn gry sm" data-r="rev" data-u="${uid}">⏸ Gantung</button>`:`<button class="btn grn sm" data-r="ok" data-u="${uid}">✅ Lulus rider</button>`}<button class="btn gry sm" data-r="pw" data-u="${uid}">🔑 Reset kata laluan</button><button class="btn danger sm" data-r="del" data-u="${uid}">🗑️ Padam</button></div></article>`}).join(''):'<div class="mut">Belum ada rider mendaftar.</div>';
+  try{ updMap(L) }catch(err){ console.error('updMap',err) }
+  const late=lateCheck(L), wait=Object.values(riders).filter(r=>r.approved!==true).length;
+  lastBadges={order:L.filter(o=>o.status==='baru').length,rider:wait,vendor:Object.values(vendors).filter(v=>v.approved===undefined).length,peta:Object.keys(reps).length};
+  drawTabs(lastBadges);
+}
+$('#riders').onclick=async e=>{
+  const b=e.target.closest('[data-r]'); if(!b) return; const u=b.dataset.u, a=b.dataset.r;
+  try{
+    if(a==='ok'){ await db.ref('riders/'+u+'/approved').set(true); toast('Rider diluluskan ✅') }
+    if(a==='rev'){ await db.ref('riders/'+u+'/approved').set(false); toast('Rider digantung') }
+    if(a==='pw'){
+      const r=riders[u]||{}; const em=(prompt('Hantar pautan tetapan semula kata laluan ke e-mel rider:',r.email||'')||'').trim(); if(!em) return;
+      try{ await auth.sendPasswordResetEmail(em); if(em!==r.email) await db.ref('riders/'+u+'/email').set(em); toast('🔑 Pautan reset dihantar ke '+em) }
+      catch(er){ toast(er.code==='auth/user-not-found'?'E-mel ini tiada akaun':er.code==='auth/invalid-email'?'Format e-mel tak betul':'Gagal: '+er.code) }
+    }
+    if(a==='del'&&confirm('Padam profil rider ini?')){ await db.ref('riders/'+u).remove() }
+    if(a==='top'||a==='ded'){
+      const v=parseFloat(prompt((a==='top'?'Tambah':'Tolak')+' wallet (RM):',''));
+      if(!v||v<=0) return; const amt=a==='top'?v:-v, note=prompt('Catatan (pilihan):','')||'';
+      await MYRIDERKU_V81.adminWallet(u,amt,note);
+      toast('Wallet dikemas kini 💰');
+    }
+  }catch(err){ toast('Gagal: '+err.code) }
+};
+$('#flt').onclick=e=>{const b=e.target.closest('[data-f]'); if(b){filter=b.dataset.f;render()}};
+$('#q').oninput=e=>{q=e.target.value;render()};
+$('#list').onchange=async e=>{
+  const t=e.target, k=t.dataset.k, a=t.dataset.a; if(!a) return;
+  try{
+    if(a==='status'){ const up={status:t.value}; up['t/'+t.value]=Date.now(); await db.ref('orders/'+k).update(up) }
+    if(a==='assign'&&t.value){ const r=riders[t.value]; const up={riderUid:t.value,riderName:r.name||'',riderPhone:r.phone||'',riderPlate:r.plate||''}; if(orders[k].status==='baru'){up.status='diterima';up['t/diterima']=Date.now()} await db.ref('orders/'+k).update(up); toast('Rider ditugaskan ✅') }
+  }catch(err){ toast('Gagal: '+err.code) }
+};
+$('#list').onclick=async e=>{
+  const b=e.target.closest('button[data-a="del"]'); if(!b) return;
+  if(confirm('Padam order ini selamanya?')) try{ { const k=b.dataset.k; await db.ref().update({['orders/'+k]:null,['orderContacts/'+k]:null,['proofs/'+k]:null,['proofs/'+k+'p']:null,['proofsP/'+k]:null}) } }catch(err){ toast('Gagal padam (hanya admin): '+err.code) }
+};
+$('#csv').onclick=()=>{
+  const rows=[['Ref','Masa','Status','Servis','Kenderaan','Ambil','Hantar','KM','RM','Upah rider','Dana Operasi','Pelanggan','Telefon','Rider']];
+  list().forEach(o=>rows.push([o.ref,new Date(o.createdAt).toLocaleString('ms-MY'),o.status,o.service,o.vehicle,o.pick.addr,o.drop.addr,o.km,o.price,RKB.riderPay(o),RKB.platCut(o),o.name,PH(o),o.riderName||'']));
+  const csv=rows.map(r=>r.map(c=>'"'+String(c==null?'':c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'})); a.download='order-rider-kb.csv'; a.click();
+};
+
+/* ---- Customer account moderation ---- */
+let customerAccounts=[];
+const customerEsc=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+async function loadCustomerAccounts(){
+  const box=document.querySelector("#customerList"),stats=document.querySelector("#customerStats");
+  if(box)box.textContent="Memuatkan...";
+  try{
+    const r=await MYRIDERKU_V81.adminListCustomers();
+    customerAccounts=Array.isArray(r.data)?r.data:[];
+    renderCustomerAccounts();
+  }catch(e){if(stats)stats.textContent=e.message||"Gagal mendapatkan senarai Customer.";if(box)box.textContent="Tidak dapat memuatkan data.";}
+}
+function renderCustomerAccounts(){
+  const box=document.querySelector("#customerList"),stats=document.querySelector("#customerStats");
+  if(!box||!stats)return;
+  const q=(document.querySelector("#customerSearch")?.value||"").toLowerCase();
+  const f=document.querySelector("#customerFilter")?.value||"all";
+  const active=customerAccounts.filter(x=>x.status!=="blocked").length, blocked=customerAccounts.length-active;
+  stats.textContent=`Jumlah ${customerAccounts.length} · Aktif ${active} · Disekat ${blocked}`;
+  const rows=customerAccounts.filter(x=>(f==="all"||x.status===f)&&[x.name,x.phone,x.uid].join(" ").toLowerCase().includes(q));
+  if(!rows.length){box.textContent="Tiada Customer sepadan.";return;}
+  box.innerHTML=rows.map(x=>`<div style="border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0;background:var(--card)">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap">
+      <b>${customerEsc(x.name||"Profil belum lengkap")}</b>
+      <span style="font-size:12px;font-weight:700;color:${x.status==="blocked"?"#dc2626":"#16a34a"}">${x.status==="blocked"?"DISEKAT":"AKTIF"}</span>
+    </div>
+    <div style="font-size:13px;margin-top:6px">☎ ${customerEsc(x.phone)}<br>Alamat: ${customerEsc(x.address||"Belum diisi")}<br><small class="mut">UID: ${customerEsc(x.uid)}</small></div>
+    ${x.status==="blocked"?`<div style="font-size:12px;color:#dc2626;margin-top:5px">Sebab: ${customerEsc(x.blockReason||"—")}</div>`:""}
+    <div class="acts" style="margin-top:9px">${x.status==="blocked"?`<button class="btn sm" data-customer-unblock="${customerEsc(x.uid)}">Unblock</button>`:`<button class="btn gry sm" data-customer-block="${customerEsc(x.uid)}">Block Customer</button>`}</div>
+  </div>`).join("");
+}
+document.querySelector("#customerReload")?.addEventListener("click",loadCustomerAccounts);
+document.querySelector("#customerSearch")?.addEventListener("input",renderCustomerAccounts);
+document.querySelector("#customerFilter")?.addEventListener("change",renderCustomerAccounts);
+document.querySelector("#customerList")?.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-customer-block],[data-customer-unblock]");if(!b)return;
+  const uid=b.dataset.customerBlock||b.dataset.customerUnblock, blocked=!!b.dataset.customerBlock;
+  let reason="";
+  if(blocked){reason=prompt("Sebab sekatan (contoh: fake order / penyalahgunaan):","Fake order / penyalahgunaan")||"";if(!reason.trim())return;}
+  else if(!confirm("Buka sekatan akaun Customer ini?"))return;
+  b.disabled=true;
+  try{await MYRIDERKU_V81.adminSetCustomerBlocked(uid,blocked,reason);await loadCustomerAccounts();}
+  catch(err){alert(err.message||"Tindakan gagal.");b.disabled=false;}
+});
+
+/* ---- Tab ---- */
+const TABS=[['order','📋 Order'],['peta','🗺️ Peta'],['rider','🛵 Rider'],['vendor','🏪 Vendor'],['kedai','⭐ Kedai & Kamera'],['customer','👤 Customer'],['tetapan','⚙️ Tetapan']];
+let curTab='order', retTab=null;
+try{ const t=sessionStorage.getItem('rkb-atab'); if(TABS.some(x=>x[0]===t)) curTab=t }catch(_){}
+function drawTabs(badges){
+  badges=badges||{};
+  $('#mtabs').innerHTML=TABS.map(t=>`<button class="tab ${curTab===t[0]?'on':''}" data-t="${t[0]}" type="button">${t[1]}${badges[t[0]]?' <span style="background:#fff;color:#16a34a;border-radius:99px;padding:1px 7px;font-size:11.5px;margin-left:3px">'+badges[t[0]]+'</span>':''}</button>`).join('');
+}
+function goTab(t){
+  curTab=t; try{ sessionStorage.setItem('rkb-atab',t) }catch(_){}
+  document.querySelectorAll('[data-tab]').forEach(el=>el.classList.toggle('hide',el.dataset.tab!==t));
+  drawTabs(lastBadges);
+  if(t==='customer') loadCustomerAccounts();
+  if(t==='peta'&&map) setTimeout(()=>{ map.invalidateSize(); if(!goTab._f){ goTab._f=1; updMap.fit=false; try{ updMap(list()) }catch(_){} } },80);
+}
+function backTab(){ if(retTab){ const t=retTab; retTab=null; goTab(t) } }
+let lastBadges={};
+$('#mtabs').onclick=e=>{ const b=e.target.closest('[data-t]'); if(b) goTab(b.dataset.t) };
+
+/* ---- Amaran order tiada rider ---- */
+let alertMin=5, alerted=new Set();
+function lateCheck(L){
+  const late=L.filter(o=>o.status==='baru'&&nowS()-o.createdAt>alertMin*60000);
+  const box=$('#late'); box.classList.toggle('hide',!late.length);
+  if(late.length){
+    box.innerHTML='⏰ <b>'+late.length+' order belum ada rider lebih '+alertMin+' minit</b><br><small>'+late.slice(0,4).map(o=>'#'+esc(o.ref)+' ('+Math.round((nowS()-o.createdAt)/60000)+' min)').join(' · ')+(late.length>4?' …':'')+' · tekan untuk tugaskan rider</small>';
+    const fresh=late.filter(o=>!alerted.has(o.k)); if(fresh.length){ fresh.forEach(o=>alerted.add(o.k)); RKB.beep() }
+  }
+  return late.length;
+}
+$('#late').onclick=()=>{ filter='baru'; goTab('order'); render() };
+
+/* ---- Tetapan (harga, WhatsApp, bayaran) ---- */
+let SET={}, qrData='';
+const nv=(id,d)=>{ const v=$('#'+id).value.trim(); return v!==''&&isFinite(+v)&&+v>=0?+v:d };
+function fillSet(){
+  const p=SET.pricing||{}, f=(id,v,d)=>{ if(document.activeElement!==$('#'+id)) $('#'+id).value=(v!=null?v:d) };
+  f('sBase',p.base,5); f('sFree',p.freeKm,5); f('sPer',p.perKm,1); f('sCar',p.car,10); f('sRain',p.rain,2); f('sAlert',SET.alertMin,5); if(document.activeElement!==$('#sAuto')) $('#sAuto').checked=SET.autoWallet===true; f('sDana',SET.platformShare!=null?SET.platformShare:(SET.riderShare!=null?100-SET.riderShare:(RKB.cfg.platformShare!=null?RKB.cfg.platformShare:100-(RKB.cfg.riderShare||80)))); f('sMark',SET.vendorMarkup,RKB.cfg.vendorMarkup!=null?RKB.cfg.vendorMarkup:10); if(SET.platformShare!=null) RKB.shares().rider=100-(+SET.platformShare); else if(SET.riderShare!=null) RKB.shares().rider=+SET.riderShare; if(SET.vendorMarkup!=null) RKB.shares().mark=+SET.vendorMarkup;
+  f('sWa',SET.wa,RKB.cfg.waNumber||''); const y=SET.pay||{}; f('sBank',y.bank,''); f('sAcc',y.acc,''); f('sName',y.name,'');
+  qrData=y.qr||''; $('#sQrP').style.display=qrData?'block':'none'; if(qrData) $('#sQrP').src=qrData; $('#sQrX').classList.toggle('hide',!qrData);
+  alertMin=+SET.alertMin>0?+SET.alertMin:5;
+}
+/* V60: salinan awam (allowlist) untuk customer: harga + butiran bayaran sahaja */
+const publicOf=o=>{ const c={pricing:o.pricing||{},payout:{platformShare:o.platformShare!=null?+o.platformShare:20}}; if(o.pay){ const y={}; ['bank','acc','name','qr'].forEach(k=>{ if(o.pay[k]) y[k]=o.pay[k] }); if(Object.keys(y).length) c.payment=y } return c };
+let _pcSynced=false;
+db.ref('settings').on('value',sn=>{ SET=sn.val()||{}; fillSet(); render();
+  if(!_pcSynced&&SET.pricing){ _pcSynced=true; db.ref('publicConfig').once('value').then(x=>{ if(!x.exists()) return db.ref('publicConfig').set(publicOf(SET)) }).catch(()=>{}) } },e=>toast('Ralat tetapan: '+e.code));
+$('#sQrF').onchange=async e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; try{ qrData=await RKB.compressImg(f,600,.8); $('#sQrP').src=qrData; $('#sQrP').style.display='block'; $('#sQrX').classList.remove('hide'); toast('QR dimuat. Tekan Simpan tetapan.') }catch(_){ toast('Gambar tak dapat dibaca') } };
+$('#sQrX').onclick=()=>{ qrData=''; $('#sQrP').style.display='none'; $('#sQrX').classList.add('hide'); $('#sQrF').value='' };
+$('#sSave').onclick=async()=>{
+  const wa=$('#sWa').value.replace(/\D/g,''); if(wa&&!/^60\d{8,11}$/.test(wa)) return toast('Nombor WhatsApp mesti bermula 60, cth 601139900099');
+  const danaShare=Math.round(nv('sDana',20));
+  const o={pricing:{base:nv('sBase',5),freeKm:nv('sFree',5),perKm:nv('sPer',1),car:nv('sCar',10),rain:nv('sRain',2)},alertMin:Math.max(1,Math.round(nv('sAlert',5))),platformShare:danaShare,riderShare:100-danaShare,vendorMarkup:Math.round(nv('sMark',10)),autoWallet:$('#sAuto').checked};
+  if(!(o.platformShare>=0&&o.platformShare<=50)) return toast('Dana Operasi mesti 0 hingga 50%');
+  if(!(o.vendorMarkup>=0&&o.vendorMarkup<=50)) return toast('Markup vendor mesti 0 hingga 50%');
+  if(wa) o.wa=wa;
+  const pay={bank:$('#sBank').value.trim().slice(0,60),acc:$('#sAcc').value.trim().slice(0,40),name:$('#sName').value.trim().slice(0,80)}; if(qrData) pay.qr=qrData;
+  if(pay.bank||pay.acc||pay.name||pay.qr) o.pay=pay;
+  if(o.pricing.base>200||o.pricing.car>200||o.pricing.rain>200||o.pricing.perKm>50) return toast('Nilai harga nampak terlalu tinggi, semak semula');
+  $('#sSave').disabled=true;
+  try{ await db.ref().update({settings:o,publicConfig:publicOf(o)}); $('#sInfo').textContent='✅ Disimpan '+new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})+'. Customer terus guna harga baharu.'; toast('Tetapan disimpan ✅') }
+  catch(err){ toast(err.code==='PERMISSION_DENIED'?'Tiada kebenaran. Tampal rules terkini (nod settings) di Firebase.':'Gagal: '+err.code) }
+  $('#sSave').disabled=false;
+};
+$('#thB').textContent=RKB_THEME.label(); $('#thB').onclick=()=>{ RKB_THEME.cycle(); $('#thB').textContent=RKB_THEME.label() };
+
+/* ---- Peta live ---- */
+function initMap(){
+  map=RKB.baseMap('map');
+  if(map.doubleClickZoom) map.doubleClickZoom.disable();
+  initRadarControls();
+  document.addEventListener('click',e=>{ const b=e.target.closest&&e.target.closest('[data-rf]'); if(!b||!map) return; const m=rm_[b.dataset.rf]; if(m){ map.setView(m.getLatLng(),16); } });
+  map.on('click',e=>{
+    if(shopPick){ shopLL=[+e.latlng.lat.toFixed(6),+e.latlng.lng.toFixed(6)]; shopPick=false; if(shMk) map.removeLayer(shMk); shMk=L.marker(shopLL,{icon:RKB.mkIcon('#fbbf24')}).addTo(map); $('#shLocT').textContent='📍 Lokasi dipilih: '+shopLL.join(', '); $('#shLoc').textContent='📍 Tukar lokasi'; backTab(); return }
+    if(!addMode) return;
+    const t=(prompt('Jenis? 1 = AES/kamera, 2 = Speed trap, 3 = Lain','1')||'').trim(); if(!t){ addMode=false; $('#addHaz').textContent='➕ Tambah kamera/AES'; backTab(); return }
+    const type={1:'aes',2:'speedtrap',3:'lain'}[t]||'aes';
+    const label=prompt('Nama / lokasi (cth: AES Jalan Hamzah)','')||(type==='speedtrap'?'Speed trap':'Kamera AES');
+    const lim=parseInt(prompt('Had laju km/j (kosongkan jika tak pasti)',''))||null;
+    db.ref('hazards').push({lat:+e.latlng.lat.toFixed(6),lng:+e.latlng.lng.toFixed(6),type,label,limit:lim,t:Date.now()}).then(()=>toast('Kamera/AES ditambah ✅')).catch(err=>toast('Gagal: '+err.code));
+    addMode=false; $('#addHaz').textContent='➕ Tambah kamera/AES'; backTab();
+  });
+  db.ref('hazards').on('value',sn=>{ hazards=sn.val()||{}; renderHaz() });
+  db.ref('shops').on('value',sn=>{ shopsA=sn.val()||{}; renderShops() },e=>toast('Ralat kedai: '+e.code));
+}
+const DAYS=['Ahd','Isn','Sel','Rab','Kha','Jum','Sab'];
+let shopsA={}, shopLL=null, shopPick=false, shMk=null; const shDays=new Set();
+$('#shC').innerHTML=RKB.CATS.map(c=>`<option value="${c.id}">${c.e} ${c.n}</option>`).join('');
+$('#shD').innerHTML=DAYS.map((d,i)=>`<button type="button" class="tab" data-d="${i}">${d}</button>`).join('');
+$('#shD').onclick=e=>{ const b=e.target.closest('[data-d]'); if(!b) return; const i=+b.dataset.d; if(shDays.has(i)) shDays.delete(i); else shDays.add(i); b.classList.toggle('on',shDays.has(i)) };
+$('#shLoc').onclick=()=>{ shopPick=true; addMode=false; retTab=curTab; goTab('peta'); toast('Tekan lokasi kedai di peta') };
+$('#shSave').onclick=async()=>{
+  const name=$('#shN').value.trim(); if(!name) return toast('Isi nama kedai'); if(!shopLL) return toast('Pilih lokasi kedai di peta');
+  const o={name,cat:$('#shC').value,addr:$('#shA').value.trim(),hours:$('#shH').value.trim(),note:$('#shNote').value.trim(),days:[...shDays].sort().join(','),lat:shopLL[0],lng:shopLL[1],active:true,t:Date.now()};
+  try{ await db.ref('shops').push(o); toast('Kedai disimpan ⭐');
+    ['#shN','#shA','#shH','#shNote'].forEach(x=>$(x).value=''); shDays.clear(); document.querySelectorAll('#shD .tab').forEach(b=>b.classList.remove('on'));
+    shopLL=null; if(shMk){map.removeLayer(shMk);shMk=null} $('#shLocT').textContent='Lokasi belum dipilih'; $('#shLoc').textContent='📍 Pilih lokasi di peta';
+  }catch(err){ toast('Gagal: '+err.code) }
+};
+function renderShops(){
+  const E=Object.entries(shopsA);
+  $('#shl').innerHTML=E.length?E.map(([k,x])=>{const c=RKB.CATS.find(c=>c.id===x.cat)||{e:'',n:x.cat};return `<div class="row" style="align-items:center;${x.active===false?'opacity:.5':''}"><span>${c.e} <b>${esc(x.name)}</b><br><small class="mut">${esc(c.n)}${x.days?' · hari: '+x.days.split(',').map(d=>DAYS[+d]).join(','):''}${x.hours?' · '+esc(x.hours):''}</small></span><span><button class="btn gry sm" data-s="tog" data-k="${k}">${x.active===false?'Papar':'Sembunyi'}</button> <button class="btn gry sm" data-s="del" data-k="${k}">🗑️</button></span></div>`}).join(''):'<div class="mut">Belum ada kedai pilihan.</div>';
+}
+$('#shl').onclick=async e=>{ const b=e.target.closest('[data-s]'); if(!b) return; const k=b.dataset.k;
+  try{ if(b.dataset.s==='tog') await db.ref('shops/'+k+'/active').set(shopsA[k].active===false); else if(confirm('Padam kedai ini?')) await db.ref('shops/'+k).remove() }catch(err){ toast('Gagal: '+err.code) } };
+let hazards={}, hmk={}, addMode=false;
+function renderHaz(){
+  $('#hazl').innerHTML=Object.keys(hazards).length?Object.entries(hazards).map(([k,h])=>`<div class="row" style="align-items:center"><span>${h.type==='speedtrap'?'🚔':'📷'} ${esc(h.label||'')}${h.limit?' · '+h.limit+' km/j':''}</span><span><button class="btn gry sm" data-h="${k}">🗑️</button></span></div>`).join(''):'<div class="mut">Belum ada. Rider juga dapat data kamera daripada OpenStreetMap secara automatik (tak lengkap).</div>';
+  if(!map) return;
+  Object.keys(hmk).forEach(k=>{ if(!hazards[k]){ map.removeLayer(hmk[k]); delete hmk[k] } });
+  Object.entries(hazards).forEach(([k,h])=>{ if(!hmk[k]) hmk[k]=L.marker([h.lat,h.lng],{icon:RKB.hazIcon(h.type)}).addTo(map).bindPopup(esc(h.label||'')) });
+}
+$('#addHaz').onclick=()=>{ addMode=!addMode; $('#addHaz').textContent=addMode?'📍 Tekan lokasi di peta… (tekan sini untuk batal)':'➕ Tambah kamera/AES'; if(addMode){ retTab=curTab; goTab('peta'); toast('Tekan lokasi di peta') } };
+$('#hazl').onclick=async e=>{ const b=e.target.closest('[data-h]'); if(b&&confirm('Padam lokasi ini?')) try{ await db.ref('hazards/'+b.dataset.h).remove() }catch(err){ toast('Gagal: '+err.code) } };
+const navs={};
+function updMap(LST){
+  if(!map) return; const keep=new Set();
+  LST.filter(o=>o.status==='baru'||isAct(o)).forEach(o=>{
+    ['p','d'].forEach(w=>{ if(w==='p'&&o.status==='diambil') return; const key=o.k+w, pt=w==='p'?o.pick:o.drop; keep.add(key);
+      if(!om[key]) om[key]=L.marker([pt.lat,pt.lng],{icon:RKB.mkIcon(w==='p'?'#10b981':'#e11d48')}).addTo(map).bindPopup(`#${esc(o.ref)} ${w==='p'?'Ambil':'Hantar'}`); });
+  });
+  Object.keys(om).forEach(k=>{ if(!keep.has(k)){ map.removeLayer(om[k]); delete om[k] } });
+  const rk=new Set(), actU=new Set(LST.filter(isAct).map(o=>o.riderUid).filter(Boolean));
+  Object.entries(riders).forEach(([u,r])=>{ const recent=r.online===true&&r.t&&nowS()-r.t<900000; if(r.lat==null||!(isOn(r)||recent||actU.has(u))) return; rk.add(u);
+    const age=r.t?Math.round((nowS()-r.t)/1000):null, stale=!isOn(r), lbl=(r.name||'Rider')+(r.spd!=null&&!stale?' · '+r.spd+' km/j':'')+(stale&&age!=null?' · isyarat '+(age<90?age+'s':Math.round(age/60)+' min')+' lalu':'');
+    if(!rm_[u]) rm_[u]=L.marker([r.lat,r.lng],{icon:RKB.riderIcon(lbl),zIndexOffset:900}).addTo(map); else { RKB.glide(rm_[u],[r.lat,r.lng],1500); rm_[u].setIcon(RKB.riderIcon(lbl)) }
+    const active=actU.has(u), assigned=LST.filter(o=>o.riderUid===u&&isAct(o)); rm_[u].setOpacity(stale?.55:1); rm_[u].bindPopup(`<div class="radar-rider-detail"><b>🛵 ${esc(r.name||'Rider')}</b><hr><b>Status:</b> ${active?'Sedang bertugas':isOn(r)?'Online':'Isyarat lama'}<br><b>Telefon:</b> ${r.phone?`<a href="tel:${esc(String(r.phone))}">${esc(r.phone)}</a>`:'Tidak direkod'}<br><b>Kenderaan:</b> ${esc(r.vehicle||'Motor')}<br><b>No. pendaftaran:</b> ${esc(r.plate||'Tidak direkod')}<br><b>Kelajuan:</b> ${!stale&&r.spd!=null?esc(String(r.spd))+' km/j':'—'}<br><b>Arah:</b> ${!stale&&r.heading!=null?Math.round(Number(r.heading))+'°':'—'}<br><b>GPS:</b> ${age==null?'Tidak diketahui':age+' saat lalu'}<br><b>Pesanan aktif:</b> ${assigned.length?assigned.map(o=>'#'+esc(o.ref||o.k)).join(', '):'Tiada'}</div>`); });
+  Object.keys(rm_).forEach(u=>{ if(!rk.has(u)){ map.removeLayer(rm_[u]); delete rm_[u] } });
+  { const ch=document.getElementById('rChips'); if(ch){ const rows=[...rk].map(u=>{ const r=riders[u]||{}, live=isOn(r), age=r.t?Math.round((nowS()-r.t)/1000):null; return `<button type="button" class="btn gry sm" data-rf="${u}" style="${live?'':'opacity:.6'}">${live?'🟢':'🟠'} ${esc(r.name||'Rider')}${age!=null?' · '+(age<90?age+'s':Math.round(age/60)+' min'):''}</button>` }); ch.innerHTML=rows.length?rows.join(''):'<span class="mut">Tiada rider online dengan lokasi sekarang.</span>'; } }
+  // garisan laluan terang untuk setiap job aktif
+  const nk=new Set();
+  LST.filter(isAct).forEach(o=>{ nk.add(o.k); if(!navs[o.k]) navs[o.k]=RKB.makeNav(map);
+    const rr=riders[o.riderUid]||{}, loc=o.riderLoc&&nowS()-o.riderLoc.t<300000?[o.riderLoc.lat,o.riderLoc.lng]:(rr.lat!=null?[rr.lat,rr.lng]:null);
+    navs[o.k].update(o,loc); });
+  Object.keys(navs).forEach(k=>{ if(!nk.has(k)){ navs[k].clear(); delete navs[k] } });
+  if(!updMap.fit){ const pts=[...Object.values(om),...Object.values(rm_)].map(m=>m.getLatLng()); if(pts.length){ map.fitBounds(L.latLngBounds(pts),{padding:[40,40],maxZoom:15}); updMap.fit=true } }
+  renderRadarStats(LST,rk,actU);
+}
+function renderRadarStats(LST,rk,actU){const online=Object.entries(riders).filter(([u,r])=>isOn(r)&&r.lat!=null).length,active=actU.size,waiting=Math.max(0,online-active),stale=[...rk].filter(u=>!isOn(riders[u]||{})).length;[['radarOnline',online],['radarJobs',active],['radarWaiting',waiting],['radarStale',stale]].forEach(([id,v])=>{const e=document.getElementById(id);if(e)e.textContent=String(v)})}
+let radarWeatherMoveTimer=null,radarWeatherSeq=0,radarWeatherInterval=null;
+function initRadarControls(){
+ const card=document.getElementById('radarCard'),full=document.getElementById('radarFull');
+ const toggleRadarFull=async()=>{try{if(!document.fullscreenElement){await card.requestFullscreen()}else{await document.exitFullscreen()}}catch(e){card.classList.toggle('radar-expanded')}setTimeout(()=>map&&map.invalidateSize(),220)};
+ full?.addEventListener('click',toggleRadarFull);
+ document.addEventListener('fullscreenchange',()=>setTimeout(()=>map&&map.invalidateSize(),220));
+ let lastTap=0;
+ const mapEl=document.getElementById('map');
+ mapEl?.addEventListener('touchend',e=>{const now=Date.now();if(now-lastTap<330){e.preventDefault();toggleRadarFull();lastTap=0}else lastTap=now},{passive:false});
+ mapEl?.addEventListener('dblclick',e=>{e.preventDefault();toggleRadarFull()});
+ document.getElementById('radarMyLocation')?.addEventListener('click',()=>{
+   if(!navigator.geolocation){toast('GPS tidak disokong telefon ini');return}
+   navigator.geolocation.getCurrentPosition(pos=>{if(map){map.setView([pos.coords.latitude,pos.coords.longitude],16,{animate:true});toast('Peta dipusatkan pada lokasi anda')}},err=>toast(err.code===1?'Kebenaran lokasi belum diberikan':'Lokasi GPS belum tersedia'),{enableHighAccuracy:true,timeout:12000,maximumAge:10000});
+ });
+ document.getElementById('radarFit')?.addEventListener('click',()=>{if(!map)return;const pts=Object.values(rm_).map(m=>m.getLatLng());if(pts.length)map.fitBounds(L.latLngBounds(pts),{padding:[45,45],maxZoom:15});else toast('Tiada lokasi Rider untuk dipaparkan')});
+ document.getElementById('radarWeather')?.addEventListener('click',loadRadarWeather);
+ if(map){
+   map.off('moveend',scheduleRadarWeather);
+   map.on('moveend',scheduleRadarWeather);
+   setTimeout(loadRadarWeather,700);
+   if(radarWeatherInterval) clearInterval(radarWeatherInterval);
+   radarWeatherInterval=setInterval(loadRadarWeather,10*60*1000);
+ }
+}
+function scheduleRadarWeather(){
+ clearTimeout(radarWeatherMoveTimer);
+ radarWeatherMoveTimer=setTimeout(loadRadarWeather,1400);
+}
+async function loadRadarWeather(){
+ const out=document.getElementById('radarWeatherText'),btn=document.getElementById('radarWeather');
+ if(!map||!out)return;
+ const seq=++radarWeatherSeq,c=map.getCenter();out.textContent='Memuatkan cuaca kawasan peta…';if(btn)btn.disabled=true;
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),9000);
+ try{
+  const url=`https://api.open-meteo.com/v1/forecast?latitude=${c.lat.toFixed(4)}&longitude=${c.lng.toFixed(4)}&current=temperature_2m,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m&timezone=Asia%2FKuala_Lumpur`;
+  const res=await fetch(url,{cache:'no-store',signal:ctl.signal});if(!res.ok)throw new Error('HTTP '+res.status);
+  const j=await res.json(),w=j.current;if(!w)throw new Error('Tiada data cuaca');if(seq!==radarWeatherSeq)return;
+  const desc=({0:'Cerah',1:'Cerah berawan',2:'Separa mendung',3:'Mendung',45:'Kabut',48:'Kabut tebal',51:'Renyai',53:'Renyai sederhana',55:'Renyai lebat',61:'Hujan',63:'Hujan sederhana',65:'Hujan lebat',80:'Hujan setempat',81:'Hujan setempat sederhana',82:'Hujan setempat lebat',95:'Ribut petir',96:'Ribut petir + hujan batu',99:'Ribut petir kuat'})[w.weather_code]||'Keadaan berubah-ubah';
+  out.textContent=`${desc} · ${Math.round(w.temperature_2m)}°C · Hujan ${w.precipitation} mm · Angin ${w.wind_speed_10m} km/j · ${new Date(w.time).toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit'})}`;
+ }catch(e){if(seq===radarWeatherSeq){out.textContent='Cuaca tidak tersedia. Cuba lagi kemudian.';console.warn('Weather:',e)}}
+ finally{clearTimeout(timer);if(seq===radarWeatherSeq&&btn)btn.disabled=false}
+}
+}
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script>
+<script src="myriderku-standard.js?v=1"></script>
+<script src="health-check.js?v=78"></script>
+<style>
+.leaflet-container.myr-map-fs{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:99999!important;border-radius:0!important;background:#fff}
+.myr-map-fs-exit{position:absolute;top:12px;right:12px;z-index:10000;border:0;border-radius:12px;padding:10px 13px;background:#111827;color:#fff;font-weight:700;box-shadow:0 2px 10px #0003}
+</style>
+<script>
+(()=>{
+ const attached=new WeakSet();
+ function setup(c){if(attached.has(c))return;attached.add(c);let last=0,lastTouchGesture=0,old=null,exit=null;
+  const excluded=e=>e.target&&e.target.closest&&e.target.closest('.leaflet-marker-icon,.leaflet-interactive,.leaflet-popup,.leaflet-control');
+  const invalidate=()=>{try{const id=c._leaflet_id;const map=id&&window.L&&L.Map&&L.Map._instances&&L.Map._instances[id];if(map)map.invalidateSize({pan:false});}catch(_){}};
+  const toggle=()=>{
+   const nativeFs=c.querySelector('.fsb');if(nativeFs){nativeFs.click();return;}
+   if(c.classList.contains('myr-map-fs')){c.classList.remove('myr-map-fs');document.body.style.overflow=old||'';if(exit)exit.remove();exit=null;}
+   else{old=document.body.style.overflow;c.classList.add('myr-map-fs');document.body.style.overflow='hidden';exit=document.createElement('button');exit.type='button';exit.className='myr-map-fs-exit';exit.textContent='✕ Tutup skrin penuh';exit.addEventListener('click',toggle);c.appendChild(exit);}
+   [80,250,500].forEach(t=>setTimeout(invalidate,t));
+  };
+  c.addEventListener('touchend',e=>{if(excluded(e)||!e.changedTouches||e.changedTouches.length!==1)return;const now=Date.now();if(now-last<360){e.preventDefault();lastTouchGesture=now;toggle();last=0;}else last=now;},{passive:false});
+  c.addEventListener('dblclick',e=>{if(excluded(e)||Date.now()-lastTouchGesture<700)return;e.preventDefault();e.stopPropagation();toggle();},true);
+  // Peta tersuai yang tidak menggunakan RKB.baseMap tetap mendapat butang skrin penuh.
+  if(!c.querySelector('.fsb')){const b=document.createElement('button');b.type='button';b.className='myr-map-fs-exit';b.textContent='⛶ Skrin penuh';b.style.top='12px';b.style.right='12px';b.addEventListener('click',toggle);c.appendChild(b);}
+ }
+ function scan(root=document){root.querySelectorAll('.leaflet-container').forEach(setup);}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>scan());else scan();
+ new MutationObserver(()=>scan()).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+</body></html>
