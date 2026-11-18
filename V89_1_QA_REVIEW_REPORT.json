@@ -1,0 +1,140 @@
+{
+  "build": "MYRIDERKU MASTER BUILD V89 AUDIT MERGED",
+  "review_date": "2026-11-18",
+  "archive": {
+    "zip_integrity": "PASS",
+    "duplicate_archive_paths": 0,
+    "file_count": 101
+  },
+  "node_syntax": {
+    "cloudinary-config.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "common.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "firebase-config.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "firebase-messaging-sw.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "functions/index.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "health-check.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "map-controls.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "myriderku-standard.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "sw.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "theme.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "v81-callables.js": {
+      "status": "PASS",
+      "stderr": ""
+    }
+  },
+  "inline_html_script_syntax": {
+    "admin.html": {
+      "inline_script_blocks": 2,
+      "status": "PASS",
+      "errors": []
+    },
+    "customer-rewards.html": {
+      "inline_script_blocks": 1,
+      "status": "PASS",
+      "errors": []
+    },
+    "customer-shop.html": {
+      "inline_script_blocks": 3,
+      "status": "PASS",
+      "errors": []
+    },
+    "customer-track.html": {
+      "inline_script_blocks": 3,
+      "status": "PASS",
+      "errors": []
+    },
+    "customer.html": {
+      "inline_script_blocks": 2,
+      "status": "PASS",
+      "errors": []
+    },
+    "index.html": {
+      "inline_script_blocks": 0,
+      "status": "PASS",
+      "errors": []
+    },
+    "repair.html": {
+      "inline_script_blocks": 1,
+      "status": "PASS",
+      "errors": []
+    },
+    "rider.html": {
+      "inline_script_blocks": 2,
+      "status": "PASS",
+      "errors": []
+    },
+    "vendor.html": {
+      "inline_script_blocks": 3,
+      "status": "PASS",
+      "errors": []
+    }
+  },
+  "json_and_webmanifest": {
+    "CUSTOMER_LOGIN_PRIVATE_NODES_RULES_SNIPPET.json": "PASS",
+    "V85_3_STATIC_CHECKS.json": "PASS",
+    "V89_BUILD_QA_REPORT.json": "PASS",
+    "V89_MANIFEST_SHA256.json": "PASS",
+    "WHATSAPP_OTP_RTDB_RULES_SNIPPET.json": "PASS",
+    "database.rules.V85_3_CANDIDATE.json": "PASS",
+    "functions/package.json": "PASS",
+    "manifest-admin.webmanifest": "PASS",
+    "manifest-rider.webmanifest": "PASS",
+    "manifest-vendor.webmanifest": "PASS",
+    "manifest.webmanifest": "PASS"
+  },
+  "firebase_project_id": "riderkb-fe7e1",
+  "vapid_key_configured": false,
+  "cloud_function_exports": [
+    "acceptOrder",
+    "releaseCodReservation",
+    "updateVendorOrderStatus",
+    "adminAdjustRiderWallet",
+    "riderUpdateOrderStatus",
+    "riderMarkArrival",
+    "customerConfirmReceipt",
+    "getCustomerSession",
+    "saveCustomerProfile",
+    "adminListCustomers",
+    "adminSetCustomerBlocked",
+    "createCustomerOrder",
+    "listRiderOrders",
+    "startWhatsAppOtp",
+    "verifyWhatsAppOtp"
+  ],
+  "marketplace_frontend_direct_db_writes_detected": true,
+  "createMarketplaceOrder_callable_present": false,
+  "heuristic_secret_scan_patterns_found": [],
+  "live_tests": "NOT RUN — requires authorized Firebase Emulator/staging and real Android/browser sessions",
+  "overall": "STATIC CHECKS PASS; STAGING/PRODUCTION RELEASE BLOCKED",
+  "credential_scan_note": "Firebase Web API key found in firebase-config.js; this is a client-side identifier, not a service-account private key. No private-key or service-account JSON marker found."
+}

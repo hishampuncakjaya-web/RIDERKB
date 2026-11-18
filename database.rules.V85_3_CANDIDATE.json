@@ -62,7 +62,7 @@
     "vorders": {
       "$vendorUid": {
         "$orderId": {
-          ".read": "auth != null && (auth.uid == $vendorUid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
+          ".read": "auth != null && (auth.uid == $vendorUid || data.child('customerUid').val() == auth.uid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))",
           ".write": "auth != null && auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true"
         },
         ".read": "auth != null && (auth.uid == $vendorUid || (auth.token.email == 'mnhzuan@gmail.com' && auth.token.email_verified == true))"
