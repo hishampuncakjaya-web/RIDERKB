@@ -249,9 +249,8 @@ body.typing{padding-bottom:24px}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=87"></script>
-<script src="map-controls.js?v=88"></script>
-<script src="v81-callables.js?v=87"></script>
+<script src="common.js?v=88"></script>
+<script src="v81-callables.js?v=88"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('tempah')</script>
 <script>
 /* ===== TETAPAN (ubah di sini) ===== */
@@ -727,7 +726,7 @@ async function send(){
     // Callable response is the authoritative acknowledgement; no direct-write fallback.
     sending=false; trackUrl=''; closeWaTab();
     const code=e&&e.code;
-    const why=code==='TIMEOUT'?'Talian lemah atau tiada internet.':code==='PERMISSION_DENIED'?'Sistem tidak membenarkan tempahan ini. Sila hubungi Admin dengan kod ralat untuk semakan.':'Sambungan bermasalah.';
+    const why=code==='TIMEOUT'?'Talian lemah atau tiada internet.':code==='PERMISSION_DENIED'?'Tempahan ditolak (terlalu kerap dalam masa singkat, atau sistem sedang disemak).':'Sambungan bermasalah.';
     setBtn('🛵 Cari Rider Sekarang',false); $('#err').textContent='⚠️ Order belum masuk. '+why+' Tekan sekali lagi atau lihat bawah ringkasan.';
     note('⚠️ <b>Order belum masuk ke sistem rider.</b> '+why+'<br>Anda boleh <b>tekan sekali lagi</b> untuk cuba semula, atau <a href="#" id="waonly" style="color:#fbbf24;font-weight:800">hantar terus melalui WhatsApp (tanpa jejak live)</a>.');
     const w=$('#waonly'); if(w) w.onclick=ev=>{ ev.preventDefault(); finish(); sendWA(buildMsg()); afterSend(''); };

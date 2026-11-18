@@ -146,9 +146,8 @@ if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWor
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="cloudinary-config.js"></script>
-<script src="common.js?v=87"></script>
-<script src="map-controls.js?v=88"></script>
-<script src="v81-callables.js?v=87"></script>
+<script src="common.js?v=88"></script>
+<script src="v81-callables.js?v=88"></script>
 <script>RKB.gateInstall('KB Vendor')</script>
 <script>
 /*PURE*/
@@ -217,7 +216,7 @@ function gate(){
 let started=false;
 function stopData(){dataOffs.forEach(f=>f());dataOffs=[];started=false}
 // MYRIDERKU custom Aisyah voice alert (Vendor)
-const vendorAisyahAlert = new Audio('vendor-order-aisyah.wav');
+const vendorAisyahAlert = new Audio('sounds/vendor-order-aisyah.wav');
 vendorAisyahAlert.preload='auto';
 let vendorAisyahLastPlay=0;
 function playVendorAisyahAlert(){
@@ -256,32 +255,15 @@ function setVendorGeo(lat,lng,zoom=true){
     if(zoom)vendorMap.setView(geo,17);}
 }
 function initVendorMap(){
-  const el=$('#vendorMap');
-  if(!el){$('#serr').textContent='Ruang peta tidak ditemui.';return;}
-  if(!window.L){$('#serr').textContent='Pustaka peta Leaflet gagal dimuatkan. Semak internet atau sekatan CDN.';return;}
+  if(!window.L){$('#serr').textContent='Peta gagal dimuatkan. Semak sambungan internet.';return}
   const fallback=[6.1256,102.2386],center=geo||fallback;
-  try{
-    if(!vendorMap){
-      vendorMap=L.map(el,{zoomControl:true,preferCanvas:true}).setView(center,geo?17:13);
-      const tiles=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-        maxZoom:19,attribution:'&copy; OpenStreetMap',errorTileUrl:''
-      });
-      let tileErrors=0;
-      tiles.on('tileerror',()=>{tileErrors++;if(tileErrors>=3) $('#serr').textContent='Peta asas gagal dimuatkan. Koordinat masih boleh disimpan; cuba rangkaian lain atau buka semula.';});
-      tiles.on('load',()=>{if(tileErrors===0) $('#serr').textContent='';});
-      tiles.addTo(vendorMap);
-      vendorMap.on('click',e=>setVendorGeo(e.latlng.lat,e.latlng.lng,false));
-    }else{vendorMap.setView(center,geo?17:13);}
-    if(vendorPin){vendorPin.remove();vendorPin=null;}
-    if(geo){vendorPin=L.marker(geo,{draggable:true}).addTo(vendorMap);vendorPin.on('dragend',e=>{const p=e.target.getLatLng();geo=[p.lat,p.lng];showGeo();});}
-    [80,250,600,1200].forEach(t=>setTimeout(()=>{try{vendorMap.invalidateSize({pan:false});}catch(e){}},t));
-    if(window.ResizeObserver&&!el.__rkbMapResizeObserver){
-      el.__rkbMapResizeObserver=new ResizeObserver(()=>{try{vendorMap&&vendorMap.invalidateSize({pan:false});}catch(e){}});
-      el.__rkbMapResizeObserver.observe(el);
-    }
-  }catch(e){$('#serr').textContent='Peta gagal dimulakan: '+(e&&e.message||'ralat tidak diketahui');console.error('MYRIDERKU vendor map:',e);}
+  if(!vendorMap){vendorMap=L.map('vendorMap').setView(center,geo?17:13);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(vendorMap);
+    vendorMap.on('click',e=>setVendorGeo(e.latlng.lat,e.latlng.lng,false));}
+  else vendorMap.setView(center,geo?17:13);
+  if(vendorPin){vendorPin.remove();vendorPin=null;}
+  if(geo){vendorPin=L.marker(geo,{draggable:true}).addTo(vendorMap);vendorPin.on('dragend',e=>{const p=e.target.getLatLng();geo=[p.lat,p.lng];showGeo()});}
+  [180,500,1200].forEach(t=>setTimeout(()=>{try{vendorMap.invalidateSize()}catch(e){}},t));
 }
-
 function openSetup(){
   show('setup');const s=shop||{};
   $('#stT').textContent=shop?'Edit profil kedai':'Siapkan profil kedai';

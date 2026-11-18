@@ -46,12 +46,9 @@ body{padding-bottom:90px}
 <div id="toast" class="toast hide"></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="common.js?v=90"></script>
-<script src="v81-callables.js?v=90"></script>
+<script src="common.js?v=61"></script>
 <script>RKB.gateInstall('MYRIDERKU');RKB.customerTabs('kedai')</script>
 <script>
 const $=s=>document.querySelector(s), {esc,rm,r2}=RKB;
@@ -176,32 +173,42 @@ async function place(st,s){
     menu=m.val()||{}; const bad=Object.entries(cart).find(([k,q])=>{ const x=menu[k]; return !x||x.on===false||x.st===0||(x.st>0&&q>x.st) });
     if(bad){ b.disabled=false; refreshFee(); toast('Stok berubah, sila semak semula pesanan.'); drawMenu(); return }
   }catch(e){}
-  const id=RKB.newId(), cartObj={}; Object.entries(cart).forEach(([k,q])=>{ cartObj[k]=q });
-  const payload={vendorUid:uid,orderId:id,mode:st.mode,pay:st.pay,name:nm,phone:ph,notes:$('#nt').value.trim(),items:cartObj};
-  if(st.mode==='hantar'){ payload.addr=addr; payload.lat=geo[0]; payload.lng=geo[1]; payload.km=quote.km }
+  const S2=sums(), id=RKB.newId(), ref='KDI-'+id.slice(0,4).toUpperCase(), TS=firebase.database.ServerValue.TIMESTAMP, its={};
+  Object.entries(cart).forEach(([k,q],i)=>{ const m=menu[k]; its['i'+i]={n:String(m.n).slice(0,60),q,p:r2(base(m)),id:k.slice(0,40)} });
+  const SM=smallOf(S2.total), hq=st.mode==='hantar'&&quote, tag=`[#U=${hq?quote.fee.toFixed(2):'0.00'};K=${hq?quote.km:0};S=${SM.toFixed(2)}] `;
+  const note=(st.mode==='hantar'?'[HANTAR] ':'[AMBIL SENDIRI] ')+tag+$('#nt').value.trim();
+  const od={ref,createdAt:TS,name:nm.slice(0,60),phone:ph.slice(0,20),phoneKey:RKB.phoneKey(ph),items:its,sub:S2.sub,markup:S2.markup,total:S2.total,pricingPolicy:'vendor_full_price_plus_platform_markup_v1',status:'baru',pay:st.pay,notes:note.slice(0,300)};
+  if(st.mode==='hantar'){ od.addr=addr.slice(0,200); if(geo){ od.lat=geo[0]; od.lng=geo[1] } }
+  const up={}; up['vorders/'+uid+'/'+id]=od; up['ratelimit/'+od.phoneKey]=TS;
   try{
-    // V90: pesanan dihantar melalui backend (harga dikira semula di pelayan); tiada tulisan terus ke /vorders
-    await Promise.race([(async()=>{ await RKB.ensureGuestAuth(); return MYRIDERKU_V81.createMarketplaceOrder(payload) })(),new Promise((_,r)=>setTimeout(()=>r({code:'TIMEOUT'}),15000))]);
+    await Promise.race([RKB.db.ref().update(up),new Promise((_,r)=>setTimeout(()=>r({code:'TIMEOUT'}),9000))]);
     try{ localStorage.setItem('rkb',JSON.stringify({n:nm,p:ph})); localStorage.setItem('rkb-lastsend',String(Date.now())); localStorage.setItem(SK,JSON.stringify({v:uid,o:id})) }catch(_){}
     track(uid,id);
   }catch(e){
-    // permintaan mungkin sudah sampai walaupun respons lambat
+    // tulisan tertunda mungkin sudah sampai
     try{ const ex=await Promise.race([RKB.db.ref('vorders/'+uid+'/'+id+'/ref').once('value'),new Promise((_,r)=>setTimeout(r,4000))]); if(ex&&ex.exists()){ try{ localStorage.setItem(SK,JSON.stringify({v:uid,o:id})) }catch(_){} track(uid,id); return } }catch(_){}
     b.disabled=false; refreshFee();
-    const fc=e&&String(e.code||'').indexOf('functions/')===0;
-    err(e&&e.code==='TIMEOUT'?'⚠️ Talian lemah. Pesanan belum masuk, tekan sekali lagi.':fc&&e.message?'⚠️ '+e.message:'⚠️ Sambungan bermasalah. Tekan sekali lagi.');
+    err(e&&e.code==='TIMEOUT'?'⚠️ Talian lemah. Pesanan belum masuk, tekan sekali lagi.':e&&e.code==='PERMISSION_DENIED'?'⚠️ Pesanan ditolak: kedai mungkin baru tutup, atau terlalu kerap dalam masa singkat. Cuba lagi sebentar lagi.':'⚠️ Sambungan bermasalah. Tekan sekali lagi.');
   }
 }
 
 /* ---------- Panggil rider automatik (pickup = kedai, drop = lokasi semasa order) ---------- */
 const DS={};
-async function dispatchRider(vu,id,o,sh){
+async function dispatchRider(id,o,sh){
   if(DS[id]==='busy'||DS[id]==='ok') return; DS[id]='busy';
   const done=v=>{ DS[id]=v; if(window.__redraw) window.__redraw() };
   try{
-    await RKB.ensureGuestAuth();
-    const r=await Promise.race([MYRIDERKU_V81.dispatchMarketplaceOrder(vu,id),new Promise((_,x)=>setTimeout(()=>x({code:'TIMEOUT'}),15000))]);
-    done(r&&r.data&&r.data.ok?'ok':'fail');
+    let ex=null; try{ ex=await RKB.db.ref('orders/'+id+'/ref').once('value') }catch(_){}
+    if(ex&&ex.exists()){ return done('ok') }
+    let g=null; try{ g=await RKB.ensureGuestAuth() }catch(_){}
+    const TS=firebase.database.ServerValue.TIMESTAMP, cash=o.pay==='cash', minCash=+(RKB.cfg.walletMinCash??0), pk=RKB.phoneKey(o.phone||'');
+    if(!pk) return done('fail');
+    const order={ref:'RKB-'+id.slice(0,4).toUpperCase(),createdAt:TS,status:'baru',...(g?{customerUid:g.uid}:{}),service:'Tapau Makanan',vehicle:'Motor',
+      pick:{lat:+sh.lat,lng:+sh.lng,addr:(sh.name+(sh.addr?', '+sh.addr:'')).slice(0,200)},drop:{lat:+o.lat,lng:+o.lng,addr:String(o.addr).slice(0,200)},
+      notes:('Ambil pesanan kedai '+sh.name+' #'+o.ref+(cash?' (KUTIP TUNAI '+rm(r2(o.total+(o.small||0)+(+o.fee||0)))+' daripada customer: produk '+rm(o.total)+' + upah '+rm(o.fee)+')':' (sudah dibayar online, tiada kutipan)')).slice(0,600),name:String(o.name||'').slice(0,60),km:+o.km||0,rain:false,price:+o.fee,pay:o.pay,itemEst:0,need:cash?r2(RKB.platCut({price:+o.fee})+minCash):0};
+    const up={}; up['orders/'+id]=order; up['orderContacts/'+id]={phone:String(o.phone).slice(0,20),phoneKey:pk}; up['ratelimit/'+pk]=TS;
+    await Promise.race([RKB.db.ref().update(up),new Promise((_,r)=>setTimeout(()=>r({code:'TIMEOUT'}),9000))]);
+    done('ok');
   }catch(e){
     console.error('dispatch',e);
     try{ const ex=await RKB.db.ref('orders/'+id+'/ref').once('value'); if(ex&&ex.exists()) return done('ok') }catch(_){}
@@ -228,7 +235,7 @@ function track(u,id){
     if(o.pay==='online'&&!fin&&payD&&(payD.acc||payD.qr)) h+=`<div class="card"><div class="big">📲 Bayar ${rm(r2(o.total+(o.small||0)+(o.fee||0)))}</div><div style="margin-top:6px;line-height:1.7">${payD.bank?esc(payD.bank)+'<br>':''}${payD.acc?'No. akaun: <b>'+esc(payD.acc)+'</b><br>':''}${payD.name?'Nama: '+esc(payD.name):''}</div>${payD.qr&&/^data:image\//.test(payD.qr)?`<img alt="QR bayaran" src="${esc(payD.qr)}" style="display:block;max-width:240px;width:100%;margin:10px auto 0;border-radius:12px;background:#fff">`:''}</div>`;
     const auto=o.fee!=null&&o.lat!=null&&o.addr&&sh&&sh.lat!=null;
     if(auto&&['diterima','siap'].includes(o.status)){
-      if(!DS[id]) dispatchRider(u,id,o,sh);
+      if(!DS[id]) dispatchRider(id,o,sh);
       h+=DS[id]==='ok'?`<div class="card">🛵 <b>Rider sedang dicari / dalam perjalanan.</b> Tiada apa-apa lagi untuk anda buat.<div class="acts"><a class="btn gry" href="customer-track.html?id=${encodeURIComponent(id)}">📡 Jejak rider</a></div></div>`:DS[id]==='fail'?`<div class="card">⚠️ Rider belum berjaya dipanggil.<div class="acts"><button class="btn full" id="rd" type="button">🔁 Cuba panggil rider</button></div></div>`:`<div class="card mut">⏳ Memanggil rider…</div>`;
     } else if(!auto&&o.addr&&['diterima','siap'].includes(o.status)&&sh&&sh.lat!=null){   /* order lama (tiada upah dalam order): kekal cara lama */
       const p=new URLSearchParams({pk:sh.lat+','+sh.lng,pa:(sh.name+(sh.addr?', '+sh.addr:'')).slice(0,200),da:o.addr,n:('Ambil pesanan kedai '+sh.name+' #'+o.ref+(o.pay==='online'?' (sudah dibayar kepada kedai)':' (bayar kedai: '+rm(o.total)+')')).slice(0,300)}); if(o.lat!=null) p.set('dk',o.lat+','+o.lng);
@@ -237,9 +244,9 @@ function track(u,id){
     if(o.status==='selesai'){ h+=o.rating?`<div class="card"><div class="big">Terima kasih! ${'⭐'.repeat(+o.rating.stars||0)}</div></div>`:'<div class="card"><div class="big">Macam mana pesanan tadi?</div><div id="stars">'+[1,2,3,4,5].map(n=>`<button class="star" data-n="${n}" type="button">⭐</button>`).join('')+'</div></div>'; }
     h+='<div class="acts"><a class="btn gry" href="customer-shop.html">🏪 Semua kedai</a><a class="btn gry" href="customer.html">🛵 Hantar barang</a></div>';
     view(h);
-    const rd=$('#rd'); if(rd) rd.onclick=()=>{ DS[id]=null; dispatchRider(u,id,ext(cur),sh) };
-    const cx=$('#cx'); if(cx) cx.onclick=async()=>{ if(!confirm('Batalkan pesanan ini?')) return; cx.disabled=true; try{ await RKB.ensureGuestAuth(); await MYRIDERKU_V81.marketplaceAction(u,id,'cancel') }catch(e){ toast('Tak dapat batal: kedai mungkin baru terima.'); cx.disabled=false } };
-    const st=$('#stars'); if(st) st.onclick=async e=>{ const b=e.target.closest('.star'); if(!b||rated) return; rated=true; try{ await RKB.ensureGuestAuth(); await MYRIDERKU_V81.marketplaceAction(u,id,'rate',+b.dataset.n) }catch(_){ rated=false; toast('Tak dapat hantar penilaian.') } };
+    const rd=$('#rd'); if(rd) rd.onclick=()=>{ DS[id]=null; dispatchRider(id,ext(cur),sh) };
+    const cx=$('#cx'); if(cx) cx.onclick=async()=>{ if(!confirm('Batalkan pesanan ini?')) return; cx.disabled=true; try{ await ref.child('status').set('batal') }catch(e){ toast('Tak dapat batal: kedai mungkin baru terima.'); cx.disabled=false } };
+    const st=$('#stars'); if(st) st.onclick=async e=>{ const b=e.target.closest('.star'); if(!b||rated) return; rated=true; try{ await ref.child('rating').set({stars:+b.dataset.n,t:Date.now()}) }catch(_){ rated=false; toast('Tak dapat hantar penilaian.') } };
   }
 }
 if('serviceWorker' in navigator) addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));

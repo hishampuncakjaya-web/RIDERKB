@@ -1,0 +1,21 @@
+MYRIDERKU V87 — PATCH BRIDGE CALLABLE (CACHE FIX)
+
+Pakej asas: MYRIDERKU_V87_FIXED (2).zip
+Patch ini:
+1. Kekalkan v81-callables.js sebagai satu-satunya tempat yang mendaftarkan window.MYRIDERKU_V81.
+2. Buang pendaftaran bridge pendua daripada common.js.
+3. Naikkan query version common.js dan v81-callables.js kepada v=88 pada halaman Customer, Rider, Vendor, Admin dan Customer Track.
+4. Naikkan nama cache Service Worker kepada myriderku-v88-callable-fix dan precache URL aset versi 88.
+
+CARA DEPLOY:
+- Extract semua kandungan ZIP ini ke root folder deployment/repository (jangan letak dalam subfolder).
+- Commit/push semua fail yang berubah bersama fail lain dalam pakej.
+- Pastikan root mengandungi common.js, v81-callables.js, customer.html, rider.html, vendor.html, admin.html dan sw.js.
+- Deploy semula keseluruhan site.
+- Selepas deploy, tutup PWA/tab MYRIDERKU. Buka semula URL halaman dan buat hard refresh / clear site data jika masih memaparkan aset lama.
+- Uji halaman Customer, Rider, Vendor, Admin dan Customer Track.
+
+NOTA:
+Patch ini membaiki pendaftaran/global bridge dan cache version berdasarkan semakan statik.
+Ia tidak mengesahkan endpoint Cloud Functions di Firebase sudah deployed atau berfungsi.
+Jangan ubah Firebase Rules atau database sebagai sebahagian patch ini.
