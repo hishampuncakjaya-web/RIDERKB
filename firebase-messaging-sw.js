@@ -1,6 +1,5 @@
 /* MYRIDERKU Firebase Cloud Messaging background worker.
- * Letak fail ini pada root deployment yang sama dengan rider.html.
- * Konfigurasi di bawah ialah public Firebase Web App config (bukan server secret).
+ * Letak di ROOT deployment, sama aras dengan rider.html dan index.html.
  */
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
@@ -28,7 +27,6 @@ messaging.onBackgroundMessage((payload) => {
     renotify: true
   });
 });
-
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const target = (event.notification.data && event.notification.data.url) || './rider.html';
