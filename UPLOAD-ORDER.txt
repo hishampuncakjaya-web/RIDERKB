@@ -1,0 +1,13 @@
+UPLOAD-ORDER — GITHUB `hishampuncakjaya-web/RIDERKB`
+
+1. Pastikan GitHub Pages publish source ialah root repo (atau letak fail pada folder sebenar yang diterbitkan).
+2. Upload/replace `firebase-messaging-sw.js` pada root publish yang sama dengan `rider.html`.
+3. Buka `common.js`, cari modul “Push sebenar (FCM)”, dan ganti fungsi `reg(role,user)` mengikut `PATCH-common.js.txt`.
+4. Buka `vendor.html`, cari `function initVendorMap()`, ganti fungsi itu mengikut `PATCH-vendor.html.txt`.
+5. Jangan upload fail `.txt` patch sebagai fail aplikasi; ia arahan edit.
+6. Commit ke branch ujian dahulu. Tunggu GitHub Pages deployment selesai.
+7. Semak URL worker secara terus: `https://hishampuncakjaya-web.github.io/firebase-messaging-sw.js` — mesti memaparkan JavaScript, bukan 404.
+8. Uji Rider dalam Chrome Incognito: log masuk, benarkan Notification, semak console/log jika task feed masih “internal”.
+9. Uji Vendor → Edit profil → peta mesti memaparkan tile; jika kotak tile kosong tetapi pin boleh diletak, semak permintaan tile OSM/rangkaian.
+
+Jangan replace `index.js` atau `firebase-rules.json` menggunakan pakej ini. Ralat callable memerlukan log Cloud Functions sebelum patch backend selamat disediakan.

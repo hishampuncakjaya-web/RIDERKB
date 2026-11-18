@@ -1,0 +1,26 @@
+PATCH 1 — common.js (gantikan blok R.pushInit dan fungsi reg(role,user) di dalam modul “Push sebenar (FCM)”)
+
+Cari blok bermula:
+  async function reg(role,user){
+
+Gantikan fungsi reg sedia ada dengan:
+
+  async function reg(role,user){
+    try{
+      if(!ok()) return;
+      // Daftar worker FCM secara eksplisit pada root laluan aplikasi.
+      // Jangan bergantung pada auto-registration default Firebase Messaging.
+      var workerUrl = new URL('firebase-messaging-sw.js', document.baseURI);
+      var scopeUrl = new URL('./', document.baseURI);
+      var swReg = await navigator.serviceWorker.register(workerUrl.href, {scope:scopeUrl.pathname});
+      await navigator.serviceWorker.ready;
+      var tok=await firebase.messaging().getToken({vapidKey:R.cfg.vapidKey,serviceWorkerRegistration:swReg});
+      if(!tok) return;
+      cur={role:role,uid:user.uid,token:tok};
+      await R.db.ref('fcmTokens/'+role+'/'+user.uid+'/'+tok).set(Date.now());
+    }catch(e){ console.warn('MYRIDERKU FCM registration failed:',e); }
+  }
+
+JANGAN ubah fungsi R.pushCustomer atau fungsi signOut yang bersebelahan.
+
+Nota: pendaftaran eksplisit hanya berjaya jika fail `firebase-messaging-sw.js` benar-benar diterbitkan pada URL yang sama origin. Jika URL itu 404 selepas deployment, periksa GitHub Pages Source/Actions dan folder publish.

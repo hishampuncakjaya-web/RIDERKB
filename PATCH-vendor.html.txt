@@ -1,0 +1,49 @@
+PATCH 2 — vendor.html (gantikan fungsi initVendorMap() sahaja)
+
+Cari `function initVendorMap(){` dalam seksyen Profil kedai dan gantikan seluruh fungsi itu dengan:
+
+function initVendorMap(){
+  const el=$('#vendorMap');
+  if(!el){$('#serr').textContent='Ruang peta tidak ditemui.';return;}
+  if(!window.L){$('#serr').textContent='Pustaka peta Leaflet gagal dimuatkan. Semak internet atau sekatan CDN.';return;}
+  const fallback=[6.1256,102.2386],center=geo||fallback;
+  try{
+    if(!vendorMap){
+      vendorMap=L.map(el,{zoomControl:true,preferCanvas:true}).setView(center,geo?17:13);
+      const tiles=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        maxZoom:19,attribution:'&copy; OpenStreetMap',
+        errorTileUrl:''
+      });
+      let tileErrors=0;
+      tiles.on('tileerror',()=>{
+        tileErrors++;
+        if(tileErrors>=3) $('#serr').textContent='Peta asas gagal dimuatkan. Koordinat masih boleh disimpan; cuba rangkaian lain atau buka semula.';
+      });
+      tiles.on('load',()=>{ if(tileErrors===0) $('#serr').textContent=''; });
+      tiles.addTo(vendorMap);
+      vendorMap.on('click',e=>setVendorGeo(e.latlng.lat,e.latlng.lng,false));
+    } else {
+      vendorMap.setView(center,geo?17:13);
+    }
+    if(vendorPin){vendorPin.remove();vendorPin=null;}
+    if(geo){
+      vendorPin=L.marker(geo,{draggable:true}).addTo(vendorMap);
+      vendorPin.on('dragend',e=>{const p=e.target.getLatLng();geo=[p.lat,p.lng];showGeo();});
+    }
+    // Setup panel mungkin baru ditukar daripada display:none; ukur semula selepas layout stabil.
+    [80,250,600,1200].forEach(t=>setTimeout(()=>{
+      try{vendorMap.invalidateSize({pan:false});}catch(e){}
+    },t));
+    if(window.ResizeObserver && !el.__rkbMapResizeObserver){
+      el.__rkbMapResizeObserver=new ResizeObserver(()=>{
+        try{vendorMap&&vendorMap.invalidateSize({pan:false});}catch(e){}
+      });
+      el.__rkbMapResizeObserver.observe(el);
+    }
+  }catch(e){
+    $('#serr').textContent='Peta gagal dimulakan: '+(e&&e.message||'ralat tidak diketahui');
+    console.error('MYRIDERKU vendor map:',e);
+  }
+}
+
+Nota: jika tile OpenStreetMap disekat oleh rangkaian, kotak peta mungkin kekal kosong walaupun Leaflet dan koordinat berfungsi. Patch ini memaparkan amaran dan membetulkan isu peta yang diinisialisasi ketika panel masih tersembunyi; ia tidak boleh memaksa penyedia tile luar talian.
