@@ -1,0 +1,7 @@
+functions/index.js: PASS
+
+v81-callables.js: PASS
+
+static-check.js: PASS
+PASS: required files, callable declarations and package metadata found.
+NOTE: this is a static check, not an Emulator or live Firebase test.
