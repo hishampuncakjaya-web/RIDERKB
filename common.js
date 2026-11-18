@@ -241,12 +241,16 @@
   async function reg(role,user){
     try{
       if(!ok()) return;
-      var sw=await navigator.serviceWorker.ready;
-      var tok=await firebase.messaging().getToken({vapidKey:R.cfg.vapidKey,serviceWorkerRegistration:sw});
+      // Register the FCM worker explicitly at the application root.
+      var workerUrl=new URL('firebase-messaging-sw.js',document.baseURI);
+      var scopeUrl=new URL('./',document.baseURI);
+      var swReg=await navigator.serviceWorker.register(workerUrl.href,{scope:scopeUrl.pathname});
+      await navigator.serviceWorker.ready;
+      var tok=await firebase.messaging().getToken({vapidKey:R.cfg.vapidKey,serviceWorkerRegistration:swReg});
       if(!tok) return;
       cur={role:role,uid:user.uid,token:tok};
       await R.db.ref('fcmTokens/'+role+'/'+user.uid+'/'+tok).set(Date.now());
-    }catch(e){ console.warn('push',e) }
+    }catch(e){ console.warn('MYRIDERKU FCM registration failed:',e); }
   }
   // pelanggan (tanpa log masuk): token dikaitkan dengan id order, dibuang bila order selesai/batal oleh Cloud Function
   R.pushCustomer=function(id){

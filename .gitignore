@@ -1,0 +1,16 @@
+node_modules/
+functions/node_modules/
+.firebase/
+.netlify/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+service-account*.json
+*-service-account*.json
+firebase-debug.log
+firestore-debug.log
+*.log
+.DS_Store
+Thumbs.db

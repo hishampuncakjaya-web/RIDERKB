@@ -1,0 +1,502 @@
+[
+  {
+    "path": "CLOUDINARY-SETUP-MYRIDERKU.txt",
+    "bytes": 1939,
+    "sha256": "052268b6ec433d8f3df5bb4f229090ef5ed7ffe8812965a1fc90e60327ddedb2"
+  },
+  {
+    "path": "CUSTOMER_LOGIN_PRIVATE_NODES_RULES_SNIPPET.json",
+    "bytes": 319,
+    "sha256": "beb13ac1284afc8be642ac2fc93e9dc72c6f347c20d917104a5dd76fee7e9d29"
+  },
+  {
+    "path": "CUSTOMER_SECURE_LOGIN_V82_README_MS.md",
+    "bytes": 4339,
+    "sha256": "8a6f724ab0ca4eb9b9fc94b94ad7d041d8e6d2daee7f45918ad29e309b45eec9"
+  },
+  {
+    "path": "DEPLOYMENT_NOTES_V86_MS.txt",
+    "bytes": 1680,
+    "sha256": "97ef348b76faccbf4d69083fa114054f57e56958b32bdbf18dd7376074200cd2"
+  },
+  {
+    "path": "QA_CHECKLIST_V86_MS.txt",
+    "bytes": 2382,
+    "sha256": "41031b6342b26c57c31ab848b98a9615fddaa527a010d35f5f92c652327b4b3a"
+  },
+  {
+    "path": "README_ADMIN_RADAR_V65.txt",
+    "bytes": 876,
+    "sha256": "0503c34e746ac6b51261302cefe41e8c1a605da22a615b453703e8af8fe8ab18"
+  },
+  {
+    "path": "README_MASCOT_UI_V2.txt",
+    "bytes": 932,
+    "sha256": "c6402a9a487480793f79715bcc22425f238e4030d2a07c37b2cd3e6404792d54"
+  },
+  {
+    "path": "README_V64_UI_POLISH.txt",
+    "bytes": 657,
+    "sha256": "7a1067facb0d16e9f91c54bc7c451b09de553bc9973f64213b689729e087d68a"
+  },
+  {
+    "path": "README_V66_FIX_SATU_BAYARAN.txt",
+    "bytes": 917,
+    "sha256": "ba9e5acbf70e83321f179399b1e9c3269ad128e2324bceca6f6099cfaef8e0ff"
+  },
+  {
+    "path": "README_V66_PREMIUM_UI.txt",
+    "bytes": 942,
+    "sha256": "d8cf9a663f7008f968ae9908cf77bbb2aa9c585cf294b6bce2222046a5028c81"
+  },
+  {
+    "path": "README_V67_POLISI_HARGA.txt",
+    "bytes": 2694,
+    "sha256": "60ff814bbfe0066d685a854f5f592ed705d716141564d312752db81ad7c800a5"
+  },
+  {
+    "path": "README_V70_PAPARAN_KEWANGAN.txt",
+    "bytes": 1639,
+    "sha256": "b3f52ffe64f9fafff85d83770c1ce2d1c416b734873a3763ea54e8a38db146e3"
+  },
+  {
+    "path": "README_V72_PREMIUM_POLISH.txt",
+    "bytes": 914,
+    "sha256": "e28c103264422867c50756fd6d63f644b58f5578088bc881a29e5cf55b55c619"
+  },
+  {
+    "path": "README_V73_CERIA_MULTIPAGE.txt",
+    "bytes": 1057,
+    "sha256": "7d80e6156ad48ac9c6f64741f586f46027f212f634575e0205733b8d2fdebd9a"
+  },
+  {
+    "path": "README_V75_REDESIGN.txt",
+    "bytes": 1088,
+    "sha256": "85c670658e5ba4ea26fccf07eb806f69c2f9cb2b91dd7788d92229866e80e47f"
+  },
+  {
+    "path": "README_V76_HEALTH_CHECK.txt",
+    "bytes": 1134,
+    "sha256": "d996b143b697d9fa29d694a65cabe4381e14f8711cde2e1030b78fb6d1d904b0"
+  },
+  {
+    "path": "README_V77_MATRIX_MAINTENANCE.txt",
+    "bytes": 2475,
+    "sha256": "f1a0e0b4c3c25fc987bbee575e66d5c133d7433450ccf89f464d737ad2371041"
+  },
+  {
+    "path": "README_V78_AISYAH_CUSTOM_ALERTS.txt",
+    "bytes": 1202,
+    "sha256": "8e7106ec23f841725d258e1d024fe2f4c0436ec6d52d2116c111a57c23b0cd5c"
+  },
+  {
+    "path": "README_V79_MINIMAL_CERIA_PROFESIONAL.txt",
+    "bytes": 1153,
+    "sha256": "5f7d83b01b0b17eeb73fffd95d7c1f1f0bc12f0376e9ae34b5ad8abbff82fdc8"
+  },
+  {
+    "path": "README_V80_VENDOR_FIXED_LOCATION.txt",
+    "bytes": 1261,
+    "sha256": "5b8e43f64376078793787cb3b5c3ba7e74a110fdfe21d644e2c2915d989c6d19"
+  },
+  {
+    "path": "README_V81_NEXT_PATCH_MS.txt",
+    "bytes": 1678,
+    "sha256": "4f5393c5d22b2b47e361fa7f9370220534b6b899ffea57005345f20e7ca47c64"
+  },
+  {
+    "path": "README_V81_NEXT_STAGE_MS.txt",
+    "bytes": 1852,
+    "sha256": "7cb02d4781e1924bf57370725166f96d7d7cfa0772303fa799c96e93fd0c694d"
+  },
+  {
+    "path": "README_V89_MASTER_BUILD_MS.md",
+    "bytes": 2540,
+    "sha256": "9555baabb9d21133ca60ac7e66eef3553070103417e587fdb0a70a746e32c402"
+  },
+  {
+    "path": "README_WALLET_SINGLE_V63.txt",
+    "bytes": 1939,
+    "sha256": "09e50ddd9c50a9c052fd67f92ea988e37eb8c8c703cbc8c5c673e13d69d85baa"
+  },
+  {
+    "path": "V85_3_INTEGRATION_AUDIT_MS.md",
+    "bytes": 2682,
+    "sha256": "7efb4b1ae87e29d63f43ae739650d5dcdb8141f9476af8e9651a17128d1d50cc"
+  },
+  {
+    "path": "V85_3_STATIC_CHECKS.json",
+    "bytes": 888,
+    "sha256": "46753fed85954f68d856a7fcc663f7f794e91ea2ed382c29b97a15cf3f24f525"
+  },
+  {
+    "path": "V86_SMART_AUTO_NOTES_MS.txt",
+    "bytes": 1723,
+    "sha256": "fdb85de76e16193b443e99924196b41b4ecc23ac539633fe727f5968ef838ab3"
+  },
+  {
+    "path": "V88_AUDIT_AND_PATCH_MS.md",
+    "bytes": 2407,
+    "sha256": "2b62d1a9221072ad645c883c8303ea16b9eb4ab68ac3c516f7d1b44a92b8f680"
+  },
+  {
+    "path": "V89_BUILD_QA_REPORT.json",
+    "bytes": 1907,
+    "sha256": "61811c8de72816a1fd96ff065206e53878531caf0e948056476cd754911a12a5"
+  },
+  {
+    "path": "WHATSAPP_CLOUD_API_SETUP_MS.md",
+    "bytes": 4497,
+    "sha256": "6e867232e66118441afb64a3aa168d253ad30e542f18df92db32ea8f541af076"
+  },
+  {
+    "path": "WHATSAPP_OTP_RTDB_RULES_SNIPPET.json",
+    "bytes": 239,
+    "sha256": "161ba4f6ae9283f71771ac323e8f3e2aa65f6973fcc75431bd2ab6478e77cc6f"
+  },
+  {
+    "path": "_headers",
+    "bytes": 271,
+    "sha256": "c5a27a52bee41d3690179bd44b8c60ab1ac78059a4e67b4ae490908bc3cce19d"
+  },
+  {
+    "path": "admin.html",
+    "bytes": 56444,
+    "sha256": "75fbeceab0bf08d6de86909b85e24599728e82928529c9d34a3f57861e8674cc"
+  },
+  {
+    "path": "app.css",
+    "bytes": 6526,
+    "sha256": "4f8624c29819a224d7b55ab9ecf0f0b7e59b9dc0b75faff5cd316b271aa36c2e"
+  },
+  {
+    "path": "apple-touch-icon-admin.png",
+    "bytes": 70396,
+    "sha256": "aa906ec96d3a1d5673be76e3f933d6e99c1579c750fe8e22fca1cb654930cb23"
+  },
+  {
+    "path": "apple-touch-icon-customer.png",
+    "bytes": 69873,
+    "sha256": "f6acd76f064a3241e5945ca987b6ad2374d22dfa964feb2a8a328d7d3119f945"
+  },
+  {
+    "path": "apple-touch-icon-rider.png",
+    "bytes": 73412,
+    "sha256": "cb41368610d040ebb777657fe6733a9e3e0c8fe80707ce4ef4b85313f7080723"
+  },
+  {
+    "path": "apple-touch-icon-vendor.png",
+    "bytes": 68672,
+    "sha256": "6a484b0bed8d8c69bf038e051749d238cdca0a06a2ffe8071dc2476cbf1e1768"
+  },
+  {
+    "path": "apple-touch-icon.png",
+    "bytes": 18409,
+    "sha256": "5765523b43ff7033cf2d3f8531b3d9af039e13fdbeb37981a426275aa42087d2"
+  },
+  {
+    "path": "cloudinary-config.js",
+    "bytes": 197,
+    "sha256": "371e7154f6219eddd9e6273f5c19b29131c77cc9e3591724ec7c4aca414ebeec"
+  },
+  {
+    "path": "common.js",
+    "bytes": 31730,
+    "sha256": "369bba32d937b91ae672041885ba72e94455f8e2352c18a3a1a63f3b791334ae"
+  },
+  {
+    "path": "customer-rewards.html",
+    "bytes": 8177,
+    "sha256": "1641214a00c7312ded62bbebe662914f1aad4aeeeb6d87fd62c2f8fe173a1bc7"
+  },
+  {
+    "path": "customer-shop.html",
+    "bytes": 27935,
+    "sha256": "5f519a392302d96cf93fa6e09db400f657405f230fee3d59f8e69dfb18118f61"
+  },
+  {
+    "path": "customer-track.html",
+    "bytes": 22192,
+    "sha256": "99ec3cd961a5902f8f5e6b39f24c10d71f4cd8b52de249b711a1a352acd78e17"
+  },
+  {
+    "path": "customer.html",
+    "bytes": 66831,
+    "sha256": "c4abe0c7701c7c7e85491414190eddca813abf12aa618ac63b08a5802acd9ae6"
+  },
+  {
+    "path": "database.rules.V85_3_CANDIDATE.json",
+    "bytes": 7330,
+    "sha256": "baf541d20176ae53fa53cb9f0191ad46ec43a7e37a72d39ce0dd3c433c0c7312"
+  },
+  {
+    "path": "firebase-config.js",
+    "bytes": 2128,
+    "sha256": "6ce5b79840b07c22424f986c3576d63ca9023ff657fc1e054542f631ce52eeb6"
+  },
+  {
+    "path": "firebase-messaging-sw.js",
+    "bytes": 1454,
+    "sha256": "2a63afff4a0dd2b783e96fa91101090a2d5c4f00ae1bb44844572464ae5e1de6"
+  },
+  {
+    "path": "functions/index.js",
+    "bytes": 30637,
+    "sha256": "15f6a1825b566be56f117437ab50f175508b27c4d04ee27a47a07f195d6579c4"
+  },
+  {
+    "path": "functions/package.json",
+    "bytes": 210,
+    "sha256": "2c8430a6ed82c5d72831ea711509117fbe937629446842908f428f541997ef19"
+  },
+  {
+    "path": "health-check.css",
+    "bytes": 5967,
+    "sha256": "a62685a72a20bbe5acef8e347c1590b16f2364dd080409e3bcb60f7f9cc0a470"
+  },
+  {
+    "path": "health-check.js",
+    "bytes": 16943,
+    "sha256": "f08ccc8f045cb6925f6c127ff654983b2cf251a009ba2cb9a3ce3205bb3ebb8b"
+  },
+  {
+    "path": "icon-192.png",
+    "bytes": 19752,
+    "sha256": "f7cb3a0070312709d4618c1f596e0b4257f99d77c2706c988ea12bb06f21412a"
+  },
+  {
+    "path": "icon-512.png",
+    "bytes": 60197,
+    "sha256": "df0664c4c4f5368a492bc8753e709547ec73ece887b1c1acaf579453f5699eb1"
+  },
+  {
+    "path": "icon-admin-192.png",
+    "bytes": 70396,
+    "sha256": "aa906ec96d3a1d5673be76e3f933d6e99c1579c750fe8e22fca1cb654930cb23"
+  },
+  {
+    "path": "icon-admin-512.png",
+    "bytes": 388253,
+    "sha256": "55b0f1c9e09f19f0a34b65e7dce65b28e98991af4765826032736d377122d686"
+  },
+  {
+    "path": "icon-admin-maskable-512.png",
+    "bytes": 278712,
+    "sha256": "cd35e508e91c9595dcb3c61ebaa3c9c304b652c5c5cace4038ef732d13282373"
+  },
+  {
+    "path": "icon-customer-192.png",
+    "bytes": 69873,
+    "sha256": "f6acd76f064a3241e5945ca987b6ad2374d22dfa964feb2a8a328d7d3119f945"
+  },
+  {
+    "path": "icon-customer-512.png",
+    "bytes": 382634,
+    "sha256": "fecd190203aac51cd15656da5f911454f73bfd57de39060bcb871807ffe71087"
+  },
+  {
+    "path": "icon-customer-maskable-512.png",
+    "bytes": 276129,
+    "sha256": "2528795ed1d7a3a0161aface97da9852d63108dc4428a63e350327e851d7f654"
+  },
+  {
+    "path": "icon-rider-192.png",
+    "bytes": 73412,
+    "sha256": "cb41368610d040ebb777657fe6733a9e3e0c8fe80707ce4ef4b85313f7080723"
+  },
+  {
+    "path": "icon-rider-512.png",
+    "bytes": 398804,
+    "sha256": "2e57127c92941871992e242ef69d27975a89fe0baf1255de7c578fc0862a5a96"
+  },
+  {
+    "path": "icon-rider-maskable-512.png",
+    "bytes": 288546,
+    "sha256": "4dc634301f7c63b4479d67db09b71eedfc684ebba2ce385ed564da4375f7a956"
+  },
+  {
+    "path": "icon-vendor-192.png",
+    "bytes": 68672,
+    "sha256": "6a484b0bed8d8c69bf038e051749d238cdca0a06a2ffe8071dc2476cbf1e1768"
+  },
+  {
+    "path": "icon-vendor-512.png",
+    "bytes": 373374,
+    "sha256": "78d6af3c055e55fd05bbc5cd093c2a81ce376510680b22ecfedc403af8fc0828"
+  },
+  {
+    "path": "icon-vendor-maskable-512.png",
+    "bytes": 269738,
+    "sha256": "cf6c0e8a2be954747bd6378856c304a95b8f34b2a1724f5c8d5198f08f8f842c"
+  },
+  {
+    "path": "index.html",
+    "bytes": 1029,
+    "sha256": "75c267c80b3f0f237dcfd80f91060b4bb8be9ac8acca370fd3d43c0558c70ba8"
+  },
+  {
+    "path": "manifest-admin.webmanifest",
+    "bytes": 751,
+    "sha256": "8d5a644c3d36e8b8dd5b304d4c55ebdb59156c23ba656d446c17235b645d3616"
+  },
+  {
+    "path": "manifest-rider.webmanifest",
+    "bytes": 757,
+    "sha256": "cecea9875681010f1e548c92d3411b68a6c4d0e6a155fe1fbca22bb02d57d013"
+  },
+  {
+    "path": "manifest-vendor.webmanifest",
+    "bytes": 758,
+    "sha256": "5090381290a3123fe0ac3713c55f71a3f3665baebc7bc3bd6b53ce31b6f9401e"
+  },
+  {
+    "path": "manifest.webmanifest",
+    "bytes": 772,
+    "sha256": "81b9076160f2236834edc1722024ec5229a9355bb14be90d04c3fadfb91e9da6"
+  },
+  {
+    "path": "map-controls.js",
+    "bytes": 2777,
+    "sha256": "ed7b5858197e605c3d267d3f7fd51c4c5c72e13cbe4c872b4e9211ae7272726f"
+  },
+  {
+    "path": "myriderku-admin-radar-v65.css",
+    "bytes": 2639,
+    "sha256": "8351f2c14fc687282693368bf846f7397d186f3692389098274be4a37d705018"
+  },
+  {
+    "path": "myriderku-admin-v42.css",
+    "bytes": 3939,
+    "sha256": "fb9dc77b77186b6fc39047f77b94095f178c10316fd9a5556db7354994018a73"
+  },
+  {
+    "path": "myriderku-brand.css",
+    "bytes": 8389,
+    "sha256": "18e3cf4ae7a788b5e787214fe2d2f1b85233fb51f8907c17cda4258fba064ed2"
+  },
+  {
+    "path": "myriderku-ceria.css",
+    "bytes": 6403,
+    "sha256": "4315e7d4b25674733c9b0faea6b7784c355a058df4564fa2dc29bb679b4bb435"
+  },
+  {
+    "path": "myriderku-mascot-v2.css",
+    "bytes": 6385,
+    "sha256": "d816753cf33a159511f42442b28979c7bfd2fb9acf234b7e8e28d7d735a21244"
+  },
+  {
+    "path": "myriderku-standard.css",
+    "bytes": 1700,
+    "sha256": "dad833542aa952496981b86f6c84410150b10e0325d1d7c5a212e3f3dcb1321e"
+  },
+  {
+    "path": "myriderku-standard.js",
+    "bytes": 417,
+    "sha256": "37db04f18e225c1b8e0d926bd1ef987d2d880d9581b35c59a97b72df60c1ffcc"
+  },
+  {
+    "path": "myriderku-ui.css",
+    "bytes": 5301,
+    "sha256": "77c1aa72d960e53546ffd1c59760ab7df2f0bd24c869103145e2f6fb06a52c21"
+  },
+  {
+    "path": "myriderku-v37.css",
+    "bytes": 6811,
+    "sha256": "2b5352667267ec7c63de10301b30686e73e64314365bc5491c521be2b6e9289c"
+  },
+  {
+    "path": "myriderku-v38-design.css",
+    "bytes": 17137,
+    "sha256": "240d7e4eafa779c63fe36a9a9fe93c8b2e08b6c566317f80996460ee0a4a61f7"
+  },
+  {
+    "path": "myriderku-v41-fixes.css",
+    "bytes": 4284,
+    "sha256": "68b50fec274b6916f42018ed5646a6461139065b965a171a75c1f2075d34f7a9"
+  },
+  {
+    "path": "myriderku-v43-complete.css",
+    "bytes": 13120,
+    "sha256": "3c314922f42bc6170b750af27cce4f440565d167fd0dbca6ee4bcf3296fd8fdd"
+  },
+  {
+    "path": "myriderku-v52-fixes.css",
+    "bytes": 845,
+    "sha256": "f32ab54197770ccf8f413b9daed62b388bdbd827a9b1104a435072d5d767b88c"
+  },
+  {
+    "path": "myriderku-v64-polish.css",
+    "bytes": 4422,
+    "sha256": "f3a05530ddbb16790a578194c83688cbcac280117ffee98c69af707823700930"
+  },
+  {
+    "path": "myriderku-v66-premium-ui.css",
+    "bytes": 4754,
+    "sha256": "ae9511410b4b0c85feeea1f0aef2a4d841bf83114f46cc11560743afdab72364"
+  },
+  {
+    "path": "myriderku-v72-premium-polish.css",
+    "bytes": 6250,
+    "sha256": "27d5f23ca7a19533aaece21d87dbc97c388ddfa91cb69da428301717fc397489"
+  },
+  {
+    "path": "myriderku-v73-ceria-multipage.css",
+    "bytes": 7400,
+    "sha256": "af99c8903a377ecfada195f19d4d24423584313cab76d685168cf278c43b33b6"
+  },
+  {
+    "path": "myriderku-v75-role-redesign.css",
+    "bytes": 10329,
+    "sha256": "7c9d18b61c1b7280952ed3eab4ea675998c119098336004b28c6f6f38963cb62"
+  },
+  {
+    "path": "myriderku-v87-fixes.css",
+    "bytes": 2598,
+    "sha256": "3d3d5393a51cd95219b27157efee28b5c16385cc7a112e5178165fcbdfe4cb3b"
+  },
+  {
+    "path": "repair.html",
+    "bytes": 11060,
+    "sha256": "5d595f5fc6aa8dce4f081f03eee7c907cbe51d3e844b29479b5d54a139ce6566"
+  },
+  {
+    "path": "rider-alert-aisyah.wav",
+    "bytes": 129210,
+    "sha256": "d5f1fd253a918a8de9bd4b93a57a28556bbceb60c34f93772d5aaeaf825530a1"
+  },
+  {
+    "path": "rider.html",
+    "bytes": 42514,
+    "sha256": "53e12bb158183b7eb4a6cd25730ded3ee57562d2c9900c29600b6d11f491c589"
+  },
+  {
+    "path": "sw.js",
+    "bytes": 4289,
+    "sha256": "b341f90286e47f8039ab6b12972237417be766bf60069ba302f3a3d6558c6277"
+  },
+  {
+    "path": "theme.css",
+    "bytes": 6861,
+    "sha256": "2d0529c897758008c2f87ec1fb31a32a4f7fa409dfc916d566b220c0ddda191b"
+  },
+  {
+    "path": "theme.js",
+    "bytes": 1540,
+    "sha256": "29c015420f0e22edab506bc6e5ae308133ae59aa49ecd585c07756bb488c5958"
+  },
+  {
+    "path": "v81-callables.js",
+    "bytes": 2395,
+    "sha256": "8cfb75f8c29e5890140406fe56a7951a66929b9027d89cb7b39de1b29e78e996"
+  },
+  {
+    "path": "vendor-order-aisyah.wav",
+    "bytes": 238650,
+    "sha256": "e6efb7b927e92bc133055d552cfc94db9c97129332eddc1d93d14387cce66aca"
+  },
+  {
+    "path": "vendor.html",
+    "bytes": 42090,
+    "sha256": "78ba0cf069dcf5bf42251bf75208011117a9deb564154c11adca2aa56acb19be"
+  }
+]

@@ -1,0 +1,80 @@
+{
+  "zip_integrity": "PASS",
+  "json": {
+    "manifest.webmanifest": "PASS",
+    "manifest-admin.webmanifest": "PASS",
+    "manifest-vendor.webmanifest": "PASS",
+    "V85_3_STATIC_CHECKS.json": "PASS",
+    "WHATSAPP_OTP_RTDB_RULES_SNIPPET.json": "PASS",
+    "database.rules.V85_3_CANDIDATE.json": "PASS",
+    "CUSTOMER_LOGIN_PRIVATE_NODES_RULES_SNIPPET.json": "PASS",
+    "manifest-rider.webmanifest": "PASS",
+    "functions/package.json": "PASS"
+  },
+  "node_syntax": {
+    "myriderku-standard.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "map-controls.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "firebase-config.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "common.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "sw.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "health-check.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "cloudinary-config.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "firebase-messaging-sw.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "v81-callables.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "theme.js": {
+      "status": "PASS",
+      "stderr": ""
+    },
+    "functions/index.js": {
+      "status": "PASS",
+      "stderr": ""
+    }
+  },
+  "static_assertions": {
+    "vendor_map_repair_present": true,
+    "explicit_fcm_worker_registration_present": true,
+    "map_controls_included": true,
+    "functions_backend_included": true,
+    "firebase_project_preserved": true,
+    "vapid_key_configured": false
+  },
+  "live_tests": "NOT_RUN",
+  "inline_html_script_syntax": {
+    "index.html": "PASS",
+    "customer.html": "PASS",
+    "customer-shop.html": "PASS",
+    "customer-track.html": "PASS",
+    "rider.html": "PASS",
+    "vendor.html": "PASS",
+    "admin.html": "PASS",
+    "repair.html": "PASS",
+    "customer-rewards.html": "PASS"
+  }
+}
