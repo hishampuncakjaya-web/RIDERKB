@@ -412,11 +412,43 @@ exports.createCustomerOrder = onCall({ region: REGION }, async (req) => {
   const cfg=await db.ref("publicConfig/walletMinCash").once("value"),minCash=Math.max(0,Number(cfg.val())||0),need=pay==="cash"?Math.round((minCash+itemEst)*100)/100:0;
   const now=Date.now(),ref=text(src.ref,30)||("RKB-"+orderId.slice(0,4).toUpperCase());
   const order={ref,createdAt:now,status:"baru",customerUid:uid,service,vehicle,pick,drop,notes:text(src.notes,600),name:customer.name,km:Math.round(km*10)/10,rain,rainFee:rain?2:0,price,pay,itemEst,need,riderPay:Math.round(price*80)/100};
-  const phoneKey=customer.phone.replace(/[^0-9]/g,""); const contact={customerUid:uid,phone:customer.phone,phoneKey,recv:text(ci.recv,100)},limitRef=db.ref("ratelimit/"+phoneKey);
-  const lock=await limitRef.transaction(last=>{if(last&&now-Number(last)<30000)return;return now;});
+  const phoneKey=customer.phone.replace(/[^0-9]/g,"");
+  const contact={customerUid:uid,phone:customer.phone,phoneKey,recv:text(ci.recv,100)};
+  const limitRef=db.ref("ratelimit/"+phoneKey);
+  const lock=await limitRef.transaction(last=>{
+    if(last&&now-Number(last)<30000)return;
+    return now;
+  });
   if(!lock.committed)throw new HttpsError("resource-exhausted","Sila tunggu 30 saat sebelum menghantar tempahan baharu.");
-  try{const updates={};updates["orders/"+orderId]=order;updates["orderContacts/"+orderId]=contact;await db.ref().update(updates);}
-  catch(e){await limitRef.set(0);throw new HttpsError("internal","Pesanan tidak dapat disimpan. Sila cuba semula.");}
+
+  // Claim each order ID atomically; never overwrite an existing order.
+  const orderRef=db.ref("orders/"+orderId);
+  let orderClaimed=false;
+  try{
+    const claim=await orderRef.transaction(current=>{
+      if(current!==null)return;
+      return order;
+    });
+    if(!claim.committed){
+      throw new HttpsError("already-exists","ID pesanan telah digunakan. Sila jana ID pesanan baharu.");
+    }
+    orderClaimed=true;
+    await db.ref("orderContacts/"+orderId).set(contact);
+  }catch(e){
+    if(orderClaimed){
+      try{
+        await orderRef.transaction(current=>{
+          if(current&&current.customerUid===uid&&current.createdAt===now&&current.status==="baru")return null;
+          return;
+        });
+      }catch(cleanupError){
+        console.error("Unable to roll back incomplete customer order",orderId,cleanupError);
+      }
+    }
+    if(e instanceof HttpsError)throw e;
+    console.error("Customer order persistence failed",orderId,e);
+    throw new HttpsError("internal","Pesanan tidak dapat disimpan. Sila cuba semula.");
+  }
   return{ok:true,orderId,ref,price,status:"baru"};
 });
 
