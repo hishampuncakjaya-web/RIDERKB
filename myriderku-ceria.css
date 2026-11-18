@@ -1,50 +1,19 @@
-/* Gaya CERIA (happy go lucky). Hanya aktif bila <html data-style="ceria">. Klasik = tanpa fail ini. */
-html[data-style="ceria"]{--cy:#ffd93d;--cp:#ff5d8f;--co:#ff9f1c;--cb:#4d96ff;--cg:#2ecc71;--cv:#8e5bff;--ink:#2b2350}
-@keyframes cBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes cWig{0%,100%{transform:rotate(0)}25%{transform:rotate(-2.5deg)}75%{transform:rotate(2.5deg)}}
-html[data-style="ceria"] h1,html[data-style="ceria"] h2,html[data-style="ceria"] h3,html[data-style="ceria"] .btn,html[data-style="ceria"] .tag,html[data-style="ceria"] .stat b,html[data-style="ceria"] .price b,html[data-style="ceria"] .big{font-family:"Fredoka","Baloo 2",ui-rounded,system-ui,sans-serif}
-/* Header ceria */
-html[data-style="ceria"] .hd{background:radial-gradient(circle at 12% 30%,rgba(255,255,255,.28) 0 6px,transparent 7px),radial-gradient(circle at 82% 22%,rgba(255,217,61,.55) 0 10px,transparent 11px),radial-gradient(circle at 92% 78%,rgba(255,255,255,.25) 0 7px,transparent 8px),linear-gradient(130deg,#ff9f1c,#ff5d8f 58%,#8e5bff)!important;border-radius:0 0 38px 38px!important;border:0!important;box-shadow:0 8px 0 rgba(43,35,80,.14)}
-html[data-style="ceria"] .hd::after{background:radial-gradient(circle,rgba(255,255,255,.3),transparent 68%)}
-html[data-style="ceria"] .hd h1{text-shadow:0 3px 0 rgba(43,35,80,.22);font-size:28px!important}
-html[data-style="ceria"] .tag{background:var(--cy)!important;color:#5a3a00!important;border:2px solid var(--ink)!important;font-weight:700}
-html[data-style="ceria"] .hbtn{background:#fff;color:var(--ink);border:2px solid var(--ink);box-shadow:0 3px 0 var(--ink);border-radius:99px}
-#styBtn{position:absolute;right:14px;bottom:10px;width:38px;height:38px;border-radius:50%;border:2px solid rgba(255,255,255,.7);background:rgba(255,255,255,.25);color:#fff;font-size:18px;line-height:1;padding:0;cursor:pointer;z-index:3}
-/* Latar & kad: stiker berbucu tebal */
-html[data-style="ceria"] body:not(.role-admin){background:radial-gradient(#ffe7a0 2px,transparent 2.5px) 0 0/24px 24px,#fff9e8;color:var(--ink);font-family:"Fredoka",system-ui,sans-serif;font-weight:500}
-html[data-style="ceria"] body:not(.role-admin) .card,html[data-style="ceria"] body:not(.role-admin) .sum,html[data-style="ceria"] body:not(.role-admin) .nb,html[data-style="ceria"] body:not(.role-admin) .stat{background:#fff;border:2.5px solid var(--ink);border-radius:26px;box-shadow:0 5px 0 var(--ink)}
-html[data-style="ceria"] body:not(.role-admin) .mut,html[data-style="ceria"] body:not(.role-admin) .sm{color:#6b6490}
-html[data-style="ceria"] body:not(.role-admin) h2{color:var(--ink);font-weight:700}
-/* Butang bulat timbul */
-html[data-style="ceria"] .btn{border:2.5px solid var(--ink)!important;border-radius:99px!important;box-shadow:0 5px 0 var(--ink)!important;text-shadow:none!important;background:linear-gradient(135deg,var(--cp),var(--co))!important;color:#fff!important;transition:transform .1s,box-shadow .1s}
-html[data-style="ceria"] .btn.grn,html[data-style="ceria"] .btn.wa{background:linear-gradient(135deg,#27ae60,#6bdc8b)!important}
-html[data-style="ceria"] .btn.blu{background:linear-gradient(135deg,#3b82f6,#7cb4ff)!important}
-html[data-style="ceria"] .btn.gry{background:#fff!important;color:var(--ink)!important}
-html[data-style="ceria"] .btn:active{transform:translateY(4px)!important;box-shadow:0 1px 0 var(--ink)!important}
-html[data-style="ceria"] body:not(.role-admin) .bar .btn,html[data-style="ceria"] body:not(.role-admin) .btn.full{animation:cBob 2.2s ease-in-out infinite;font-size:18px;letter-spacing:.02em}
-/* Servis berwarna-warni */
-html[data-style="ceria"] body:not(.role-admin) .svc{border:2.5px solid var(--ink);border-radius:24px;box-shadow:0 4px 0 var(--ink);color:var(--ink);font-weight:700;background:#fff}
-html[data-style="ceria"] .svc:nth-child(4n+1){background:#fff1b8}
-html[data-style="ceria"] .svc:nth-child(4n+2){background:#ffd6e3}
-html[data-style="ceria"] .svc:nth-child(4n+3){background:#d3e6ff}
-html[data-style="ceria"] .svc:nth-child(4n+4){background:#d4f7dc}
-html[data-style="ceria"] body:not(.role-admin) .svc.on{border:3px solid var(--ink);box-shadow:0 7px 0 var(--cp);animation:cWig .6s ease 1}
-/* Harga, langkah, label, input */
-html[data-style="ceria"] body:not(.role-admin) .price{background:var(--cy);border:2.5px solid var(--ink);border-radius:26px;box-shadow:0 5px 0 var(--ink)}
-html[data-style="ceria"] body:not(.role-admin) .price b{color:var(--ink);font-size:38px}
-html[data-style="ceria"] .steps .on,html[data-style="ceria"] .steps .active{background:var(--cp)!important;border-color:var(--ink)!important;color:#fff!important}
-html[data-style="ceria"] body:not(.role-admin) .badge,html[data-style="ceria"] body:not(.role-admin) .chip{background:#e8dcff;color:var(--ink);border:2px solid var(--ink);font-weight:700}
-html[data-style="ceria"] body:not(.role-admin) .tab{border:2px solid var(--ink);color:var(--ink);font-weight:700;background:#fff}
-html[data-style="ceria"] body:not(.role-admin) .tab.on{background:var(--cb);color:#fff;border-color:var(--ink)}
-html[data-style="ceria"] body:not(.role-admin) input,html[data-style="ceria"] body:not(.role-admin) textarea,html[data-style="ceria"] body:not(.role-admin) select{background:#fff;border:2.5px solid var(--ink);border-radius:20px;color:var(--ink)}
-html[data-style="ceria"] body:not(.role-admin) input:focus,html[data-style="ceria"] body:not(.role-admin) textarea:focus{outline:4px solid rgba(255,93,143,.35);border-color:var(--cp)}
-html[data-style="ceria"] body:not(.role-admin) .nav{background:#fff;border-top:3px solid var(--ink)}
-html[data-style="ceria"] body:not(.role-admin) .nav button.on{background:var(--cy);color:var(--ink);border-radius:99px}
-html[data-style="ceria"] .ridercard{background:linear-gradient(150deg,#fff,#fff6d6)!important}
-html[data-style="ceria"] .ridercard #earn{background:#d4f7dc;border:2px solid var(--ink)}
-html[data-style="ceria"] .ridercard #wal{background:#fff1b8;border:2px solid var(--ink)}
-/* Admin kekal gelap, tapi berwarna-warni */
-html[data-style="ceria"] body.role-admin .stat{border:2.5px solid var(--ac);border-left-width:6px;border-radius:24px}
-html[data-style="ceria"] body.role-admin .btn{color:#fff!important}
-html[data-style="ceria"] body.role-admin .tab.on{background:var(--cy);color:var(--ink)}
-@media(prefers-reduced-motion:reduce){html[data-style="ceria"] *{animation:none!important}}
+
+body { font-family: sans-serif; background-color: #f8f9fa; color: #1a1a1a; margin: 0; padding: 0; }
+.container { max-width: 600px; margin: auto; padding: 16px; }
+.card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 20px; margin-bottom: 16px; }
+.btn { display: inline-block; padding: 12px 20px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; cursor: pointer; text-align: center; text-decoration: none; }
+.btn-warning { background-color: #f59e0b; color: #ffffff; }
+.btn-primary { background-color: #3b82f6; color: #ffffff; }
+.btn-secondary { background-color: #6b7280; color: #ffffff; }
+.btn-success { background-color: #10b981; color: #ffffff; }
+.btn-dark { background-color: #1f2937; color: #ffffff; }
+.btn-outline-primary { background: transparent; border: 1px solid #3b82f6; color: #3b82f6; }
+.w-100 { width: 100%; }
+.form-control { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; margin-top: 4px; margin-bottom: 12px; }
+.text-center { text-align: center; }
+.text-muted { color: #6b7280; }
+.small { font-size: 0.875rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mt-3 { margin-top: 1rem; }
+.py-5 { padding-top: 3rem; padding-bottom: 3rem; }
