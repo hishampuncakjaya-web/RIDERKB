@@ -121,8 +121,7 @@ else{
     if(o.arrivedAt&&!prevArr&&wasSt!==null&&o.status==='diterima') notify('MYRIDERKU · #'+o.ref,'Rider dah sampai di lokasi ambil 📍');
     prevArr=o.arrivedAt||null;
     $('#again2').classList.toggle('hide',!over); drawConf(); drawRate(); loadProof(); drawPayC();
-    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],[o.status==='selesai'?'Harga akhir':'Upah penghantaran',rm(o.price)]];
-    {const cm=String(o.notes||'').match(/KUTIP TUNAI RM\s*([\d.]+)/i); if(cm) rows.push(['Jumlah bayar customer',rm(+cm[1])]);}
+    const rows=[['Servis',o.service],['Kenderaan',o.vehicle],['Ambil',o.pick.addr],['Hantar',o.drop.addr],['Jarak',(+o.km||0).toFixed(1)+' KM'],['Bayaran',o.pay==='online'?'Transfer / QR':'Tunai'+(+o.itemEst?' · barang ≈ '+rm(o.itemEst):'')],['Nota',o.notes||'-'],[o.status==='selesai'?'Harga akhir':'Jumlah tambang',rm(o.price)]];
     $('#sum').innerHTML=rows.map(r=>`<div class="row"><span>${r[0]}</span><span>${esc(r[1])}</span></div>`).join('');
   }
   $('#dX').onclick=()=>$('#done').classList.add('hide');
