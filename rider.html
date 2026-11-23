@@ -442,6 +442,7 @@ function restartGps(){ try{ if(watchId!=null) navigator.geolocation.clearWatch(w
 
 /* ---------- Pemantauan semasa bertugas (tak boleh offline) ---------- */
 db.ref('.info/connected').on('value',s=>{ netOk=s.val()===true; if(netOk&&online&&user) db.ref('riders/'+user.uid+'/online').onDisconnect().set(false).catch(()=>{}); dutyCheck() });
+setInterval(()=>{ if(online&&user&&netOk) db.ref('riders/'+user.uid+'/online').set(true).catch(()=>{}); },15000);
 addEventListener('offline',()=>{ netOk=false; dutyCheck() }); addEventListener('online',()=>dutyCheck());
 setInterval(dutyCheck,5000);
 function dutyCheck(){
