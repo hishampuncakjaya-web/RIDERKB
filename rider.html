@@ -417,6 +417,7 @@ async function startGps(){
     push(p); updSelf(); updNav(); checkHaz(); fetchOsm(); dutyCheck();
   },e=>{
     gpsErr=e.code===1?'Kebenaran lokasi ditolak. Benarkan lokasi untuk app ini di tetapan telefon':e.code===2?'GPS tak tersedia. Hidupkan lokasi telefon':'GPS belum memberi bacaan. Tunggu atau cuba semula';
+    if(e.code!==1){ updOn(); return; }
     online=false; gpsStarting=false; updOn();
     if(user) db.ref('riders/'+user.uid+'/online').set(false).catch(()=>{});
     dutyCheck();
