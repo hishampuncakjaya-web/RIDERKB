@@ -405,7 +405,7 @@ async function startGps(){
   if(online||gpsStarting||!user) return;
   if(!navigator.geolocation){ toast('Peranti tak sokong GPS'); return }
   gpsStarting=true; online=false; gpsErr='Menunggu bacaan GPS pertama…'; updOn(); dutyCheck();
-  
+  db.ref('riders/'+user.uid+'/online').onDisconnect().set(false).catch(()=>{});
   watchId=navigator.geolocation.watchPosition(p=>{
     const lat=Number(p.coords.latitude), lng=Number(p.coords.longitude);
     if(!Number.isFinite(lat)||!Number.isFinite(lng)||Math.abs(lat)>90||Math.abs(lng)>180){ gpsErr='Koordinat GPS tidak sah'; online=false; updOn(); dutyCheck(); return }
@@ -441,7 +441,7 @@ document.addEventListener('visibilitychange',async()=>{
 function restartGps(){ try{ if(watchId!=null) navigator.geolocation.clearWatch(watchId) }catch(e){} watchId=null; online=false; gpsErr=''; startGps() }
 
 /* ---------- Pemantauan semasa bertugas (tak boleh offline) ---------- */
-db.ref('.info/connected').on('value',s=>{ netOk=s.val()===true; if(netOk&&online&&user)  dutyCheck() });
+db.ref('.info/connected').on('value',s=>{ netOk=s.val()===true; if(netOk&&online&&user) db.ref('riders/'+user.uid+'/online').onDisconnect().set(false).catch(()=>{}); dutyCheck() });
 setInterval(()=>{ if(online&&user&&netOk) db.ref('riders/'+user.uid+'/online').set(true).catch(()=>{}); },15000);
 addEventListener('offline',()=>{ netOk=false; dutyCheck() }); addEventListener('online',()=>dutyCheck());
 setInterval(dutyCheck,5000);
