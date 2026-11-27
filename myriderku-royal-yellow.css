@@ -1,0 +1,149 @@
+
+/* =====================================================
+   MYRIDERKU ROYAL YELLOW PREMIUM
+   Tema rasmi: Royal Green + Gold + Yellow
+   Versi: 1.0
+   Lapisan CSS tambahan sahaja
+===================================================== */
+
+:root {
+  --royal-gold: #f5c542;
+  --royal-yellow: #ffd84d;
+  --royal-green: #14532d;
+  --royal-dark: #0b140f;
+  --royal-card: #17251b;
+  --royal-line: #536b36;
+}
+
+/* HEADER */
+body.role-customer header,
+body.role-rider header,
+body.role-vendor header,
+body.role-admin header {
+  background:
+    linear-gradient(
+      135deg,
+      #123b25,
+      #166534 55%,
+      #a87913
+    ) !important;
+  border-bottom: 3px solid var(--royal-gold);
+}
+
+/* TAJUK */
+header h1,
+.hd h1 {
+  color: #fff !important;
+  font-weight: 900;
+  letter-spacing: .4px;
+}
+
+/* TAG */
+.tag {
+  color: var(--royal-yellow);
+  border-color: var(--royal-gold);
+  font-weight: 800;
+}
+
+/* KAD */
+.card,
+.stat,
+.svc,
+.nb,
+.sum {
+  border-radius: 17px;
+}
+
+/* BUTANG UTAMA */
+.btn:not(.back):not(.gry) {
+  background: linear-gradient(
+    135deg,
+    #eabf36,
+    #a87913
+  ) !important;
+  color: #17200f !important;
+  font-weight: 900;
+  border: 1px solid #ffe58a;
+  box-shadow: 0 5px 15px #0003;
+}
+
+/* BUTANG AKTIF */
+.svc.on,
+.chip.on,
+.opt.on,
+.tab.on {
+  border-color: var(--royal-gold) !important;
+}
+
+/* HARGA */
+.price {
+  border: 1px solid var(--royal-gold) !important;
+}
+
+.price b,
+.price .km {
+  color: var(--royal-yellow) !important;
+}
+
+/* INPUT */
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--royal-gold) !important;
+  outline-color: var(--royal-gold) !important;
+}
+
+/* LABEL */
+h2 {
+  color: var(--royal-yellow);
+  font-weight: 800;
+}
+
+/* NAVIGASI */
+.tab.on {
+  background: var(--royal-green) !important;
+  color: var(--royal-yellow) !important;
+}
+
+/* STATUS */
+.b-selesai {
+  border-color: #34d399;
+}
+
+.b-baru {
+  border-color: var(--royal-gold);
+}
+
+/* FOOTER */
+.foot {
+  color: #a8b9a8;
+}
+
+/* KESAN PREMIUM */
+button {
+  transition:
+    transform .15s ease,
+    box-shadow .15s ease;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+/* MESRA PAPARAN TELEFON */
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 27px;
+  }
+
+  .btn {
+    min-height: 48px;
+  }
+}
+
+/* AKSESIBILITI */
+@media (prefers-reduced-motion: reduce) {
+  button {
+    transition: none;
+  }
+}
